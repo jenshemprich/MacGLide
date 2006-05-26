@@ -1,0 +1,72 @@
+Configuration:
+
+MacGLide stores its settings in the "MacGLide Settings" subfolder of the
+Preferences Folder in the MacOS 9 System Folder. There can be settings for
+each game, but normally you're just editing the default settings, which
+apply to all games. The files are created when you run a game the first
+time.
+
+
+The most important settings:
+
+
+Resolution=n	Overrides the screen resolution
+
+	values from 1 to 8 are used to multiply the resolution requested by
+	the game.
+
+	Example: With Resolution=2 and the game requests 800x600, the
+	         screen resolution will be actually 1600x1200.
+	         Because the game still thinks it 800x600, you might
+	         achive higher framerates for games that extensively
+	         write to the framebuffer (for instance Falcon 4.0).
+
+	Greater values override the requested resolution with a fixed value:
+
+	Example: Resolution=1024 sets the screen resolution to 1024x768
+	         regardless what the game requests (handy if you're using
+	         a LCD with that resolution).
+
+
+FullSceneAntiAliasing=n	Sets the amount of samples to be used for antialiasing.
+
+	Values greater than 1 enable full scene antialiasing
+	(improves rendering quality a lot)
+
+	Example: FullSceneAntiAliasing=4 uses 4 samples to render a pixel. The
+	         maximum value depends on the amount of VRAM of your video card
+	         and the screen resolution.
+	         So if your set the value too high, FSAA may cease to work. In
+	         this case, you have either to decrease the screen resolution
+	         or the FSAA value.
+
+
+TextureSmoothing=n	Improves rendering quality by enabling global texture
+	                  smoothing and mipmapping for all objects.
+
+	A value of 1 (default) enables texture smoothing, a value of 0 disables
+	it. When enabled, all textures (instead of just the ones chosen by the
+	game) are rendered smoothly (using the OpenGL linear filter). If
+	mipmaps are enabled (they are by default) all textures are also
+	mipmapped.
+
+
+MonitorRefreshRate=n	Overrides the vertical screen refesh rate.
+
+	Values from >=60 set the vertical screen refresh rate to n.
+	Example: MonitorRefreshRate=75 sets the vertical screen refresh rate to
+	75Hz. Some games doesn't allow to change the refresh rate, but you can
+	change it here.
+	
+All other default values are chosen for each game to provide the best quality/
+compatibility, so it shouldn't be necessary to change them.
+
+For other setings, see the hints at the top of the ini-file for details.
+
+
+Memory usage:
+
+In order to get a game running with MacGLide on a MacOS 9 system and to avoid
+a sudden exit to the finder, you must raise its memory partition by
+about 50000K. When started in the MacOS X classic environment, the memory
+setting can be left as it as.

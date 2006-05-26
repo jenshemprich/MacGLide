@@ -1,0 +1,148 @@
+Compatibility:
+
+Performance and rendering quality:
+
+In general, MacGLide works best when used in the MacOS X Classic environment. In this case
+it can use the MacOS X OpenGL driver to render better quality images, and offers a lot more
+features (like anisotropic filtering, Full Scene Antialiasing, etc.).
+
+In MacOS 9, the performance is a little bit better, but the rendering quality is not as good
+as in the Classic environment.
+
+Compatibility:
+
+MacGLide has been tested with a lot of several games, and with several
+hardware configurations. Below is a list of games and how they do with MacGLide.
+
+
+Playable Games:
+
+Carmageddon:            Works just fine. There is just a small problem with Exposé and
+                        the mouse pointer. To use the mouse, you must set the screen
+                        resolution to your desktop size.
+
+Carmageddon Splatpack:  Works just fine. Set the resolution to the desktop resolution
+                        to get the mouse pointer working correctly.
+
+Carmageddon 2:          Works fine except that in menus and the loading screen,
+                        the colors of the background images are wrong. Otherwise
+                        the game is fully playable.
+
+Descent 1 & 2:          Playable, but there are issues with switching from cockpit to map
+                        view. The textures become corrupt after a few switches, or the screen
+                        behind the cockpit becomes blank (to resolve this you can just switch
+                        the view to rear and back)
+                        
+Descent 3 Demo:		Works fine, with great graphics. But I have just the demo, and no
+                        twin-stick, so I just gave it a quick try.
+                        
+Deus Ex:                Works fine except the sunglasses of some characters are sometimes 
+                        white. The same goes for gun-smoke effects which are displayed
+                        all the time (instead just when firing a gun). Sometimes, textured
+                        landscape tiles show the wrong textures (or garbage).
+
+DS9 - The Fallen:       Some objects in the intro seem to have problems with transparency.
+                        Otherwise the game looks great but I haven't tested it a lot.
+
+Falcon 4.0:             Works just fine. For maximum performance at 1600x1200, choose 800x600
+                        in the game menu, and set Resolution=2 in the settings file.
+
+Futurecop LAPD:         Works fine except that in version 1.02, the pause screen is corrupt.
+                        But you can stick with version 1.0.
+
+Myth The Fallen Lords:  Works fine except when you override the Glide resolution in V1.3
+                        or below, the mouse pointer will not work correctly anymore.
+
+Quake 3Dfx:             Works fine.
+
+Rune Demo:              The Demo seems to work fine.
+
+Tomb Raider 1 (Gold):   Works fine. Please note, that the In-Game menu has a black background,
+                        except for 640x480, where you can see the dimmed paused game.
+                        I believe this is actually a game feature, so don't blame me without
+                        screenshots made with 3dfx hardware.
+
+Tomb Raider 2 (Gold):   Works fine even with movies enabled with Version TR2 1.03. Earlier
+                        versions of TR2 may not display everything as expected.
+
+Tomb Raider 3:          Works fine. 
+
+Unreal:                 Works fine.
+
+
+Games with issues:
+
+Diablo 2:               In the video driver setup dialog, the 3dfx/Glide options is greyed out
+                        and can't be selected. Probably needs 3DfxGlideLib3.x to run properly
+                        in 3dfx mode. However, there's a MacOS X patch available.
+                        
+Driver 3dfx:            The main menu screen is missing. Besides that, the game doesn't run
+                        in the MaxOS X classic environment (even with software rendering).
+
+F-18 Korea:             Hardly playable. Although the textures look correct now, there are
+                        severe screen update problems in cockpit mode.
+
+Waterrace:              Needs 3DfxGlideLib3.x to run properly in 3dfx mode.
+
+
+In general, MacGLide works best when used in the MacOS X Classic environment. In this case
+it can use the MacOS X OpenGL driver to render better quality images, and offers a lot more
+features (like anisotropic filtering, Full Scene Antialiasing, etc.).
+In MacOS 9, the performance is a little bit better, but the rendering quality is not as good
+as in the Classic environment.
+
+
+Tested systems on MacOS X:
+
+MacGLide runs on any system with an OpenGL capable graphics card.
+
+So far, I've tested MacGLide myself with the following cards:
+
+- NVidia GForce 2MX
+- NVidia 4MX
+- ATI Radeon 7500
+- ATI Radeon 9000
+- ATI Mobility Radeon 9200
+
+With these cards, all supported games work as described above.
+But other cards will likely work without problems, too.
+
+
+Same systems with MacOS 9.22:
+
+On MacOS 9, MacGLide doesn't run very well. The development of MacGLide
+is focussed on features available through the Classic environemnt.
+As a result, MacOS9 users have to live with the following inconveniences:
+
+- Fog is missing
+- Unreal doesn't work with mipmaps enabled.
+- In Carmageddon, textured objects loose their texture adn become white shaded.
+- The MacOS 9.22 OpenGL drivers doesn't support Antialiasing.
+- Chromakeying mght not work (probably caused by non-working alpha test).
+
+If you still want to play your games on MacOS 9.22, here's some problems
+I have encountered on my machines:
+
+NVidia GForce 2MX OpenGL 1.2.2 (MacOS 9.22):
+
+- In Myth, most objects in the game are drawn in the wrong colors.
+
+
+ATI Rage 128 OpenGL Engine Version 1.1.ATI-5.99 (MacOS 9.22):
+
+- The display in Carmageddon starts to flicker when the race starts.
+
+- The ATI OpenGL 1.1 driver returns 32 bit as the maximum Depth Buffer bits, causing
+  display errors. To get a correct display, the maximum number of depth buffer
+  bits must explicitely be set to 16 in the ini-file (DepthBufferBits=16).
+
+- Tomb Raider Gold has still zbuffer problems, even with the changed  settings.
+
+- Unreal looks bad when mipmapping is enabled.
+
+- In Myth, the bounding rectangle of most objects in the game ise drawn with the wrong colors
+  (seems to be a problem with the Alpha test not working)
+
+If you have a graphic card not mentioned here, please let me know your experiences.
+
+Regards, Jens
