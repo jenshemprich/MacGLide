@@ -1,0 +1,23 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            CLASS = MacGLideGameSpecificEnhancementsPanel; 
+            LANGUAGE = ObjC; 
+            SUPERCLASS = NSPanel; 
+        }, 
+        {
+            ACTIONS = {toggleMipmapping = id; toogleUseGameSpecificOptimisations = id; }; 
+            CLASS = MacGLideMainPanel; 
+            LANGUAGE = ObjC; 
+            SUPERCLASS = NSWindow; 
+        }, 
+        {
+            ACTIONS = {toggleTextureSmoothing = id; }; 
+            CLASS = NSWindow; 
+            LANGUAGE = ObjC; 
+            SUPERCLASS = NSResponder; 
+        }
+    ); 
+    IBVersion = 1; 
+}

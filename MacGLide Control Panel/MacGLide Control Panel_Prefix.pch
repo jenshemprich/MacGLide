@@ -1,0 +1,17 @@
+//
+// Prefix header for all source files of the 'MacGLide Control Panel' target in the 'MacGLide Control Panel' project
+//
+
+#ifdef __OBJC__
+    #import <Cocoa/Cocoa.h>
+#endif
+
+// Stuff that needs to be here in order to make the GLide SDK and MacGLide happy
+
+#include "OpenGL/gl.h"
+#include "Carbon/Carbon.h"
+
+#include "sdk2_glide.h"
+
+const int StringBufferSize = 256;
+void GlideMsg(const char *message, ...);
