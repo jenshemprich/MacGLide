@@ -1,0 +1,234 @@
+// !$*UTF8*$!
+{
+	29B97313FDCFA39411CA2CEA /* Project object */ = {
+		activeBuildConfigurationName = Debug;
+		activeExecutable = B4E30D4B09A0BC8D003DD374 /* MacGLide Control Panel */;
+		activeTarget = 8D1107260486CEB800E47090 /* MacGLide Control Panel */;
+		addToTargets = (
+			8D1107260486CEB800E47090 /* MacGLide Control Panel */,
+		);
+		breakpointsGroup = B4F7C7F909A508AB0001160D /* XCBreakpointsBucket */;
+		codeSenseManager = B4E30D5A09A0BC9A003DD374 /* Code sense */;
+		executables = (
+			B4E30D4B09A0BC8D003DD374 /* MacGLide Control Panel */,
+		);
+		perUserDictionary = {
+			PBXConfiguration.PBXFileTableDataSource3.PBXErrorsWarningsDataSource = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXErrorsWarningsDataSource_LocationID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					20,
+					300,
+					200,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXErrorsWarningsDataSource_TypeID,
+					PBXErrorsWarningsDataSource_MessageID,
+					PBXErrorsWarningsDataSource_LocationID,
+				);
+			};
+			PBXConfiguration.PBXFileTableDataSource3.PBXExecutablesDataSource = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXExecutablesDataSource_NameID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					22,
+					300,
+					252,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXExecutablesDataSource_ActiveFlagID,
+					PBXExecutablesDataSource_NameID,
+					PBXExecutablesDataSource_CommentsID,
+				);
+			};
+			PBXConfiguration.PBXFileTableDataSource3.PBXFileTableDataSource = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					20,
+					554,
+					20,
+					48,
+					43,
+					43,
+					20,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXFileDataSource_FiletypeID,
+					PBXFileDataSource_Filename_ColumnID,
+					PBXFileDataSource_Built_ColumnID,
+					PBXFileDataSource_ObjectSize_ColumnID,
+					PBXFileDataSource_Errors_ColumnID,
+					PBXFileDataSource_Warnings_ColumnID,
+					PBXFileDataSource_Target_ColumnID,
+				);
+			};
+			PBXConfiguration.PBXTargetDataSource.PBXTargetDataSource = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					20,
+					200,
+					184,
+					20,
+					48,
+					43,
+					43,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXFileDataSource_FiletypeID,
+					PBXFileDataSource_Filename_ColumnID,
+					PBXTargetDataSource_PrimaryAttribute,
+					PBXFileDataSource_Built_ColumnID,
+					PBXFileDataSource_ObjectSize_ColumnID,
+					PBXFileDataSource_Errors_ColumnID,
+					PBXFileDataSource_Warnings_ColumnID,
+				);
+			};
+			PBXPerProjectTemplateStateSaveDate = 171316574;
+			PBXWorkspaceStateSaveDate = 171316574;
+		};
+		sourceControlManager = B4E30D5909A0BC9A003DD374 /* Source Control */;
+		userBuildSettings = {
+		};
+	};
+	29B97316FDCFA39411CA2CEA /* main.m */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {723, 322}}";
+			sepNavSelRange = "{275, 0}";
+			sepNavVisRect = "{{0, 0}, {723, 322}}";
+			sepNavWindowFrame = "{{179, 0}, {762, 451}}";
+		};
+	};
+	32CA4F630368D1EE00C91783 /* MacGLide Control Panel_Prefix.pch */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {725, 325}}";
+			sepNavSelRange = "{256, 0}";
+			sepNavVisRect = "{{0, 0}, {725, 325}}";
+			sepNavWindowFrame = "{{7, 36}, {764, 454}}";
+		};
+	};
+	8D1107260486CEB800E47090 /* MacGLide Control Panel */ = {
+		activeExec = 0;
+		executables = (
+			B4E30D4B09A0BC8D003DD374 /* MacGLide Control Panel */,
+		);
+	};
+	8D1107310486CEB800E47090 /* Info.plist */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {686, 467}}";
+			sepNavSelRange = "{360, 0}";
+			sepNavVisRect = "{{0, 0}, {674, 467}}";
+			sepNavWindowFrame = "{{216, 83}, {713, 596}}";
+		};
+	};
+	B43FFB0409FD3D350094A3E3 /* GlideSettings.cpp */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {693, 8232}}";
+			sepNavSelRange = "{426, 0}";
+			sepNavVisRect = "{{0, 0}, {693, 482}}";
+			sepNavWindowFrame = "{{36, 21}, {732, 611}}";
+		};
+	};
+	B452D05309F9756E00A4F626 /* GlideSettings_iostream.cpp */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {525, 1092}}";
+			sepNavSelRange = "{411, 36}";
+			sepNavVisRect = "{{0, 0}, {525, 466}}";
+			sepNavWindowFrame = "{{436, 151}, {564, 595}}";
+		};
+	};
+	B452D05409F9756E00A4F626 /* GlideSettings_iostream.h */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {525, 466}}";
+			sepNavSelRange = "{829, 3}";
+			sepNavVisRect = "{{0, 0}, {525, 466}}";
+			sepNavWindowFrame = "{{15, 146}, {564, 595}}";
+		};
+	};
+	B46D4BC60A064796002A428F /* GlideSettings_FSp.h */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {725, 602}}";
+			sepNavSelRange = "{434, 0}";
+			sepNavVisRect = "{{0, 0}, {725, 325}}";
+			sepNavWindowFrame = "{{15, 287}, {764, 454}}";
+		};
+	};
+	B46D4BC70A064796002A428F /* GlideSettings.cpp */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {860, 3388}}";
+			sepNavSelRange = "{3812, 0}";
+			sepNavVisRect = "{{0, 1615}, {725, 325}}";
+			sepNavWindowFrame = "{{38, 266}, {764, 454}}";
+		};
+	};
+	B483759009F67BFC004826B1 /* GlideSettings.h */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {674, 2170}}";
+			sepNavSelRange = "{2260, 13}";
+			sepNavVisRect = "{{0, 881}, {674, 329}}";
+			sepNavWindowFrame = "{{272, 31}, {713, 458}}";
+		};
+	};
+	B4DE41C90A18BF99002BD718 /* MacGLideMainPanel.h */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {725, 325}}";
+			sepNavSelRange = "{89, 0}";
+			sepNavVisRect = "{{0, 0}, {725, 325}}";
+			sepNavWindowFrame = "{{191, 105}, {764, 454}}";
+		};
+	};
+	B4DE41CA0A18BF99002BD718 /* MacGLideMainPanel.mm */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {725, 325}}";
+			sepNavSelRange = "{126, 0}";
+			sepNavVisRect = "{{0, 0}, {725, 325}}";
+			sepNavWindowFrame = "{{61, 245}, {764, 454}}";
+		};
+	};
+	B4E30D4B09A0BC8D003DD374 /* MacGLide Control Panel */ = {
+		isa = PBXExecutable;
+		activeArgIndex = 2147483647;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		autoAttachOnCrash = 1;
+		configStateDict = {
+		};
+		customDataFormattersEnabled = 1;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		dylibVariantSuffix = "";
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		libgmallocEnabled = 0;
+		name = "MacGLide Control Panel";
+		savedGlobals = {
+		};
+		sourceDirectories = (
+		);
+	};
+	B4E30D5909A0BC9A003DD374 /* Source Control */ = {
+		isa = PBXSourceControlManager;
+		fallbackIsa = XCSourceControlManager;
+		isSCMEnabled = 1;
+		scmConfiguration = {
+			SubversionToolPath = /sw/bin/svn;
+		};
+		scmType = scm.subversion;
+	};
+	B4E30D5A09A0BC9A003DD374 /* Code sense */ = {
+		isa = PBXCodeSenseManager;
+		indexTemplatePath = "";
+	};
+	B4F7C7F909A508AB0001160D /* XCBreakpointsBucket */ = {
+		isa = XCBreakpointsBucket;
+		name = "Project Breakpoints";
+		objects = (
+		);
+	};
+}
