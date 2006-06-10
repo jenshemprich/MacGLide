@@ -1,9 +1,9 @@
 #import "MacGLideMainPanel.h"
 
 #include <sdk2_glide.h>
-#include "GlideSettings_iostream.h"
+#include "GlideSettings_FSp.h"
 
-GlideSettingsIOStream UserConfig;
+GlideSettingsFSp UserConfig;
 
 @implementation MacGLideMainPanel
 
