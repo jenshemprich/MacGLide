@@ -887,7 +887,7 @@ void RenderUpdateState()
 				active_texture_unit_not_coloralpha1 = true;
 				glReportError();
 			}
-			
+
 			if (s_bUpdateFogModeState)
 			{
 				VERIFY_ACTIVE_TEXTURE_UNIT(OpenGL.FogTextureUnit);
@@ -1011,6 +1011,7 @@ void RenderUpdateState()
 			}
 		}
 
+		// Means fog texture unit is active
 		if (active_texture_unit_not_coloralpha1 == false &&
 		    (s_bUpdateColorInvertState || s_bUpdateAlphaInvertState))
 		{
@@ -1096,8 +1097,6 @@ void RenderUpdateState()
 				// AlphaCombine
 				if (OpenGL.ChromaKey && OpenGL.Texture && !OpenGL.Blend)
 				{
-					// OpenGL.ColorAlphaUnitAlphaEnabledState[0] = true;
-					// OpenGL.ColorAlphaUnitAlphaEnabledState[1] = false;
 					OpenGL.ColorAlphaUnitAlphaEnabledState[unit_index] = (unit_index == 0) ? true : false;
 				}
 				else
@@ -1160,11 +1159,9 @@ void RenderUpdateState()
 								glActiveTextureARB(OpenGL.ColorAlphaUnit1 + unit_index);
 								if (InternalConfig.EXT_compiled_vertex_array)
 								{
-									if (set_active_texture_unit)
-									{
-										glClientActiveTextureARB(OpenGL.ColorAlphaUnit1 + unit_index);
-									}
+									glClientActiveTextureARB(OpenGL.ColorAlphaUnit1 + unit_index);
 									glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+									glTexCoordPointer(4, GL_FLOAT, 0, NULL);
 									active_texture_unit_client_state_not_coloralpha1 = (unit_index != 0);
 								}
 								active_texture_unit_not_coloralpha1 = (unit_index != 0);
@@ -1208,10 +1205,11 @@ void RenderUpdateState()
 #endif							
 							// Enable the texture unit
 							glEnable(GL_TEXTURE_2D);
-							if (InternalConfig.EXT_compiled_vertex_array && set_active_texture_unit)
+							if (InternalConfig.EXT_compiled_vertex_array)
 							{
 								glClientActiveTextureARB(OpenGL.ColorAlphaUnit1 + unit_index);
 								glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+								glTexCoordPointer(4, GL_FLOAT, 0, &OGLRender.TTexture[0]);
 								active_texture_unit_client_state_not_coloralpha1 = (unit_index != 0);
 					 		}
 							glReportError();
@@ -1358,7 +1356,7 @@ void RenderUpdateState()
 						}
 						else
 						{
-							CombineFunctionGLTextureUnit unit = OpenGL.AlphaCombineFunctions[a_function].ColorAlphaUnit[unit_index];
+							const CombineFunctionGLTextureUnit unit = OpenGL.AlphaCombineFunctions[a_function].ColorAlphaUnit[unit_index];
 							if (unit.Function == CF_Unused)
 							{
 								if (OpenGL.ChromaKey && OpenGL.Texture && OpenGL.Blend)
@@ -1471,7 +1469,7 @@ void RenderUpdateState()
 					// Constant Color State
 					if (s_bUpdateConstantColorValueState || s_bUpdateConstantColorValue4State)
 					{
-						GLfloat* color;
+						const GLfloat* color;
 						if (Glide.State.Delta0Mode)
 						{
 							if (reset_state) s_bUpdateConstantColorValue4State = false;
@@ -1500,18 +1498,19 @@ void RenderUpdateState()
 		}
 		else // OpenGL.ColorAlphaTectureUnit2 == 0
 		{
-			if (active_texture_unit_not_coloralpha1)
-			{
-				glActiveTextureARB(OpenGL.ColorAlphaUnit1);
-				active_texture_unit_not_coloralpha1 = false;
-			}
 			if (s_bUpdateTextureState)
 			{
 				s_bUpdateTextureState = false;
-				if (active_texture_unit_client_state_not_coloralpha1)
+				if (active_texture_unit_not_coloralpha1)
 				{
-					glClientActiveTextureARB(OpenGL.ColorAlphaUnit1);
-					active_texture_unit_client_state_not_coloralpha1 = false;
+					glActiveTextureARB(OpenGL.ColorAlphaUnit1);
+					active_texture_unit_not_coloralpha1 = false;
+					if (active_texture_unit_client_state_not_coloralpha1)
+					{
+						glClientActiveTextureARB(OpenGL.ColorAlphaUnit1);
+						active_texture_unit_client_state_not_coloralpha1 = false;
+					}
+					glReportError();
 				}
 				if (OpenGL.Texture)
 				{
@@ -1519,6 +1518,7 @@ void RenderUpdateState()
 					if (InternalConfig.EXT_compiled_vertex_array)
 					{
 						glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+						glTexCoordPointer(4, GL_FLOAT, 0, &OGLRender.TTexture[0]);
 					}
 				}
 				else
@@ -1526,6 +1526,7 @@ void RenderUpdateState()
 					if (InternalConfig.EXT_compiled_vertex_array)
 					{
 						glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+						glTexCoordPointer(4, GL_FLOAT, 0, NULL);
 					}
 					glDisable(GL_TEXTURE_2D);
 				}
@@ -1573,7 +1574,7 @@ void RenderUpdateState()
 		glActiveTextureARB(OpenGL.ColorAlphaUnit1);
 		glReportError();
 	}
-		
+	
 	VERIFY_ACTIVE_TEXTURE_UNIT(OpenGL.ColorAlphaUnit1);
 	VERIFY_TEXTURE_ENABLED_STATE();
 }
