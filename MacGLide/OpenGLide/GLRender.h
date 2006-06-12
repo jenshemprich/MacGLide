@@ -14,13 +14,6 @@
 #define __GLRENDER_H__
 
 //**************************************************************
-// Defines
-//**************************************************************
-
-#define MAXTRIANGLES 500
-
-
-//**************************************************************
 // Structs
 //**************************************************************
 
@@ -73,6 +66,8 @@ struct TFogStruct
 
 struct RenderStruct
 {
+	static const int RenderBufferSize = 512;
+	int FrameBufferTrianglesStart;
 	TColorStruct *TColor;
 	TColorStruct *TColor2;
 	TVertexStruct *TVertex;
@@ -94,8 +89,6 @@ struct RenderStruct
 	unsigned long OverallTriangles, OverallRenderTriangleCalls;
 	unsigned long OverallLines;
 	unsigned long OverallPoints;
-	unsigned long OverallQuads;
-	unsigned long OverallPolygons;
 #endif
 };
 
@@ -119,6 +112,18 @@ extern RenderStruct	OGLRender;
 
 void RenderInitialize( void );
 void RenderFree( void );
+
+inline void RenderUnlockArrays()
+{
+	glReportErrors("RenderUnlockArrays");
+
+	if (OGLRender.BufferLocked)
+	{
+		glUnlockArraysEXT();
+		glReportError();
+		OGLRender.BufferLocked = false;
+	}
+};
 
 
 // Main Render variables

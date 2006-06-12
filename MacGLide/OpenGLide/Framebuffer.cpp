@@ -12,6 +12,7 @@
 #include "Glide.h"
 #include "GlideApplication.h"
 #include "GlideSettings.h"
+#include "GLRender.h"
 #include "GLRenderUpdateState.h"
 #include "GLColorAlphaCombineEnvTables.h"
 
@@ -84,7 +85,7 @@ bool Framebuffer::initialise_buffers(BufferStruct* framebuffer, BufferStruct* te
 	GLfloat zero = 0.0f;
 	if (m_use_client_storage)
 	{
-		glGenTextures( m_max_client_storage_textures, &m_tex_name[0]);
+		glGenTextures(m_max_client_storage_textures, &m_tex_name[0]);
 		for(int i = 0; i < m_max_client_storage_textures; i++)
 		{
 			glPrioritizeTextures(1, &m_tex_name[i], &zero);
@@ -103,7 +104,7 @@ bool Framebuffer::initialise_buffers(BufferStruct* framebuffer, BufferStruct* te
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 	}
-	// If a game has it's own tilesize table, use
+	// If a game has its own tilesize table, use
 	// the largest tiles for opaque renderings
 	GLint y_step = y_tile == 0 ? m_y_step_start_opaque : m_y_step_start;
 	// init default/opaque tilesize table
@@ -248,7 +249,15 @@ bool Framebuffer::end_write(FxU32 alpha, GLfloat depth, bool pixelpipeline)
 	// to determine if a tile contains any pixels to be rendered.
 	if (m_glAlpha == 0) return false;
 	set_gl_state(pixelpipeline);
-	draw(m_custom_tilesizes ? m_custom_tilesizes : m_tilesizes, pixelpipeline);
+	const tilesize* tilesizes = m_custom_tilesizes ? m_custom_tilesizes : m_tilesizes;
+	if (InternalConfig.EXT_compiled_vertex_array)
+	{
+		drawCompiledVertexArrays(tilesizes, pixelpipeline);
+	}
+	else
+	{
+		draw(tilesizes, pixelpipeline);
+	}
 	restore_gl_state(pixelpipeline);
 	return true;
 }
@@ -437,7 +446,7 @@ void Framebuffer::set_gl_state(bool pixelpipeline)
 			{
 				glClientActiveTextureARB(OpenGL.FogTextureUnit);
 				glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-				glClientActiveTextureARB(OpenGL.ColorAlphaUnit1);
+				glTexCoordPointer(4, GL_FLOAT, 0, NULL);
 			}
 			glDisable(GL_TEXTURE_2D);
 		}
@@ -456,18 +465,53 @@ void Framebuffer::set_gl_state(bool pixelpipeline)
 			if (disable_coloralpha_texture_unit_2)
 			{
 				glActiveTextureARB(OpenGL.ColorAlphaUnit2);
+				if (InternalConfig.EXT_compiled_vertex_array)
+				{
+					glClientActiveTextureARB(OpenGL.ColorAlphaUnit2);
+					glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+					// On MacOS9 (Classic?) the texcoord pointer needs to be reset
+					// to the default value when glLockArrays/glUnlockArrays is used
+					glTexCoordPointer( 4, GL_FLOAT, 0, NULL );
+				}
 				glDisable(GL_TEXTURE_2D);
 			}
-			if (disable_fog_texture_unit || disable_coloralpha_texture_unit_2) glActiveTextureARB(OpenGL.ColorAlphaUnit1);
+			if (disable_fog_texture_unit || disable_coloralpha_texture_unit_2)
+			{
+				glActiveTextureARB(OpenGL.ColorAlphaUnit1);
+				if (InternalConfig.EXT_compiled_vertex_array)
+				{
+					glClientActiveTextureARB(OpenGL.ColorAlphaUnit1);
+				}
+			}
 			if (!OpenGL.ColorAlphaUnitColorEnabledState[0] && !OpenGL.ColorAlphaUnitAlphaEnabledState[0])
 			{
 				glEnable(GL_TEXTURE_2D);
+				if (InternalConfig.EXT_compiled_vertex_array)
+				{
+					glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+					glTexCoordPointer(4, GL_FLOAT, 0, &OGLRender.TTexture[0]);
+				}
 			}
 		}
 		else
 		{
-			if (disable_fog_texture_unit) glActiveTextureARB(OpenGL.ColorAlphaUnit1);
-			if (OpenGL.Texture == false) glEnable(GL_TEXTURE_2D);
+			if (disable_fog_texture_unit)
+			{
+				glActiveTextureARB(OpenGL.ColorAlphaUnit1);
+				if (InternalConfig.EXT_compiled_vertex_array)
+				{
+					glClientActiveTextureARB(OpenGL.ColorAlphaUnit1);
+				}
+			}
+			if (OpenGL.Texture == false)
+			{
+				glEnable(GL_TEXTURE_2D);
+				if (InternalConfig.EXT_compiled_vertex_array)
+				{
+					glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+					glTexCoordPointer(4, GL_FLOAT, 0, &OGLRender.TTexture[0]);
+				}
+			}
 		}
 		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		glReportError();
@@ -591,11 +635,7 @@ void Framebuffer::restore_gl_state(bool pixelpipeline)
 			{
 				glClientActiveTextureARB(OpenGL.FogTextureUnit);
 				glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-				glClientActiveTextureARB(OpenGL.ColorAlphaUnit1);
-			}
-			if (OpenGL.ColorAlphaUnit2 == 0)
-			{
-				glActiveTextureARB(OpenGL.ColorAlphaUnit1);
+				glTexCoordPointer(1, GL_FLOAT, 0, &OGLRender.TFog[0]);
 			}
 		}
 		if (OpenGL.Fog &&
@@ -613,10 +653,28 @@ void Framebuffer::restore_gl_state(bool pixelpipeline)
 			{
 				glActiveTextureARB(OpenGL.ColorAlphaUnit2);
 				glEnable(GL_TEXTURE_2D);
+				if (InternalConfig.EXT_compiled_vertex_array)
+				{
+					glClientActiveTextureARB(OpenGL.ColorAlphaUnit2);
+					glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+					glTexCoordPointer(4, GL_FLOAT, 0, &OGLRender.TTexture[0]);
+				}
 			}
-			if (enable_fog_texture_unit || enable_coloralpha_texture_unit_2) glActiveTextureARB(OpenGL.ColorAlphaUnit1);
+			if (enable_fog_texture_unit || enable_coloralpha_texture_unit_2)
+			{
+				glActiveTextureARB(OpenGL.ColorAlphaUnit1);
+				if (InternalConfig.EXT_compiled_vertex_array)
+				{
+					glClientActiveTextureARB(OpenGL.ColorAlphaUnit1);
+				}
+			}
 			if (!OpenGL.ColorAlphaUnitColorEnabledState[0] && !OpenGL.ColorAlphaUnitAlphaEnabledState[0])
 			{
+				if (InternalConfig.EXT_compiled_vertex_array)
+				{
+					glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+					glTexCoordPointer( 4, GL_FLOAT, 0, NULL );
+				}
 				glDisable(GL_TEXTURE_2D);
 			}
 			// Restore the previous texture environment
@@ -624,8 +682,21 @@ void Framebuffer::restore_gl_state(bool pixelpipeline)
 		}
 		else
 		{
+			if (enable_fog_texture_unit)
+			{
+				glActiveTextureARB(OpenGL.ColorAlphaUnit1);
+				if (InternalConfig.EXT_compiled_vertex_array)
+				{
+					glClientActiveTextureARB(OpenGL.ColorAlphaUnit1);
+				}
+			}
 			if (OpenGL.Texture == false)
 			{
+				if (InternalConfig.EXT_compiled_vertex_array)
+				{
+					glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+					glTexCoordPointer( 4, GL_FLOAT, 0, NULL );
+				}
 				glDisable(GL_TEXTURE_2D);
 			}
 			// Restore the previous texture environment
@@ -639,8 +710,8 @@ void Framebuffer::restore_gl_state(bool pixelpipeline)
 
 	glReportError();
 	VERIFY_ACTIVE_TEXTURE_UNIT(OpenGL.ColorAlphaUnit1);
+	VERIFY_TEXTURE_ENABLED_STATE();
 }
-
 
 bool Framebuffer::draw(const tilesize* tilesizetable, bool pixelpipeline)
 {
@@ -767,7 +838,165 @@ bool Framebuffer::draw(const tilesize* tilesizetable, bool pixelpipeline)
  		glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE , false);
 		glReportError();
  	}
+	s_Framebuffer.SetRenderBufferChanged();
+	return y == m_height && x == m_width; 
+}
 
+bool Framebuffer::drawCompiledVertexArrays(const tilesize* tilesizetable, bool pixelpipeline)
+{
+	#ifdef OGL_FRAMEBUFFER
+		GlideMsg( "Framebuffer::draw(---, %d)\n", pixelpipeline);
+	#endif
+
+	glReportErrors("Framebuffer::draw()");
+
+	// Compute the coordinates
+	const int framebuffertrianglesstart = OGLRender.FrameBufferTrianglesStart;
+	TColorStruct* pC = &OGLRender.TColor[framebuffertrianglesstart];
+	TVertexStruct* pV = &OGLRender.TVertex[framebuffertrianglesstart];
+	TTextureStruct* pTS = &OGLRender.TTexture[framebuffertrianglesstart];
+	int n = 0;
+	GLint x;
+	GLint y;
+	GLint x_step;
+	GLint y_step;
+	y = 0;
+	for(int w = 0; y < m_height && w < MaxTiles; w++, y += y_step)
+	{
+		y_step = tilesizetable[w].y;
+		x = 0;
+		for(int v = 0; x < m_width && v < MaxTiles; v++, x += x_step)
+		{
+			x_step = tilesizetable[w].x[v];
+			// Write coordinates counter clockwise into render buffers
+			pC->ar = pC->ag = pC->ab =
+			pC->br = pC->bg = pC->bb =
+			pC->cr = pC->cg = pC->cb =
+			pC->aa = pC->ba = pC->ca = 1.0;
+			pV->ax = x;
+			pV->ay = y;
+			pV->az = m_glDepth;
+			pV->bx = x + x_step;
+			pV->by = y;
+			pV->bz = m_glDepth;
+			pV->cx = x + x_step;
+			pV->cy = y + y_step;
+			pV->cz = m_glDepth;
+			pTS->as = 0.0;
+			pTS->at = 0.0;
+			pTS->bs = 1.0;
+			pTS->bt = 0.0;
+			pTS->cs = 1.0;
+			pTS->ct = 1.0;
+			pTS->aq = pTS->bq = pTS->cq = 0.0f;
+			pTS->aoow = pTS->boow = pTS->coow = 1.0;
+			pC++; pV++; pTS++; n++;
+
+			pC->ar = pC->ag = pC->ab =
+			pC->br = pC->bg = pC->bb =
+			pC->cr = pC->cg = pC->cb =
+			pC->aa = pC->ba = pC->ca = 1.0;
+			pV->ax = x + x_step;
+			pV->ay = y + y_step;
+			pV->az = m_glDepth;
+			pV->bx = x;
+			pV->by = y + y_step;
+			pV->bz = m_glDepth;
+			pV->cx = x;
+			pV->cy = y;
+			pV->cz = m_glDepth;
+			pTS->as = 1.0;
+			pTS->at = 1.0;
+			pTS->bs = 0.0;
+			pTS->bt = 1.0;
+			pTS->cs = 0.0;
+			pTS->ct = 0.0;
+			pTS->aq = pTS->bq = pTS->cq = 0.0f;
+			pTS->aoow = pTS->boow = pTS->coow = 1.0;
+			pC++; pV++; pTS++; n++;
+		}
+	}
+	if (m_use_client_storage)
+	{
+		glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, true);
+		glReportError();
+	}
+	// Finish rendering
+	RenderUnlockArrays();
+	// Transfer coords to VRAM
+	glLockArraysEXT(framebuffertrianglesstart  * 3 , n * 3);
+	OGLRender.BufferLocked = true;
+	const bool init_second_textureunit = pixelpipeline && OpenGL.ColorAlphaUnit2;
+	int texturenameindex = 0;
+	FxU32* texbuffer = reinterpret_cast<FxU32*>(m_texbuffer->Address);
+	// Render the tiles
+	y = 0;
+	n = 0;
+	for(int w = 0; y < m_height && w < MaxTiles; w++, y += y_step)
+	{
+		y_step = tilesizetable[w].y;
+		x = 0;
+		for(int v = 0; x < m_width && v < MaxTiles; v++, x += x_step)
+		{
+			x_step = tilesizetable[w].x[v];
+			// Use the same name for each texture in order to maintain the size
+			// and avoid vram memory reallocation
+			GLint texturename;
+			if (m_use_client_storage)
+			{
+				// Multiple textures are used to keep the gl pipeline busy
+				texturename = m_tex_name[texturenameindex];
+				if (texturenameindex == m_max_client_storage_textures -1)
+				{
+					glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE , false);
+					glReportError();
+				}
+				else if (texturenameindex < m_max_client_storage_textures -1)
+				{
+					texturenameindex++;
+				}
+			}
+			else
+			{
+				// Without GL_UNPACK_CLIENT_STORAGE_APPLE, just one texture is used
+				// in orde to minimise memory usage
+				// @todo: Could be further optimised by using multiple texture names
+				// (like if CLIENT_STORAGE_APPLE is present) and deleting obsolete
+				// textures > texturenameindex after rendering the current framebuffer.
+				texturename = m_tex_name[0];
+			}
+			if (createTextureData(texbuffer, x, y, x_step, y_step))
+			{
+				glBindTexture(GL_TEXTURE_2D, texturename);
+				#ifdef DEBUG_TILE_RENDERING
+					((long*) texbuffer)[0] = 0x00ff00ff;
+					((long*) texbuffer)[x_step * y_step - 1] = 0x00ff00ff;
+				#endif
+				glTexImage2D(GL_TEXTURE_2D, 0, m_glInternalFormat, x_step, y_step, 0, m_glFormat, m_glType, texbuffer);
+				glReportError();
+				if (init_second_textureunit)
+				{
+					glActiveTextureARB(OpenGL.ColorAlphaUnit2);
+					glBindTexture(GL_TEXTURE_2D, texturename);
+					glActiveTextureARB(OpenGL.ColorAlphaUnit1);
+					glReportError();
+				}
+				// use the next texbuffer location
+				if (m_use_client_storage && texturenameindex != m_max_client_storage_textures -1)
+				{
+					texbuffer += x_step * y_step;
+				}
+				// Draw the tile
+				glDrawArrays(GL_TRIANGLES, framebuffertrianglesstart * 3 + n,  6);
+			}
+			n += 6;
+		}
+	}
+	if (m_use_client_storage && texturenameindex < m_max_client_storage_textures - 1)
+	{
+ 		glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE , false);
+		glReportError();
+ 	}
 	s_Framebuffer.SetRenderBufferChanged();
 	return y == m_height && x == m_width; 
 }
@@ -803,6 +1032,7 @@ inline bool Framebuffer::Convert565Kto8888(FxU16* buffer1, register FxU32* buffe
 	return false;
 create_8888_texture:
 	const register unsigned long alpha = m_glAlpha;
+	const register unsigned long null = 0x00000000;
 	const register unsigned long mask_pixel1 = 0xffff0000;
 	const register unsigned long mask_pixel2 = 0x0000ffff;
 	const register unsigned long mask_pixel1_r = 0xf8000000;
@@ -821,15 +1051,15 @@ create_8888_texture:
 			pixel = *src;
 			if (pixel == chromakey12)
 			{
-				*buffer2++ = 0;
-				*buffer2++ = 0;
+				*buffer2++ = null;
+				*buffer2++ = null;
 			}
 			else
 			{
 				*src = chromakey12;
 				if ( (pixel & mask_pixel1) == chromakey1)
 				{
-					*buffer2++ = 0;
+					*buffer2++ = null;
 				}
 				else
 				{
@@ -840,7 +1070,7 @@ create_8888_texture:
 				}
 				if ( (pixel & mask_pixel2) == chromakey2)
 				{
-					*buffer2++ = 0;
+					*buffer2++ = null;
 				}
 				else
 				{

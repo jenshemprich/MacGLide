@@ -12,6 +12,7 @@
 
 #include "Glide.h"
 #include "GlideApplication.h"
+#include "GlideFrameBuffer.h"
 #include "GlideSettings.h"
 #include "GLextensions.h"
 #include "GLRender.h"
@@ -74,42 +75,45 @@ void RenderInitialize( void )
 	glReportErrors("RenderInitialize");
 	// initialise triagle buffers
 	OGLRender.NumberOfTriangles = 0;
-	OGLRender.TColor = (TColorStruct*) AllocBuffer( MAXTRIANGLES + 1, sizeof(TColorStruct));
+	OGLRender.FrameBufferTrianglesStart = OGLRender.RenderBufferSize + 1;
+	const int triangles = OGLRender.FrameBufferTrianglesStart + Framebuffer::MaxTiles * Framebuffer::MaxTiles;
+	OGLRender.TColor = (TColorStruct*) AllocBuffer( triangles, sizeof(TColorStruct));
 	if (OpenGL.ColorAlphaUnit2 == 0)
 	{
 		// This must be initialiased even if the secondary color extension is absent
 		// (Because there are no additional checks later on)
-		OGLRender.TColor2  = (TColorStruct*) AllocBuffer( MAXTRIANGLES + 1, sizeof(TColorStruct));
+		OGLRender.TColor2  = (TColorStruct*) AllocBuffer( triangles, sizeof(TColorStruct));
 	}
 	else
 	{
 		OGLRender.TColor2 = NULL;
 	}
-	OGLRender.TTexture = (TTextureStruct*) AllocBuffer( MAXTRIANGLES + 1, sizeof(TTextureStruct));
-	OGLRender.TVertex  = (TVertexStruct*)  AllocBuffer( MAXTRIANGLES + 1, sizeof(TVertexStruct));
-	OGLRender.TFog     = (TFogStruct*)     AllocBuffer( MAXTRIANGLES + 1, sizeof(TFogStruct));
+	OGLRender.TTexture = (TTextureStruct*) AllocBuffer(triangles, sizeof(TTextureStruct));
+	OGLRender.TVertex  = (TVertexStruct*)  AllocBuffer(triangles, sizeof(TVertexStruct));
+	OGLRender.TFog     = (TFogStruct*)     AllocBuffer(triangles, sizeof(TFogStruct));
 	// Initialise compiled vertex arrays
 	OGLRender.BufferLocked = false;
 	OGLRender.BufferStart = 0;
-	OGLRender.BufferLockedStart = MAXTRIANGLES;
+	OGLRender.BufferLockedStart = OGLRender.RenderBufferSize;
 	// fog is initially turned off
 	OGLRender.UseEnvCombineFog = false;
 	if (InternalConfig.EXT_compiled_vertex_array)
 	{
 		// Initialise to start at the first element of the buffer
-		glVertexPointer(3, GL_FLOAT, 4 * sizeof( GLfloat ), &OGLRender.TVertex[0]);
+		glVertexPointer(3, GL_FLOAT, 4 * sizeof(GLfloat), &OGLRender.TVertex[0]);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glColorPointer(4, GL_FLOAT, 0, &OGLRender.TColor[0]);
 		glEnableClientState( GL_COLOR_ARRAY );
 		glReportError();
 		if (InternalConfig.EXT_secondary_color && OpenGL.ColorAlphaUnit2 == NULL)
 		{
-			glEnableClientState( GL_SECONDARY_COLOR_ARRAY_EXT );
+			glEnableClientState(GL_SECONDARY_COLOR_ARRAY_EXT);
 			glSecondaryColorPointerEXT(3, GL_FLOAT, 4 * sizeof(GLfloat), &OGLRender.TColor2[0]);
 			glReportError();
 		}
-		glClientActiveTextureARB(OpenGL.ColorAlphaUnit1);
+		/*
 		glActiveTextureARB(OpenGL.ColorAlphaUnit1);
+		glClientActiveTextureARB(OpenGL.ColorAlphaUnit1);
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		glTexCoordPointer(4, GL_FLOAT, 0, &OGLRender.TTexture[0]);
 		glReportError();
@@ -121,9 +125,6 @@ void RenderInitialize( void )
 			glActiveTextureARB(OpenGL.ColorAlphaUnit1 + 1);
 			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 			glTexCoordPointer(4, GL_FLOAT, 0, &OGLRender.TTexture[0]);
-			// @todo: if uncommented causes alpha blended
-			//        smoke in Carmaegeddon to disappear
-			// glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 			glReportError();
 		}
 		// Setup as inverter only
@@ -135,6 +136,13 @@ void RenderInitialize( void )
 			glTexCoordPointer(1, GL_FLOAT, 0, &OGLRender.TFog[0]);
 			glReportError();
 		}
+		if ( InternalConfig.ARB_multitexture || InternalConfig.FogMode == OpenGLideFogEmulation_EnvCombine)
+		{
+			glActiveTextureARB(OpenGL.ColorAlphaUnit1);
+			glClientActiveTextureARB(OpenGL.ColorAlphaUnit1);
+			glReportError();
+		}
+		*/
 #ifdef OPENGLIDE_SYSTEM_HAS_FOGCOORD
 		if (InternalConfig.FogMode == OpenGLideFogEmulation_FogCoord)
 		{
@@ -143,13 +151,7 @@ void RenderInitialize( void )
 			glReportError();
 		}
 #endif
-		if ( InternalConfig.ARB_multitexture || InternalConfig.FogMode == OpenGLideFogEmulation_EnvCombine)
-		{
-			glActiveTextureARB(OpenGL.ColorAlphaUnit1);
-			glClientActiveTextureARB(OpenGL.ColorAlphaUnit1);
-			glReportError();
-		}
-		
+
 		VERIFY_ACTIVE_TEXTURE_UNIT(OpenGL.ColorAlphaUnit1);
 	}
 
@@ -184,18 +186,6 @@ void RenderFree( void )
 	FreeBuffer(OGLRender.TTexture);
 	FreeBuffer(OGLRender.TVertex);
 	FreeBuffer(OGLRender.TFog);
-}
-
-inline void RenderUnlockArrays()
-{
-	glReportErrors("RenderUnlockArrays");
-
-	if (OGLRender.BufferLocked)
-	{
-		glUnlockArraysEXT();
-		glReportError();
-		OGLRender.BufferLocked = false;
-	}
 }
 
 void RenderDrawTriangles_ImmediateMode(bool use_two_tex)
@@ -522,7 +512,7 @@ void RenderDrawTriangles( void )
 			{
 				glClientActiveTextureARB(OpenGL.ColorAlphaUnit1 + 1);
 				glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-				glClientActiveTextureARB(OpenGL.ColorAlphaUnit1);
+				glTexCoordPointer(4, GL_FLOAT, 0, &OGLRender.TTexture[0]);
 			}
 			glActiveTextureARB(OpenGL.ColorAlphaUnit1);
 			glReportError();
@@ -553,8 +543,8 @@ void RenderDrawTriangles( void )
 		// Continue rendering in next buffer
 		OGLRender.BufferStart += OGLRender.NumberOfTriangles;
 		// choose the largest buffer
-		if (OGLRender.BufferStart > MAXTRIANGLES / 2
-		 || OGLRender.BufferStart >= MAXTRIANGLES -1)
+		if (OGLRender.BufferStart > OGLRender.RenderBufferSize / 2
+		 || OGLRender.BufferStart >= OGLRender.RenderBufferSize -1)
 		{
 			OGLRender.BufferStart = 0;
 		}
@@ -648,11 +638,11 @@ void RenderDrawTriangles( void )
 		glActiveTextureARB(OpenGL.ColorAlphaUnit1 + 1);
 		if (InternalConfig.EXT_compiled_vertex_array)
 		{
-			glClientActiveTextureARB(OpenGL.ColorAlphaUnit1 + 1);
 			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+			glTexCoordPointer( 4, GL_FLOAT, 0, NULL);
 			glClientActiveTextureARB(OpenGL.ColorAlphaUnit1);
 		}
-		glDisable( GL_TEXTURE_2D );
+		glDisable(GL_TEXTURE_2D);
 		glActiveTextureARB(OpenGL.ColorAlphaUnit1);
 		glReportError();
 	}
@@ -699,7 +689,7 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 		RenderUpdateState();
 	}
 	
-	TColorStruct* pC  = &OGLRender.TColor[ MAXTRIANGLES ];
+	TColorStruct* pC  = &OGLRender.TColor[OGLRender.RenderBufferSize];
 	TColorStruct* pC2;
 	if (OpenGL.ColorAlphaUnit2)
 	{
@@ -727,7 +717,7 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 	}
 	else
 	{
-		pC2 = &OGLRender.TColor2[ MAXTRIANGLES ];
+		pC2 = &OGLRender.TColor2[OGLRender.RenderBufferSize];
 		memset( pC2, 0, sizeof( TColorStruct ) );
 		// Color Stuff, need to optimize it
 		if ( Glide.ALocal )
@@ -1056,7 +1046,7 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 		}
 	}
 	
-	TVertexStruct* pV  = &OGLRender.TVertex[ MAXTRIANGLES ];
+	TVertexStruct* pV  = &OGLRender.TVertex[OGLRender.RenderBufferSize];
 	// Z-Buffering
 	if ( ( Glide.State.DepthBufferMode == GR_DEPTHBUFFER_DISABLE ) || 
 	     ( Glide.State.DepthBufferMode == GR_CMP_ALWAYS ) )
@@ -1112,7 +1102,7 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 	}
 
 	TTextureStruct* pTS;
-	pTS = &OGLRender.TTexture[MAXTRIANGLES];
+	pTS = &OGLRender.TTexture[OGLRender.RenderBufferSize];
 	if ( OpenGL.Texture )
 	{
 		float hAspect = Textures->GetHAspect();
@@ -1165,7 +1155,7 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 	} 
 
 	TFogStruct* pF;
-	pF = &OGLRender.TFog[MAXTRIANGLES];
+	pF = &OGLRender.TFog[OGLRender.RenderBufferSize];
 	if (Glide.State.FogMode)
 	{
 		float af, bf;
@@ -1822,10 +1812,10 @@ void RenderAddTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c,
 			// Finish drawing of current render buffer
 			RenderUnlockArrays();
 			OGLRender.BufferLocked = false;
-			OGLRender.BufferLockedStart = MAXTRIANGLES;
+			OGLRender.BufferLockedStart = OGLRender.RenderBufferSize;
 			// Continue filling the buffer
 		}
-		else if (OGLRender.BufferStart + OGLRender.NumberOfTriangles >= MAXTRIANGLES - 1)
+		else if (OGLRender.BufferStart + OGLRender.NumberOfTriangles >= OGLRender.RenderBufferSize - 1)
 		{
 			RenderDrawTriangles();
 		}
@@ -1859,7 +1849,7 @@ void RenderAddPoint( const GrVertex *a, bool unsnap )
 		RenderUpdateState();
 	}
 
-	TColorStruct* pC  = &OGLRender.TColor[ MAXTRIANGLES ];
+	TColorStruct* pC  = &OGLRender.TColor[OGLRender.RenderBufferSize];
 	TColorStruct* pC2;
 	if (OpenGL.ColorAlphaUnit2)
 	{
@@ -1882,7 +1872,7 @@ void RenderAddPoint( const GrVertex *a, bool unsnap )
 	}
 	else
 	{
-    pC2 = &OGLRender.TColor2[ MAXTRIANGLES ];
+    pC2 = &OGLRender.TColor2[OGLRender.RenderBufferSize];
     memset( pC2, 0, sizeof( TColorStruct ) );
     // Color Stuff, need to optimize it
     if ( Glide.ALocal )
@@ -2143,7 +2133,7 @@ void RenderAddPoint( const GrVertex *a, bool unsnap )
 		}
 	}
 
-	TVertexStruct* pV = &OGLRender.TVertex[ MAXTRIANGLES ];
+	TVertexStruct* pV = &OGLRender.TVertex[OGLRender.RenderBufferSize];
 	// Z-Buffering
 	if ( ( Glide.State.DepthBufferMode == GR_DEPTHBUFFER_DISABLE ) || 
 	     ( Glide.State.DepthBufferMode == GR_CMP_ALWAYS ) )
@@ -2190,8 +2180,7 @@ void RenderAddPoint( const GrVertex *a, bool unsnap )
 		pV->ay = a->y;
 	}
 
-	TTextureStruct* pTS;
-	pTS = &OGLRender.TTexture[MAXTRIANGLES];
+	TTextureStruct* pTS = &OGLRender.TTexture[OGLRender.RenderBufferSize];
 	if ( OpenGL.Texture )
 	{
 		pTS->as = a->tmuvtx[0].sow * Textures->GetWAspect();
@@ -2219,8 +2208,7 @@ void RenderAddPoint( const GrVertex *a, bool unsnap )
 #endif
 	}
 		
-	TFogStruct* pF;
-	pF = &OGLRender.TFog[ MAXTRIANGLES ];
+	TFogStruct* pF = &OGLRender.TFog[OGLRender.RenderBufferSize];
 	if(Glide.State.FogMode)
 	{
 		float af;
