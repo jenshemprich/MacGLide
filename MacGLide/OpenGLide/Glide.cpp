@@ -360,6 +360,13 @@ bool VerifyActiveTextureUnit_impl(GLint x, const char* functionname)
 	{
 		GlideMsg("Warning: %s() active texture unit is GL_TEXTURE%d_ARB, but should be GL_TEXTURE%d_ARB\n", functionname, y - GL_TEXTURE0_ARB, x - GL_TEXTURE0_ARB);
 	}
+	glGetIntegerv(GL_CLIENT_ACTIVE_TEXTURE_ARB, &y);
+	glReportError();
+	bVerified = x == y;
+	if (!bVerified)
+	{
+		GlideMsg("Warning: %s() client active texture unit is GL_TEXTURE%d_ARB, but should be GL_TEXTURE%d_ARB\n", functionname, y - GL_TEXTURE0_ARB, x - GL_TEXTURE0_ARB);
+	}
 	return bVerified;
 }
 #endif
@@ -384,6 +391,13 @@ bool VerifyTextureEnabledState_impl(const char* functionname)
 			               OpenGL.ColorAlphaUnitAlphaEnabledState[unit_index]))
 			{
 				GlideMsg("Warning: texture unit GL_TEXTURE%d_ARB is %s in %s()\n", OpenGL.ColorAlphaUnit1 + unit_index - GL_TEXTURE0_ARB, bState ? "enabled" : "disabled", functionname);
+				bVerified = false;
+			}
+			bState = glIsEnabled(GL_TEXTURE_COORD_ARRAY);
+			if (bState != (OpenGL.ColorAlphaUnitColorEnabledState[unit_index] ||
+			               OpenGL.ColorAlphaUnitAlphaEnabledState[unit_index]))
+			{
+				GlideMsg("Warning: texcoord array for unit GL_TEXTURE%d_ARB is %s in %s()\n", OpenGL.ColorAlphaUnit1 + unit_index - GL_TEXTURE0_ARB, bState ? "enabled" : "disabled", functionname);
 				bVerified = false;
 			}
 			glReportError();
