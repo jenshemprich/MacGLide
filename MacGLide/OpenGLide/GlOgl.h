@@ -196,7 +196,6 @@ struct OpenGLStruct
 	GLuint                  Refresh;
 	GLfloat                 ConstantColor[4];
 	GLfloat                 Delta0Color[4];
-	GLfloat                 AlphaColor[4];
 	GLfloat                 ZNear;
 	GLfloat                 ZFar;
 	GLint                   ColorAlphaUnit1;
