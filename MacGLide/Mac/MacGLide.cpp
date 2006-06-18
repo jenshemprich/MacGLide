@@ -26,7 +26,7 @@ OSErr __macglide_initialize(struct CFragInitBlock* initBlkPtr)
 	if (err == noErr)
 	{
 #ifdef OGL_PROFILING
-	err = ProfilerInit(collectSummary, bestTimeBase, 666, 666);
+	err = ProfilerInit(collectDetailed, bestTimeBase, 666, 666); // collectDetailed, collectSummary
 	assert(err == noErr);
 	ProfilerSetStatus(1);
 #endif
