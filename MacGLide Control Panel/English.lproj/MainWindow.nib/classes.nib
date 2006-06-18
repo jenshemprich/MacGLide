@@ -2,12 +2,7 @@
     IBClasses = (
         {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
         {
-            CLASS = MacGLideGameSpecificEnhancementsPanel; 
-            LANGUAGE = ObjC; 
-            SUPERCLASS = NSPanel; 
-        }, 
-        {
-            ACTIONS = {toggleMipmapping = id; toogleUseGameSpecificOptimisations = id; }; 
+            ACTIONS = {noSplash = id; toggleMipmapping = id; }; 
             CLASS = MacGLideMainPanel; 
             LANGUAGE = ObjC; 
             SUPERCLASS = NSWindow; 
