@@ -67,7 +67,7 @@ struct TFogStruct
 struct RenderStruct
 {
 	static const int RenderBufferSize = 512;
-	int FrameBufferTrianglesStart;
+	static const int FrameBufferStartIndex = RenderBufferSize + 1;
 	TColorStruct *TColor;
 	TColorStruct *TColor2;
 	TVertexStruct *TVertex;
@@ -106,12 +106,21 @@ void RenderFree( void );
 void RenderAddTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c, bool unsnap );
 void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap );
 void RenderAddPoint( const GrVertex *a, bool unsnap );
-void RenderDrawTriangles( void );
+void RenderDrawTriangles_impl(void);
 
 extern RenderStruct	OGLRender;
 
 void RenderInitialize( void );
 void RenderFree( void );
+
+inline void RenderDrawTriangles(void)
+{
+	// Save the call if there's nothing to do
+	if (OGLRender.NumberOfTriangles)
+	{
+		RenderDrawTriangles_impl();
+	}
+}
 
 inline void RenderUnlockArrays()
 {
