@@ -67,7 +67,7 @@ inline GLfloat precision_fix(GLfloat oow)
 	return 8.9375f - (GLfloat( ( (*(FxU32 *)&w >> 11) & 0xFFFFF ) * D1OVER65536) );
 }
 
-void RenderInitialize( void )
+void RenderInitialize(void)
 {
 #ifdef OGL_ALL
     GlideMsg( "RenderInitialize()\n");
@@ -75,14 +75,14 @@ void RenderInitialize( void )
 	glReportErrors("RenderInitialize");
 	// initialise triagle buffers
 	OGLRender.NumberOfTriangles = 0;
-	OGLRender.FrameBufferTrianglesStart = OGLRender.RenderBufferSize + 1;
-	const int triangles = OGLRender.FrameBufferTrianglesStart + Framebuffer::MaxTiles * Framebuffer::MaxTiles;
-	OGLRender.TColor = (TColorStruct*) AllocBuffer( triangles, sizeof(TColorStruct));
+	const int triangles = InternalConfig.EXT_compiled_vertex_array ? OGLRender.FrameBufferStartIndex + 2 * Framebuffer::MaxTiles * Framebuffer::MaxTiles : OGLRender.FrameBufferStartIndex;
+	// Framebuffer utilises color, vertex and texture array only
+	OGLRender.TColor = (TColorStruct*) AllocBuffer(triangles, sizeof(TColorStruct));
 	if (OpenGL.ColorAlphaUnit2 == 0)
 	{
 		// This must be initialiased even if the secondary color extension is absent
 		// (Because there are no additional checks later on)
-		OGLRender.TColor2  = (TColorStruct*) AllocBuffer( triangles, sizeof(TColorStruct));
+		OGLRender.TColor2  = (TColorStruct*) AllocBuffer(OGLRender.FrameBufferStartIndex, sizeof(TColorStruct));
 	}
 	else
 	{
@@ -90,7 +90,7 @@ void RenderInitialize( void )
 	}
 	OGLRender.TTexture = (TTextureStruct*) AllocBuffer(triangles, sizeof(TTextureStruct));
 	OGLRender.TVertex  = (TVertexStruct*)  AllocBuffer(triangles, sizeof(TVertexStruct));
-	OGLRender.TFog     = (TFogStruct*)     AllocBuffer(triangles, sizeof(TFogStruct));
+	OGLRender.TFog     = (TFogStruct*)     AllocBuffer(OGLRender.FrameBufferStartIndex, sizeof(TFogStruct));
 	// Initialise compiled vertex arrays
 	OGLRender.BufferLocked = false;
 	OGLRender.BufferStart = 0;
@@ -111,38 +111,6 @@ void RenderInitialize( void )
 			glSecondaryColorPointerEXT(3, GL_FLOAT, 4 * sizeof(GLfloat), &OGLRender.TColor2[0]);
 			glReportError();
 		}
-		/*
-		glActiveTextureARB(OpenGL.ColorAlphaUnit1);
-		glClientActiveTextureARB(OpenGL.ColorAlphaUnit1);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glTexCoordPointer(4, GL_FLOAT, 0, &OGLRender.TTexture[0]);
-		glReportError();
-		if (InternalConfig.ARB_multitexture
-			&& (InternalConfig.FogMode != OpenGLideFogEmulation_EnvCombine
-			|| OpenGL.FogTextureUnit > GL_TEXTURE1_ARB))
-		{
-			glClientActiveTextureARB(OpenGL.ColorAlphaUnit1 + 1);
-			glActiveTextureARB(OpenGL.ColorAlphaUnit1 + 1);
-			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-			glTexCoordPointer(4, GL_FLOAT, 0, &OGLRender.TTexture[0]);
-			glReportError();
-		}
-		// Setup as inverter only
-		if (InternalConfig.FogMode != OpenGLideFogEmulation_EnvCombine)
-		{
-			glClientActiveTextureARB(OpenGL.FogTextureUnit);
-			glActiveTextureARB(OpenGL.FogTextureUnit);
-			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-			glTexCoordPointer(1, GL_FLOAT, 0, &OGLRender.TFog[0]);
-			glReportError();
-		}
-		if ( InternalConfig.ARB_multitexture || InternalConfig.FogMode == OpenGLideFogEmulation_EnvCombine)
-		{
-			glActiveTextureARB(OpenGL.ColorAlphaUnit1);
-			glClientActiveTextureARB(OpenGL.ColorAlphaUnit1);
-			glReportError();
-		}
-		*/
 #ifdef OPENGLIDE_SYSTEM_HAS_FOGCOORD
 		if (InternalConfig.FogMode == OpenGLideFogEmulation_FogCoord)
 		{
@@ -174,7 +142,7 @@ void RenderInitialize( void )
 }
 
 // Shuts down the renderer and frees memory
-void RenderFree( void )
+void RenderFree(void)
 {
 #ifdef OGL_ALL
     GlideMsg("RenderFree()\n");
@@ -196,7 +164,7 @@ void RenderDrawTriangles_ImmediateMode(bool use_two_tex)
 	{
 		// Render only the color, not the alpha
 		glBegin( GL_TRIANGLES );
-		int count = OGLRender.BufferStart + OGLRender.NumberOfTriangles;
+		const int count = OGLRender.BufferStart + OGLRender.NumberOfTriangles;
 		for (int i = OGLRender.BufferStart; i < count; i++ )
 		{
 			glColor3fv( &OGLRender.TColor[ i ].ar );
@@ -289,7 +257,7 @@ void RenderDrawTriangles_ImmediateMode(bool use_two_tex)
 	else
 	{
 		glBegin( GL_TRIANGLES );
-		int count = OGLRender.BufferStart + OGLRender.NumberOfTriangles;
+		const int count = OGLRender.BufferStart + OGLRender.NumberOfTriangles;
 		for (int i = OGLRender.BufferStart; i < count; i++ )
 		{
 			glColor4fv( &OGLRender.TColor[ i ].ar );
@@ -383,8 +351,8 @@ void RenderDrawTriangles_ImmediateMode(bool use_two_tex)
 
 inline GLfloat dist(GLfloat ax, GLfloat ay, GLfloat bx, GLfloat by)
 {
-	GLfloat ad = ax - bx;
-	GLfloat bd = ay - by;
+	const GLfloat ad = ax - bx;
+	const GLfloat bd = ay - by;
 	return sqrt(ad * ad + bd * bd);
 }
 
@@ -409,12 +377,12 @@ inline void GapFix(const TVertexStruct* u, TVertexStruct* v, GLfloat p)
 	// (with barycentric coordinates)
 	// New vertices of the triangle
 	// A' = A+(A-M)* p / r.
-	GLfloat a = dist(u->bx, u->by, u->cx, u->cy);
-	GLfloat b = dist(u->ax, u->ay, u->cx, u->cy);
-	GLfloat c = dist(u->ax, u->ay, u->bx, u->by);
-	GLfloat abc = a + b + c;
-	GLfloat s = abc / 2;
-	GLfloat r = sqrt( (s-a)*(s-b)*(s-c) / s );
+	const GLfloat a = dist(u->bx, u->by, u->cx, u->cy);
+	const GLfloat b = dist(u->ax, u->ay, u->cx, u->cy);
+	const GLfloat c = dist(u->ax, u->ay, u->bx, u->by);
+	const GLfloat abc = a + b + c;
+	const GLfloat s = abc / 2;
+	const GLfloat r = sqrt( (s-a)*(s-b)*(s-c) / s );
 	// Enlarge the radius by a factor derived from the avarage vertex depth
 	// As a result, triangles in the foreground must have a larger incircle than
 	// the ones in the background in order to apply the gapfix.
@@ -443,12 +411,12 @@ inline void GapFix(const TVertexStruct* u, TVertexStruct* v, GLfloat p)
 	}
 	// Filter artecfacts when rendering geometry in front of "holes", which means 
 	// all fragments produced by glClear() and not painted over by other geometry
-	GLfloat r1 = InternalConfig.GapFixParam1;
-	GLfloat gs = InternalConfig.GapFixParam2;
-	GLfloat r2 = InternalConfig.GapFixParam3;
+	const GLfloat r1 = InternalConfig.GapFixParam1;
+	const GLfloat gs = InternalConfig.GapFixParam2;
+	const GLfloat r2 = InternalConfig.GapFixParam3;
 	// Apply the gapfix:
 	// smaller z values allow smaller triangles to pass the gapfix test
-	OpenGLideGapFixFlags g = InternalConfig.GapFix;
+	const OpenGLideGapFixFlags g = InternalConfig.GapFix;
 	if (
 	    ((g & OpenGLideGapFixFlag_IncircleOr) &&
 	     (r > r1 * zr || abc < gs * r))
@@ -461,8 +429,8 @@ inline void GapFix(const TVertexStruct* u, TVertexStruct* v, GLfloat p)
 	     ((r > r1 * zr || max(a, max(b, c)) > gs) && r > r2 * zr))
 	   )
 	{
-		GLfloat Mx = (a * u->ax + b * u->bx + c * u->cx) / abc;
-		GLfloat My = (a * u->ay + b * u->by + c * u->cy) / abc;
+		const GLfloat Mx = (a * u->ax + b * u->bx + c * u->cx) / abc;
+		const GLfloat My = (a * u->ay + b * u->by + c * u->cy) / abc;
 		// Transform coordinates to fill the gaps
 		v->ax = u->ax + (u->ax - Mx) * p / r;
 		v->ay = u->ay + (u->ay - My) * p / r; 
@@ -477,13 +445,8 @@ inline void GapFix(const TVertexStruct* u, TVertexStruct* v, GLfloat p)
 	}
 }
 
-void RenderDrawTriangles( void )
+void RenderDrawTriangles_impl( void )
 {
-	if ( ! OGLRender.NumberOfTriangles )
-	{
-		return;
-	}
-
 	glReportErrors("RenderDrawTriangles");
 	#ifdef OGL_OPTIMISE_DEBUG
 		GlideMsg("RenderDrawTriangles(): %d\n", OGLRender.NumberOfTriangles); 
@@ -493,7 +456,7 @@ void RenderDrawTriangles( void )
 		#endif
 	#endif
 
-	// Finish rendering
+	// Finish rendering of the last buffer
 	RenderUnlockArrays();
 	s_Framebuffer.OnRenderDrawTriangles();
 	// Update the state after processing the frame buffer because
@@ -533,7 +496,7 @@ void RenderDrawTriangles( void )
 	}
 		
 	// Render the triangles
-	bool use_compiled_vertex_arrays = InternalConfig.EXT_compiled_vertex_array
+	const bool use_compiled_vertex_arrays = InternalConfig.EXT_compiled_vertex_array
 		// && OGLRender.NumberOfTriangles > 1 // Might be more optimal
 		;
 	if (use_compiled_vertex_arrays)
@@ -590,7 +553,7 @@ void RenderDrawTriangles( void )
 				RenderUnlockArrays();
 			}
 			// Enlarge triangles to fill the gaps between tiles in TR1 & TR2
-			int buffer_end = OGLRender.BufferLockedStart + OGLRender.NumberOfTriangles;
+			const int buffer_end = OGLRender.BufferLockedStart + OGLRender.NumberOfTriangles;
 			for (int index = OGLRender.BufferLockedStart; index < buffer_end; index++)
 			{
 				TVertexStruct* t = &OGLRender.TVertex[index];
@@ -611,9 +574,7 @@ void RenderDrawTriangles( void )
 			{
 				glLockArraysEXT(OGLRender.BufferLockedStart * 3, OGLRender.NumberOfTriangles * 3);
 				OGLRender.BufferLocked = true;
-				GLint primitive;
-				primitive = GL_TRIANGLES;
-				glDrawArrays(primitive, OGLRender.BufferLockedStart * 3, OGLRender.NumberOfTriangles * 3);
+				glDrawArrays(GL_TRIANGLES, OGLRender.BufferLockedStart * 3, OGLRender.NumberOfTriangles * 3);
 				glReportError();
 			}
 			else
@@ -689,7 +650,7 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 		RenderUpdateState();
 	}
 	
-	TColorStruct* pC  = &OGLRender.TColor[OGLRender.RenderBufferSize];
+	TColorStruct* pC = &OGLRender.TColor[OGLRender.RenderBufferSize];
 	TColorStruct* pC2;
 	if (OpenGL.ColorAlphaUnit2)
 	{
@@ -1046,7 +1007,7 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 		}
 	}
 	
-	TVertexStruct* pV  = &OGLRender.TVertex[OGLRender.RenderBufferSize];
+	TVertexStruct* pV = &OGLRender.TVertex[OGLRender.RenderBufferSize];
 	// Z-Buffering
 	if ( ( Glide.State.DepthBufferMode == GR_DEPTHBUFFER_DISABLE ) || 
 	     ( Glide.State.DepthBufferMode == GR_CMP_ALWAYS ) )
@@ -1101,20 +1062,19 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 		pV->by = b->y;
 	}
 
-	TTextureStruct* pTS;
-	pTS = &OGLRender.TTexture[OGLRender.RenderBufferSize];
+	TTextureStruct* pTS = &OGLRender.TTexture[OGLRender.RenderBufferSize];
 	if ( OpenGL.Texture )
 	{
-		float hAspect = Textures->GetHAspect();
-		float wAspect = Textures->GetWAspect();
+		const float hAspect = Textures->GetHAspect();
+		const float wAspect = Textures->GetWAspect();
 		pTS->as = a->tmuvtx[0].sow * wAspect;
 		pTS->at = a->tmuvtx[0].tow * hAspect;
 		pTS->bs = b->tmuvtx[0].sow * wAspect;
 		pTS->bt = b->tmuvtx[0].tow * hAspect;
 		pTS->aq = 0.0f;
 		pTS->bq = 0.0f;
-		float register atmuoow;
-		float register btmuoow;
+		float atmuoow;
+		float btmuoow;
 		if ( ( Glide.State.STWHint & GR_STWHINT_W_DIFF_TMU0 ) == 0 )
 		{
 			atmuoow = a->oow;
@@ -1154,8 +1114,7 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 #endif
 	} 
 
-	TFogStruct* pF;
-	pF = &OGLRender.TFog[OGLRender.RenderBufferSize];
+	TFogStruct* pF = &OGLRender.TFog[OGLRender.RenderBufferSize];
 	if (Glide.State.FogMode)
 	{
 		float af, bf;
@@ -1307,7 +1266,7 @@ void RenderAddTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c,
 	OGLRender.OverallTriangles++;
 #endif
 
-	int TriangleIndex = OGLRender.BufferStart + OGLRender.NumberOfTriangles ;
+	const int TriangleIndex = OGLRender.BufferStart + OGLRender.NumberOfTriangles ;
 
 #ifdef OGL_ALL
     GlideMsg( "RenderAddTriangle(%d)\n", TriangleIndex);
@@ -1628,8 +1587,7 @@ void RenderAddTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c,
 		pV->cy = c->y;
 	}
 
-	TTextureStruct* pTS;
-	pTS = &OGLRender.TTexture[ TriangleIndex ];
+	TTextureStruct* pTS = &OGLRender.TTexture[TriangleIndex];
 	bool generate_subtextures;
 	if (OpenGL.Texture)
 	{
@@ -1648,7 +1606,7 @@ void RenderAddTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c,
 			btmuoow = b->tmuvtx[ 0 ].oow;
 			ctmuoow = c->tmuvtx[ 0 ].oow;
 		}
-		float maxoow = 1.0f / max( atmuoow, max( btmuoow, ctmuoow ) );
+		const float maxoow = 1.0f / max( atmuoow, max( btmuoow, ctmuoow ) );
 		generate_subtextures = InternalConfig.GenerateSubTextures &&
 		                       OpenGL.SClampMode != GL_REPEAT &&
 		                       OpenGL.TClampMode != GL_REPEAT;
@@ -1663,8 +1621,8 @@ void RenderAddTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c,
 		}
 		else
 		{
-			GLfloat hAspect = Textures->GetHAspect();
-			GLfloat wAspect = Textures->GetWAspect();
+			const GLfloat hAspect = Textures->GetHAspect();
+			const GLfloat wAspect = Textures->GetWAspect();
 			pTS->as = a->tmuvtx[ 0 ].sow * wAspect * maxoow;
 			pTS->at = a->tmuvtx[ 0 ].tow * hAspect * maxoow;
 			pTS->bs = b->tmuvtx[ 0 ].sow * wAspect * maxoow;
@@ -1672,9 +1630,7 @@ void RenderAddTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c,
 			pTS->cs = c->tmuvtx[ 0 ].sow * wAspect * maxoow;
 			pTS->ct = c->tmuvtx[ 0 ].tow * hAspect * maxoow;
 		}
-		pTS->aq = 0.0f;
-		pTS->bq = 0.0f;
-		pTS->cq = 0.0f;
+		pTS->aq = pTS->bq = pTS->cq = 0.0f;
 		pTS->aoow = atmuoow * maxoow;
 		pTS->boow = btmuoow * maxoow;
 		pTS->coow = ctmuoow * maxoow;
@@ -1712,8 +1668,7 @@ void RenderAddTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c,
 #endif
 	} 
 	
-	TFogStruct* pF;
-	pF = &OGLRender.TFog[TriangleIndex];
+	TFogStruct* pF = &OGLRender.TFog[TriangleIndex];
 	if(Glide.State.FogMode)
 	{
 		float af, bf, cf;

@@ -30,7 +30,8 @@ public:
 protected:
 	void Clear();
 	bool draw(const tilesize* tilesizetable, bool pixelpipeline);
-	bool drawCompiledVertexArrays(const tilesize* tilesizetable, bool pixelpipeline);
+	bool drawCompiledVertexArrays(const tilesize* tilesizetable, int vertexarrayindex, int tilecount, bool pixelpipeline);
+	int buildVertexArrays(const tilesize* tilesizetable, int vertexarrayindex);
 	void set_gl_state(bool pixelpipeline);
 	void restore_gl_state(bool pixelpipeline);
 	inline bool createTextureData(FxU32* texbuffer, FxU32 x, FxU32 y, FxU32 x_step, FxU32 y_step);
@@ -56,7 +57,11 @@ protected:
 	GLint m_x_step_start_opaque;
 	GLint m_y_step_start_opaque;
 	tilesize m_tilesizes[MaxTiles];
+	int m_tilesizesCount;
+	int m_tilesizesVertexArrayIndex;
 	const tilesize* m_custom_tilesizes;
+	int m_customtilesizesCount;
+	int m_customtilesizesVertexArrayIndex;
 	GLfloat m_glDepth;
 	FxU32 m_glAlpha;
 	// Pixelpipeline
