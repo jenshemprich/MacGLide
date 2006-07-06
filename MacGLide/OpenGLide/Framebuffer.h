@@ -36,6 +36,9 @@ protected:
 	void restore_gl_state(bool pixelpipeline);
 	inline bool createTextureData(FxU32* texbuffer, FxU32 x, FxU32 y, FxU32 x_step, FxU32 y_step);
 	inline bool Convert565Kto8888(FxU16* buffer1, FxU32* buffer2, register FxU32 width, register FxU32 height, register FxU32 stride);
+#ifdef __ALTIVEC__
+	inline bool Convert565Kto8888_AV(FxU16* buffer1, FxU32* buffer2, register FxU32 width, register FxU32 height, register FxU32 stride);
+#endif
 	inline bool Convert1555Kto8888(FxU16* buffer1, register FxU32* buffer2, FxU32 register width, register FxU32 height, register FxU32 stride);
 	inline bool ConvertARGB8888Kto8888(FxU32* buffer1, register FxU32* buffer2, FxU32 register width, register FxU32 height, register FxU32 stride);
 	static const int m_max_client_storage_textures = MaxTiles * MaxTiles;
