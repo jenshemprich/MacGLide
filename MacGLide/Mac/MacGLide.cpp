@@ -20,6 +20,8 @@
 #include <profiler.h>
 #endif
 
+#include <Gestalt.h>
+
 OSErr __macglide_initialize(struct CFragInitBlock* initBlkPtr)
 {
 	OSErr err = __initialize((CFragInitBlock*) initBlkPtr);
@@ -76,12 +78,16 @@ void __macglide_terminate()
 
 const char* OpenGLideProductName = "MacGLide";
 
-// Allow allocation of memory at 16-byte boundaries to support altivec
+// Allow allocation of memory at 32-byte boundaries to support G4 cacheline clearing
 void* AllocSysPtr16ByteAligned(long buffersize)
 {
-	void* buffer = NewPtrSys(buffersize + 16);
+	// Align buffers to 32byte boundaries so
+	// we can use __dcbz() to clear buffers
+	const int align = 32;
+	const int align_mask = 0xffffffe0;
+	void* buffer = NewPtrSys(buffersize + align);
 	if (buffer == NULL) return NULL;
-	unsigned long aligned_buffer = (reinterpret_cast<unsigned long>(buffer) + 16) & 0xfffffff0;
+	unsigned long aligned_buffer = (reinterpret_cast<unsigned long>(buffer) + align) & align_mask;
 	// remember the real location of the buffer
 	(reinterpret_cast<unsigned long*>(aligned_buffer))[-1] = reinterpret_cast<unsigned long>(buffer);
 	return reinterpret_cast<void*>(aligned_buffer);
@@ -123,6 +129,26 @@ char* _strdate(char* timebuf)
 	strftime(timebuf, 128, "%x", currtime);
 	return timebuf;
 }
+
+OpenGLideVectorUnitType GetVectorUnitType()
+{
+	long cpuAttributes;
+	OpenGLideVectorUnitType type = OpenGLideVectorUnitType_None;
+	OSErr err = Gestalt( gestaltPowerPCProcessorFeatures, &cpuAttributes );
+	if(noErr == err)
+	{
+	    if (( 1 << gestaltPowerPCHasVectorInstructions) & cpuAttributes)
+	    {
+	    	type = OpenGLideVectorUnitType_Altivec;
+	    }
+	}
+	return type;
+}
+
+const char* OpenGLideVectorUnitNames[] =
+{
+	"PowerPC AltiVec"
+};
 
 //////////////////////////////////////////////////////////////
 // Big endian conversion functions
