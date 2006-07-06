@@ -59,6 +59,12 @@ enum OpenGLideGapFixFlags
 	OpenGLideGapFixFlag_VertexLengthSecondRadius = 0x80
 };
 
+enum OpenGLideVectorUnitType
+{
+	OpenGLideVectorUnitType_None = 0x00,
+	OpenGLideVectorUnitType_Altivec = 0x01
+};
+
 struct ConfigStruct
 {
 	OpenGLideDisplayMode DisplayMode;
@@ -114,6 +120,7 @@ struct ConfigStruct
 	bool ShamelessPlug;
 	bool UseApplicationSpecificSettings;
 	bool AutoEnableGameSpecificSettings;
+	OpenGLideVectorUnitType VectorUnitType;
 };
 
 class GlideSettings : public ConfigStruct
