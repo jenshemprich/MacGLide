@@ -26,18 +26,21 @@ extern const char* OpenGLideVersion;
 // Product name of the library
 extern const char* OpenGLideProductName;
  
-// extern double ClockFreq;
 extern GlideStruct Glide; // Glide Internal
 extern OpenGLStruct OpenGL; // OpenGL equivalents
 extern GlideSettingsImpl UserConfig;
 extern GlideSettingsImpl InternalConfig;
 
+// Return the vector unit type (None, Altivec, SSE, etc.)
+extern OpenGLideVectorUnitType GetVectorUnitType();
+extern const char* OpenGLideVectorUnitNames[];
+
 // GLide
 OSErr InitMainVariables();
-bool InitWindow( FxU32 hwnd );
-void InitOpenGL( void );
-bool ClearAndGenerateLogFile( void );
-void CloseLogFile( void );
+bool InitWindow(FxU32 hwnd);
+void InitOpenGL(void);
+bool ClearAndGenerateLogFile(void);
+void CloseLogFile(void);
 
 // Memory management
 void* AllocFrameBuffer(long buffersize, long buffertypesize);

@@ -170,7 +170,7 @@ void GlideSettings::defaults()
 	GapFixDepthFactor = 3.3f;
 	
 	GenerateSubTextures            = 0;
-	Mipmapping                  = true;
+	Mipmapping                     = true;
 	AnisotropylLevel               = 16;
 	IgnorePaletteChange            = false;
 	ARB_multitexture               = true;
@@ -207,6 +207,7 @@ void GlideSettings::defaults()
 	ShamelessPlug                  = false;
 	UseApplicationSpecificSettings = false;
 	AutoEnableGameSpecificSettings = true;
+	VectorUnitType                 = OpenGLideVectorUnitType_None;
 }
 
 GlideSettings::IOErr GlideSettings::read_settings()

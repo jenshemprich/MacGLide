@@ -28,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
 
-const char* OpenGLideVersion = "0.13a1";
+const char* OpenGLideVersion = "0.13a2";
 
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -87,6 +87,12 @@ OSErr InitMainVariables(void)
 		else if (UserConfig.GlideTextureUnits > 3)
 		{
 			UserConfig.GlideTextureUnits = 3;
+		}
+		// Detect vector unit (Altivec, SSE, etc.)
+		UserConfig.VectorUnitType = GetVectorUnitType();
+		if (UserConfig.VectorUnitType > OpenGLideVectorUnitType_None)
+		{
+			GlideMsg("Using %s vector unit\n", OpenGLideVectorUnitNames[UserConfig.VectorUnitType - 1]);
 		}
 		// Apply mandatory application dependent settings/patches
 		GlideApplication::Type application = s_GlideApplication.GetType();
