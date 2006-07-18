@@ -89,6 +89,12 @@ void RenderInitialize(void)
 		OGLRender.TColor2 = NULL;
 	}
 	OGLRender.TTexture = (TTextureStruct*) AllocBuffer(triangles, sizeof(TTextureStruct));
+ 	// Preinit static data and save a few cycles in RenderAddXXX()
+	for(int i = 0; i < OGLRender.FrameBufferStartIndex; i++)
+	{
+		TTextureStruct* pTS = &OGLRender.TTexture[i];
+		pTS->aq = pTS->bq = pTS->cq = 0.0f;
+	}
 	OGLRender.TVertex  = (TVertexStruct*)  AllocBuffer(triangles, sizeof(TVertexStruct));
 	OGLRender.TFog     = (TFogStruct*)     AllocBuffer(OGLRender.FrameBufferStartIndex, sizeof(TFogStruct));
 	// Initialise compiled vertex arrays
@@ -481,20 +487,19 @@ void RenderDrawTriangles_impl( void )
 			glReportError();
 		}
 	}
-
+	// Provide dummy coordinates when fog is turned off but
+	// the texture unit is on because of color/alpha inversion
 	if (OGLRender.UseEnvCombineFog && OpenGL.Fog == false)
 	{
-		// Provide dummy coordinates when fog is turned off but
-		// the texture unit is on because of color/alpha inversion
 		int buffer_end = OGLRender.BufferStart + OGLRender.NumberOfTriangles;
+		TFogStruct* pF = OGLRender.TFog;
 		for (int index = OGLRender.BufferStart; index < buffer_end; index++)
 		{
-			OGLRender.TFog[index].af = 0.0f;
-			OGLRender.TFog[index].bf = 0.0f;
-			OGLRender.TFog[index].cf = 0.0f;
+			pF[index].af =
+			pF[index].bf =
+			pF[index].cf = 0.0f;
 		}
 	}
-		
 	// Render the triangles
 	const bool use_compiled_vertex_arrays = InternalConfig.EXT_compiled_vertex_array
 		// && OGLRender.NumberOfTriangles > 1 // Might be more optimal
@@ -513,35 +518,12 @@ void RenderDrawTriangles_impl( void )
 		}
 		glLockArraysEXT(OGLRender.BufferLockedStart * 3, OGLRender.NumberOfTriangles * 3);
 		OGLRender.BufferLocked = true;
-
-		GLint primitive;
-		// Test code to track down the parameters of rendered triangles
-		/*
-		if (true)
-		{
-			// Dust clouds in Carma (when breaking)
-			//if (OpenGL.ChromaKey && OpenGL.Blend)
-			// Sunglasses in Deux Ex
-			if (Glide.State.ColorCombineInvert)
-			{
-				primitive = GL_LINE_LOOP;
-			}
-			else
-			{
-				primitive = GL_TRIANGLES;
-			}
-		}
-		else */
-		{
-			primitive = GL_TRIANGLES;
-		}
-		glDrawArrays(primitive, OGLRender.BufferLockedStart * 3, OGLRender.NumberOfTriangles * 3);
+		glDrawArrays(GL_TRIANGLES, OGLRender.BufferLockedStart * 3, OGLRender.NumberOfTriangles * 3);
 	}
 	else
 	{
 		RenderDrawTriangles_ImmediateMode(use_two_tex);
 	}
-	
 	// Fill gaps?
 	if ((InternalConfig.GapFix & OpenGLideGapFixFlag_Enabled) && !OpenGL.Blend)
 	{
@@ -593,7 +575,6 @@ void RenderDrawTriangles_impl( void )
 			glReportError();
 		}
 	}
-	
 	if ( use_two_tex )
 	{
 		glActiveTextureARB(OpenGL.ColorAlphaUnit1 + 1);
@@ -637,7 +618,7 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 	// Peek to avoid updating the render state twice
 	if (OGLRender.NumberOfTriangles)
 	{
-		RenderDrawTriangles();
+		RenderDrawTriangles_impl();
 	}
 	else
 	{
@@ -652,6 +633,7 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 	
 	TColorStruct* pC = &OGLRender.TColor[OGLRender.RenderBufferSize];
 	TColorStruct* pC2;
+	const GlideState glidestate = Glide.State;
 	if (OpenGL.ColorAlphaUnit2)
 	{
 		{
@@ -664,7 +646,7 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 			pC->bb = b->b * D1OVER255;
 		}
 		// Alpha
-		if (Glide.State.AlphaLocal == GR_COMBINE_LOCAL_DEPTH)
+		if (glidestate.AlphaLocal == GR_COMBINE_LOCAL_DEPTH)
 		{
 			// @todo: find out whether z has to be divided by 255 or by 65535
 			pC->aa = a->z * D1OVER255;
@@ -683,7 +665,7 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 		// Color Stuff, need to optimize it
 		if ( Glide.ALocal )
 		{
-		    switch ( Glide.State.AlphaLocal )
+		    switch (glidestate.AlphaLocal)
 		    {
 		    case GR_COMBINE_LOCAL_ITERATED:
 		        Local.aa = a->a * D1OVER255;
@@ -703,7 +685,7 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 
 		if ( Glide.AOther )
 		{
-		    switch ( Glide.State.AlphaOther )
+		    switch (glidestate.AlphaOther)
 		    {
 		    case GR_COMBINE_OTHER_ITERATED:
 		        Other.aa = a->a * D1OVER255;
@@ -722,7 +704,7 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 
 		if ( Glide.CLocal )
 		{
-		    switch ( Glide.State.ColorCombineLocal )
+		    switch (glidestate.ColorCombineLocal)
 		    {
 		    case GR_COMBINE_LOCAL_ITERATED:
 		        Local.ar = a->r * D1OVER255;
@@ -736,7 +718,7 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 		    case GR_COMBINE_LOCAL_CONSTANT:
 					{
 						GLfloat* color;
-						if (Glide.State.Delta0Mode)
+						if (glidestate.Delta0Mode)
 						{
 							color = &OpenGL.Delta0Color[0];
 						}
@@ -754,7 +736,7 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 
 		if ( Glide.COther )
 		{
-		    switch ( Glide.State.ColorCombineOther )
+		    switch (glidestate.ColorCombineOther)
 		    {
 		    case GR_COMBINE_OTHER_ITERATED:
 		        Other.ar = a->r * D1OVER255;
@@ -768,7 +750,7 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 		    case GR_COMBINE_OTHER_CONSTANT:
 					{
 						GLfloat* color;
-						if (Glide.State.Delta0Mode)
+						if (glidestate.Delta0Mode)
 						{
 							color = &OpenGL.Delta0Color[0];
 						}
@@ -789,7 +771,7 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 		    }
 		}
 
-		switch ( Glide.State.ColorCombineFunction )
+		switch (glidestate.ColorCombineFunction)
 		{
 		case GR_COMBINE_FUNCTION_ZERO:
 		    pC->ar = pC->ag = pC->ab = 0.0f; 
@@ -859,9 +841,9 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 		    break;
 		
 		case GR_COMBINE_FUNCTION_SCALE_OTHER_MINUS_LOCAL_ADD_LOCAL:
-		    if ((( Glide.State.ColorCombineFactor == GR_COMBINE_FACTOR_TEXTURE_ALPHA ) ||
-		        ( Glide.State.ColorCombineFactor == GR_COMBINE_FACTOR_TEXTURE_RGB )) &&
-		        (  Glide.State.ColorCombineOther == GR_COMBINE_OTHER_TEXTURE ) )
+		    if (((glidestate.ColorCombineFactor == GR_COMBINE_FACTOR_TEXTURE_ALPHA) ||
+		         (glidestate.ColorCombineFactor == GR_COMBINE_FACTOR_TEXTURE_RGB)) &&
+		         (glidestate.ColorCombineOther == GR_COMBINE_OTHER_TEXTURE)) 
 		    {
 		        pC->ar = Local.ar;
 		        pC->ag = Local.ag;
@@ -889,9 +871,9 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 		    break;
 		
 		case GR_COMBINE_FUNCTION_SCALE_OTHER_MINUS_LOCAL_ADD_LOCAL_ALPHA:
-		    if ((( Glide.State.ColorCombineFactor == GR_COMBINE_FACTOR_TEXTURE_ALPHA ) ||
-		        ( Glide.State.ColorCombineFactor == GR_COMBINE_FACTOR_TEXTURE_RGB )) &&
-		        (  Glide.State.ColorCombineOther == GR_COMBINE_OTHER_TEXTURE ) )
+		    if (((glidestate.ColorCombineFactor == GR_COMBINE_FACTOR_TEXTURE_ALPHA) ||
+		         (glidestate.ColorCombineFactor == GR_COMBINE_FACTOR_TEXTURE_RGB)) &&
+		         (glidestate.ColorCombineOther == GR_COMBINE_OTHER_TEXTURE))
 		    {
 		        pC->ar = pC->ag = pC->ab = Local.aa;
 		        pC->br = pC->bg = pC->bb = Local.ba;
@@ -939,7 +921,7 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 		    break;
 		}
 
-		switch ( Glide.State.AlphaFunction )
+		switch (glidestate.AlphaFunction)
 		{
 		case GR_COMBINE_FUNCTION_ZERO:
 		    pC->aa = pC->ba = 0.0f;
@@ -986,7 +968,7 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 
 		if (OpenGL.FogTextureUnit == 0)
 		{
-			if ( Glide.State.ColorCombineInvert )
+			if (glidestate.ColorCombineInvert)
 			{
 					pC->ar = 1.0f - pC->ar - pC2->ar;
 					pC->ag = 1.0f - pC->ag - pC2->ag;
@@ -998,7 +980,7 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 					pC2->br = pC2->bg = pC2->bb = 0.0f;
 			}
 
-			if ( Glide.State.AlphaInvert )
+			if (glidestate.AlphaInvert)
 			{
 					pC->aa = 1.0f - pC->aa - pC2->aa;
 					pC->ba = 1.0f - pC->ba - pC2->ba;
@@ -1009,8 +991,8 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 	
 	TVertexStruct* pV = &OGLRender.TVertex[OGLRender.RenderBufferSize];
 	// Z-Buffering
-	if ( ( Glide.State.DepthBufferMode == GR_DEPTHBUFFER_DISABLE ) || 
-	     ( Glide.State.DepthBufferMode == GR_CMP_ALWAYS ) )
+	if ((glidestate.DepthBufferMode == GR_DEPTHBUFFER_DISABLE) || 
+	    (glidestate.DepthBufferMode == GR_CMP_ALWAYS))
 	{
 		pV->az = 0.0f;
 		pV->bz = 0.0f;
@@ -1063,7 +1045,7 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 	}
 
 	TTextureStruct* pTS = &OGLRender.TTexture[OGLRender.RenderBufferSize];
-	if ( OpenGL.Texture )
+	if (OpenGL.Texture)
 	{
 		const float hAspect = Textures->GetHAspect();
 		const float wAspect = Textures->GetWAspect();
@@ -1071,11 +1053,9 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 		pTS->at = a->tmuvtx[0].tow * hAspect;
 		pTS->bs = b->tmuvtx[0].sow * wAspect;
 		pTS->bt = b->tmuvtx[0].tow * hAspect;
-		pTS->aq = 0.0f;
-		pTS->bq = 0.0f;
 		float atmuoow;
 		float btmuoow;
-		if ( ( Glide.State.STWHint & GR_STWHINT_W_DIFF_TMU0 ) == 0 )
+		if ((glidestate.STWHint & GR_STWHINT_W_DIFF_TMU0) == 0)
 		{
 			atmuoow = a->oow;
 			btmuoow = b->oow;
@@ -1093,60 +1073,41 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 		GlideMsg(b, btmuoow);
 #endif
 	}
+#ifdef OGL_DEBUG_GLIDE_COORDS
 	else
 	{
-		// @todo: only for complex color alpha model (or at all?)
-		// Does a dummy texture target need texture coords
-		// if env combine doesn't select a texture source?
-		// (See also fog code below)
-		pTS->as = 0.0f;
-		pTS->at = 0.0f;
-		pTS->bs = 0.0f;
-		pTS->bt = 0.0f;
-		pTS->aq = 0.0f;
-		pTS->bq = 0.0f;
-		pTS->aoow = 1.0;
-		pTS->boow = 1.0;
-
-#ifdef OGL_DEBUG_GLIDE_COORDS
 		GlideMsg(a, 1.0f);
 		GlideMsg(b, 1.0f);
+	}
 #endif
-	} 
 
 	TFogStruct* pF = &OGLRender.TFog[OGLRender.RenderBufferSize];
-	if (Glide.State.FogMode)
+	if (glidestate.FogMode)
 	{
-		float af, bf;
-		if (Glide.State.FogMode & GR_FOG_WITH_TABLE)
+		if (glidestate.FogMode & GR_FOG_WITH_TABLE)
 		{
-			af = (float)OpenGL.FogTable[ (FxU16)(1.0f / a->oow) ] * D1OVER255;
-			bf = (float)OpenGL.FogTable[ (FxU16)(1.0f / b->oow) ] * D1OVER255;
+			pF->af = (float)OpenGL.FogTable[ (FxU16)(1.0f / a->oow) ] * D1OVER255;
+			pF->bf = (float)OpenGL.FogTable[ (FxU16)(1.0f / b->oow) ] * D1OVER255;
 		}
 		else
 		{
-			af = a->a * D1OVER255;
-			bf = b->a * D1OVER255;
+			pF->af = a->a * D1OVER255;
+			pF->bf = b->a * D1OVER255;
 		}
 		/*
-		if ( Glide.State.FogMode & GR_FOG_ADD2 )
+		if ( glidestate.FogMode & GR_FOG_ADD2 )
 		{
-			pF->af = 1.0f - af;
-			pF->bf = 1.0f - bf;
+			pF->af = 1.0f - pF->af;
+			pF->bf = 1.0f - pF->bf;
 		}
-		else
 		*/
-		{
-			pF->af = af;
-			pF->bf = bf;
-		}
 
 #ifdef OGL_DEBUG
 		DEBUG_MIN_MAX( pF->af, OGLRender.MaxF, OGLRender.MinF );
 		DEBUG_MIN_MAX( pF->bf, OGLRender.MaxF, OGLRender.MinF );
 #endif
 	}
-	else if (OGLRender.UseEnvCombineFog)
+	else /* if (OGLRender.UseEnvCombineFog) */ // env combine fog is the default
 	{
 		// Must provide dummy coords if fog is turned off but
 		// the texture unit is active because of inveting color/alpha
@@ -1209,7 +1170,7 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 				glMultiTexCoord4fvARB( OpenGL.ColorAlphaUnit2, &pTS->as );
 			}
 		}
-		if (Glide.State.FogMode)
+		if (glidestate.FogMode)
 		{
 			if (OGLRender.UseEnvCombineFog)
 			{
@@ -1237,7 +1198,7 @@ void RenderAddLine( const GrVertex *a, const GrVertex *b, bool unsnap )
 				glMultiTexCoord4fvARB( OpenGL.ColorAlphaUnit2, &pTS->bs );
 			}
 		}
-		if (Glide.State.FogMode)
+		if (glidestate.FogMode)
 		{
 			if (OGLRender.UseEnvCombineFog)
 			{
@@ -1266,7 +1227,7 @@ void RenderAddTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c,
 	OGLRender.OverallTriangles++;
 #endif
 
-	const int TriangleIndex = OGLRender.BufferStart + OGLRender.NumberOfTriangles ;
+	const int TriangleIndex = OGLRender.BufferStart + OGLRender.NumberOfTriangles;
 
 #ifdef OGL_ALL
     GlideMsg( "RenderAddTriangle(%d)\n", TriangleIndex);
@@ -1274,6 +1235,7 @@ void RenderAddTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c,
 
 	TColorStruct* pC = &OGLRender.TColor[TriangleIndex];
 	TColorStruct* pC2;
+	const GlideState glidestate = Glide.State;
 	if (OpenGL.ColorAlphaUnit2)
 	{
 		{
@@ -1289,7 +1251,7 @@ void RenderAddTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c,
 			pC->cb = c->b * D1OVER255;
 		}
 		// Alpha
-		if (Glide.State.AlphaLocal == GR_COMBINE_LOCAL_DEPTH)
+		if (glidestate.AlphaLocal == GR_COMBINE_LOCAL_DEPTH)
 		{
 			// @todo: find out whether z has to be divided by 255 or by 65535
 			pC->aa = a->z * D1OVER255;
@@ -1309,7 +1271,7 @@ void RenderAddTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c,
 		memset( pC2, 0, sizeof( TColorStruct ) );
 		if ( Glide.ALocal )
 		{
-				switch ( Glide.State.AlphaLocal )
+				switch (glidestate.AlphaLocal)
 				{
 				case GR_COMBINE_LOCAL_ITERATED:
 						Local.aa = a->a * D1OVER255;
@@ -1331,7 +1293,7 @@ void RenderAddTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c,
 
 		if ( Glide.AOther )
 		{
-				switch ( Glide.State.AlphaOther )
+				switch (glidestate.AlphaOther)
 				{
 				case GR_COMBINE_OTHER_ITERATED:
 						Other.aa = a->a * D1OVER255;
@@ -1358,7 +1320,7 @@ void RenderAddTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c,
 
 		if ( Glide.CLocal )
 		{
-				switch ( Glide.State.ColorCombineLocal )
+				switch (glidestate.ColorCombineLocal)
 				{
 				case GR_COMBINE_LOCAL_ITERATED:
 						Local.ar = a->r * D1OVER255;
@@ -1375,7 +1337,7 @@ void RenderAddTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c,
 				case GR_COMBINE_LOCAL_CONSTANT:
 					{
 						GLfloat* color;
-						if (Glide.State.Delta0Mode)
+						if (glidestate.Delta0Mode)
 						{
 							color = &OpenGL.Delta0Color[0];
 						}
@@ -1393,7 +1355,7 @@ void RenderAddTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c,
 
 		if ( Glide.COther )
 		{
-				switch ( Glide.State.ColorCombineOther )
+				switch ( glidestate.ColorCombineOther )
 				{
 				case GR_COMBINE_OTHER_ITERATED:
 						Other.ar = a->r * D1OVER255;
@@ -1410,7 +1372,7 @@ void RenderAddTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c,
 				case GR_COMBINE_OTHER_CONSTANT:
 					{
 						GLfloat* color;
-						if (Glide.State.Delta0Mode)
+						if (glidestate.Delta0Mode)
 						{
 							color = &OpenGL.Delta0Color[0];
 						}
@@ -1443,7 +1405,7 @@ void RenderAddTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c,
 
 		ColorFunctionFunc( pC, pC2, &Local, &Other );
 
-		switch ( Glide.State.AlphaFunction )
+		switch (glidestate.AlphaFunction)
 		{
 		case GR_COMBINE_FUNCTION_ZERO:
 				pC->aa = pC->ba = pC->ca = 0.0f;
@@ -1498,7 +1460,7 @@ void RenderAddTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c,
 
 		if (OpenGL.FogTextureUnit == 0)
 		{
-			if ( Glide.State.ColorCombineInvert )
+			if (glidestate.ColorCombineInvert)
 			{
 					pC->ar = 1.0f - pC->ar - pC2->ar;
 					pC->ag = 1.0f - pC->ag - pC2->ag;
@@ -1514,7 +1476,7 @@ void RenderAddTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c,
 					pC2->cr = pC2->cg = pC2->cb = 0.0f;
 			}
 
-			if ( Glide.State.AlphaInvert )
+			if (glidestate.AlphaInvert)
 			{
 					pC->aa = 1.0f - pC->aa - pC2->aa;
 					pC->ba = 1.0f - pC->ba - pC2->ba;
@@ -1526,8 +1488,9 @@ void RenderAddTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c,
 
 	TVertexStruct* pV = &OGLRender.TVertex[ TriangleIndex ];
 	// Z-Buffering
-	if ( ( Glide.State.DepthBufferMode == GR_DEPTHBUFFER_DISABLE ) || 
-	     ( Glide.State.DepthFunction == GR_CMP_ALWAYS ) )
+	// @todo: check why this has been added , since it look s unnecessary
+	if ((glidestate.DepthBufferMode == GR_DEPTHBUFFER_DISABLE) || 
+	    (glidestate.DepthFunction == GR_CMP_ALWAYS))
 	{
 		pV->az = 0.0f;
 		pV->bz = 0.0f;
@@ -1587,14 +1550,13 @@ void RenderAddTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c,
 		pV->cy = c->y;
 	}
 
-	TTextureStruct* pTS = &OGLRender.TTexture[TriangleIndex];
-	bool generate_subtextures;
+	bool generate_subtextures = OpenGL.Texture;
 	if (OpenGL.Texture)
 	{
 		float atmuoow;
 		float btmuoow;
 		float ctmuoow;
-		if ( ( Glide.State.STWHint & GR_STWHINT_W_DIFF_TMU0 ) == 0 )
+		if ((glidestate.STWHint & GR_STWHINT_W_DIFF_TMU0) == 0)
 		{
 			atmuoow = a->oow;
 			btmuoow = b->oow;
@@ -1610,6 +1572,7 @@ void RenderAddTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c,
 		generate_subtextures = InternalConfig.GenerateSubTextures &&
 		                       OpenGL.SClampMode != GL_REPEAT &&
 		                       OpenGL.TClampMode != GL_REPEAT;
+		TTextureStruct* pTS = &OGLRender.TTexture[TriangleIndex];
 		if (generate_subtextures)
 		{
 			pTS->as = a->tmuvtx[ 0 ].sow / atmuoow;
@@ -1630,7 +1593,6 @@ void RenderAddTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c,
 			pTS->cs = c->tmuvtx[ 0 ].sow * wAspect * maxoow;
 			pTS->ct = c->tmuvtx[ 0 ].tow * hAspect * maxoow;
 		}
-		pTS->aq = pTS->bq = pTS->cq = 0.0f;
 		pTS->aoow = atmuoow * maxoow;
 		pTS->boow = btmuoow * maxoow;
 		pTS->coow = ctmuoow * maxoow;
@@ -1641,63 +1603,38 @@ void RenderAddTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c,
 		GlideMsg(c, maxoow);
 #endif
 	}
+#ifdef OGL_DEBUG_GLIDE_COORDS
 	else
 	{
-		// @todo: only for complex color alpha model (or at all?)
-		// Does a dummy texture target need texture coords
-		// if env combine doesn't select a texture source?
-		// (See also fog code below)
-		pTS->as = 0.0f;
-		pTS->at = 0.0f;
-		pTS->bs = 0.0f;
-		pTS->bt = 0.0f;
-		pTS->cs = 0.0f;
-		pTS->ct = 0.0f;
-		pTS->aq = 0.0f;
-		pTS->bq = 0.0f;
-		pTS->cq = 0.0f;
-		pTS->aoow = 1.0;
-		pTS->boow = 1.0;
-		pTS->coow = 1.0;
-		generate_subtextures = false;
-		
-#ifdef OGL_DEBUG_GLIDE_COORDS
 		GlideMsg(a, 1.0f);
 		GlideMsg(b, 1.0f);
 		GlideMsg(c, 1.0f);
+	}
 #endif
-	} 
 	
 	TFogStruct* pF = &OGLRender.TFog[TriangleIndex];
-	if(Glide.State.FogMode)
+	if(glidestate.FogMode)
 	{
-		float af, bf, cf;
-		if (Glide.State.FogMode & GR_FOG_WITH_TABLE)
+		if (glidestate.FogMode & GR_FOG_WITH_TABLE)
 		{
-			af = (float)OpenGL.FogTable[ (FxU16)(1.0f / a->oow) ] * D1OVER255;
-			bf = (float)OpenGL.FogTable[ (FxU16)(1.0f / b->oow) ] * D1OVER255;
-			cf = (float)OpenGL.FogTable[ (FxU16)(1.0f / c->oow) ] * D1OVER255;
+			pF->af = (float) OpenGL.FogTable[(FxU16)(1.0f / a->oow) ] * D1OVER255;
+			pF->bf = (float) OpenGL.FogTable[(FxU16)(1.0f / b->oow) ] * D1OVER255;
+			pF->cf = (float) OpenGL.FogTable[(FxU16)(1.0f / c->oow) ] * D1OVER255;
 		}
 		else
 		{
-			af = a->a * D1OVER255;
-			bf = b->a * D1OVER255;
-			cf = c->a * D1OVER255;
+			pF->af = a->a * D1OVER255;
+			pF->bf = b->a * D1OVER255;
+			pF->cf = c->a * D1OVER255;
 		}
 		/*
-		if ( Glide.State.FogMode & GR_FOG_ADD2 )
+		if ( glidestate.FogMode & GR_FOG_ADD2 )
 		{
-			pF->af = 1.0f - af;
-			pF->bf = 1.0f - bf;
-			pF->cf = 1.0f - cf;
+			pF->af = 1.0f - pF->af;
+			pF->bf = 1.0f - pF->bf;
+			pF->cf = 1.0f - pF->cf;
 		}
-		else
 		*/
-		{
-			pF->af = af;
-			pF->bf = bf;
-			pF->cf = cf;
-		}
         
 #ifdef OGL_DEBUG
 		DEBUG_MIN_MAX( pF->af, OGLRender.MaxF, OGLRender.MinF );
@@ -1791,7 +1728,7 @@ void RenderAddPoint( const GrVertex *a, bool unsnap )
 	// Peek to avoid updating the render state twice
 	if (OGLRender.NumberOfTriangles)
 	{
-		RenderDrawTriangles();
+		RenderDrawTriangles_impl();
 	}
 	else
 	{
@@ -1806,6 +1743,7 @@ void RenderAddPoint( const GrVertex *a, bool unsnap )
 
 	TColorStruct* pC  = &OGLRender.TColor[OGLRender.RenderBufferSize];
 	TColorStruct* pC2;
+	const GlideState glidestate = Glide.State;
 	if (OpenGL.ColorAlphaUnit2)
 	{
 		{
@@ -1815,7 +1753,7 @@ void RenderAddPoint( const GrVertex *a, bool unsnap )
 			pC->ab = a->b * D1OVER255;
 		}
 		// Alpha
-		if (Glide.State.AlphaLocal == GR_COMBINE_LOCAL_DEPTH)
+		if (glidestate.AlphaLocal == GR_COMBINE_LOCAL_DEPTH)
 		{
 			// @todo: find out whether z has to be divided by 255 or by 65535
 			pC->aa = a->z * D1OVER255;
@@ -1832,7 +1770,7 @@ void RenderAddPoint( const GrVertex *a, bool unsnap )
     // Color Stuff, need to optimize it
     if ( Glide.ALocal )
     {
-        switch ( Glide.State.AlphaLocal )
+        switch (glidestate.AlphaLocal)
         {
         case GR_COMBINE_LOCAL_ITERATED:
             Local.aa = a->a * D1OVER255;
@@ -1850,7 +1788,7 @@ void RenderAddPoint( const GrVertex *a, bool unsnap )
 
     if ( Glide.AOther )
     {
-        switch ( Glide.State.AlphaOther )
+        switch (glidestate.AlphaOther)
         {
         case GR_COMBINE_OTHER_ITERATED:
             Other.aa = a->a * D1OVER255;
@@ -1868,7 +1806,7 @@ void RenderAddPoint( const GrVertex *a, bool unsnap )
 
     if ( Glide.CLocal )
     {
-        switch ( Glide.State.ColorCombineLocal )
+        switch (glidestate.ColorCombineLocal)
         {
         case GR_COMBINE_LOCAL_ITERATED:
             Local.ar = a->r * D1OVER255;
@@ -1879,7 +1817,7 @@ void RenderAddPoint( const GrVertex *a, bool unsnap )
         case GR_COMBINE_LOCAL_CONSTANT:
 					{
 						GLfloat* color;
-						if (Glide.State.Delta0Mode)
+						if (glidestate.Delta0Mode)
 						{
 							color = &OpenGL.Delta0Color[0];
 						}
@@ -1897,7 +1835,7 @@ void RenderAddPoint( const GrVertex *a, bool unsnap )
 
     if ( Glide.COther )
     {
-        switch ( Glide.State.ColorCombineOther )
+        switch (glidestate.ColorCombineOther)
         {
         case GR_COMBINE_OTHER_ITERATED:
             Other.ar = a->r * D1OVER255;
@@ -1908,7 +1846,7 @@ void RenderAddPoint( const GrVertex *a, bool unsnap )
         case GR_COMBINE_OTHER_CONSTANT:
 					{
 						GLfloat* color;
-						if (Glide.State.Delta0Mode)
+						if (glidestate.Delta0Mode)
 						{
 							color = &OpenGL.Delta0Color[0];
 						}
@@ -1928,7 +1866,7 @@ void RenderAddPoint( const GrVertex *a, bool unsnap )
         }
     }
 
-    switch ( Glide.State.ColorCombineFunction )
+    switch (glidestate.ColorCombineFunction)
     {
     case GR_COMBINE_FUNCTION_ZERO:
         pC->ar = pC->ag = pC->ab = 0.0f; 
@@ -1977,9 +1915,9 @@ void RenderAddPoint( const GrVertex *a, bool unsnap )
         break;
 
     case GR_COMBINE_FUNCTION_SCALE_OTHER_MINUS_LOCAL_ADD_LOCAL:
-        if ((( Glide.State.ColorCombineFactor == GR_COMBINE_FACTOR_TEXTURE_ALPHA ) ||
-            ( Glide.State.ColorCombineFactor == GR_COMBINE_FACTOR_TEXTURE_RGB )) &&
-            (  Glide.State.ColorCombineOther == GR_COMBINE_OTHER_TEXTURE ) )
+        if ((( glidestate.ColorCombineFactor == GR_COMBINE_FACTOR_TEXTURE_ALPHA ) ||
+            ( glidestate.ColorCombineFactor == GR_COMBINE_FACTOR_TEXTURE_RGB )) &&
+            (  glidestate.ColorCombineOther == GR_COMBINE_OTHER_TEXTURE ) )
         {
             pC->ar = Local.ar;
             pC->ag = Local.ag;
@@ -1998,9 +1936,9 @@ void RenderAddPoint( const GrVertex *a, bool unsnap )
         break;
 
     case GR_COMBINE_FUNCTION_SCALE_OTHER_MINUS_LOCAL_ADD_LOCAL_ALPHA:
-        if ((( Glide.State.ColorCombineFactor == GR_COMBINE_FACTOR_TEXTURE_ALPHA ) ||
-            ( Glide.State.ColorCombineFactor == GR_COMBINE_FACTOR_TEXTURE_RGB )) &&
-            (  Glide.State.ColorCombineOther == GR_COMBINE_OTHER_TEXTURE ) )
+        if (((glidestate.ColorCombineFactor == GR_COMBINE_FACTOR_TEXTURE_ALPHA) ||
+             (glidestate.ColorCombineFactor == GR_COMBINE_FACTOR_TEXTURE_RGB)) &&
+             (glidestate.ColorCombineOther == GR_COMBINE_OTHER_TEXTURE)) 
         {
             pC->ar = pC->ag = pC->ab = Local.aa;
         }
@@ -2033,7 +1971,7 @@ void RenderAddPoint( const GrVertex *a, bool unsnap )
         break;
     }
 
-    switch ( Glide.State.AlphaFunction )
+    switch (glidestate.AlphaFunction)
     {
     case GR_COMBINE_FUNCTION_ZERO:
         pC->aa = 0.0f;
@@ -2072,7 +2010,7 @@ void RenderAddPoint( const GrVertex *a, bool unsnap )
 
 		if (OpenGL.FogTextureUnit == 0)
 		{
-			if ( Glide.State.ColorCombineInvert )
+			if (glidestate.ColorCombineInvert)
 			{
 					pC->ar = 1.0f - pC->ar - pC2->ar;
 					pC->ag = 1.0f - pC->ag - pC2->ag;
@@ -2080,7 +2018,7 @@ void RenderAddPoint( const GrVertex *a, bool unsnap )
 					pC2->ar = pC2->ag = pC2->ab = 0.0f;
 			}
 
-			if ( Glide.State.AlphaInvert )
+			if (glidestate.AlphaInvert)
 			{
 					pC->aa = 1.0f - pC->aa - pC2->aa;
 					pC2->aa = 0.0f;
@@ -2090,8 +2028,8 @@ void RenderAddPoint( const GrVertex *a, bool unsnap )
 
 	TVertexStruct* pV = &OGLRender.TVertex[OGLRender.RenderBufferSize];
 	// Z-Buffering
-	if ( ( Glide.State.DepthBufferMode == GR_DEPTHBUFFER_DISABLE ) || 
-	     ( Glide.State.DepthBufferMode == GR_CMP_ALWAYS ) )
+	if ((glidestate.DepthBufferMode == GR_DEPTHBUFFER_DISABLE) || 
+	    (glidestate.DepthBufferMode == GR_CMP_ALWAYS))
 	{
 		pV->az = 0.0f;
 	}
@@ -2140,57 +2078,41 @@ void RenderAddPoint( const GrVertex *a, bool unsnap )
 	{
 		pTS->as = a->tmuvtx[0].sow * Textures->GetWAspect();
 		pTS->at = a->tmuvtx[0].tow * Textures->GetHAspect();
-	    pTS->aq = 0.0f;
 		pTS->aoow = a->oow;
-
 #ifdef OGL_DEBUG_GLIDE_COORDS
-	GlideMsg(a, a->oow);
+		GlideMsg(a, a->oow);
 #endif
   }
-  else
-  {
-		// @todo: only for complex color alpha model (or at all?)
-		// Does a dummy texture target need texture coords
-		// if env combine doesn't select a texture source?
-		// (See also fog code below)
-		pTS->as = 0.0f;
-		pTS->at = 0.0f;
-		pTS->aq = 0.0f;
-		pTS->aoow = 1.0;
-
 #ifdef OGL_DEBUG_GLIDE_COORDS
-	GlideMsg(a, 1.0f);
-#endif
+	else
+	{
+		GlideMsg(a, 1.0f);
 	}
+#endif
 		
 	TFogStruct* pF = &OGLRender.TFog[OGLRender.RenderBufferSize];
-	if(Glide.State.FogMode)
+	if(glidestate.FogMode)
 	{
-		float af;
-		if (Glide.State.FogMode & GR_FOG_WITH_TABLE)
+		if (glidestate.FogMode & GR_FOG_WITH_TABLE)
 		{
-			af = (float)OpenGL.FogTable[ (FxU16)(1.0f / a->oow) ] * D1OVER255;
+			pF->af = (float) OpenGL.FogTable[(FxU16)(1.0f / a->oow)] * D1OVER255;
 		}
 		else
 		{
-			af = a->a * D1OVER255;
+			pF->af = a->a * D1OVER255;
 		}
 		/*
-		if ( Glide.State.FogMode & GR_FOG_ADD2 )
+		if ( glidestate.FogMode & GR_FOG_ADD2 )
 		{
-			pF->af = 1.0f - af;
+			pF->af = 1.0f - pF->af;
 		}
-		else
 		*/
-		{
-			pF->af = af;
-		}
 
 	#ifdef OGL_DEBUG
 		DEBUG_MIN_MAX( pF->af, OGLRender.MaxF, OGLRender.MinF );
 	#endif
 	}
-	else if (OGLRender.UseEnvCombineFog)
+	else /* if (OGLRender.UseEnvCombineFog) */ // env combine fog is the default
 	{
 		// Must provide dummy coords if fog is turned off but
 		// the texture unit is active because of inveting color/alpha
@@ -2244,7 +2166,7 @@ void RenderAddPoint( const GrVertex *a, bool unsnap )
 				glMultiTexCoord4fvARB( OpenGL.ColorAlphaUnit2, &pTS->as );
 			}
 		}
-		if (Glide.State.FogMode)
+		if (glidestate.FogMode)
 		{
 			if (OGLRender.UseEnvCombineFog)
 			{
@@ -2467,9 +2389,10 @@ void ColorFunctionScaleOtherMinusLocal( TColorStruct * pC, TColorStruct * pC2, c
 
 void ColorFunctionScaleOtherMinusLocalAddLocal( TColorStruct * pC, TColorStruct * pC2, const TColorStruct * Local, const TColorStruct * Other )
 {
-	if ((( Glide.State.ColorCombineFactor == GR_COMBINE_FACTOR_TEXTURE_ALPHA ) ||
-	    ( Glide.State.ColorCombineFactor == GR_COMBINE_FACTOR_TEXTURE_RGB )) &&
-	    (  Glide.State.ColorCombineOther == GR_COMBINE_OTHER_TEXTURE ) )
+	const GlideState glidestate = Glide.State;
+	if (((glidestate.ColorCombineFactor == GR_COMBINE_FACTOR_TEXTURE_ALPHA) ||
+	     (glidestate.ColorCombineFactor == GR_COMBINE_FACTOR_TEXTURE_RGB)) &&
+	     (glidestate.ColorCombineOther == GR_COMBINE_OTHER_TEXTURE))
 	{
 		pC->ar = Local->ar;
 		pC->ag = Local->ag;
@@ -2507,9 +2430,10 @@ void ColorFunctionScaleOtherMinusLocalAddLocal( TColorStruct * pC, TColorStruct 
 
 void ColorFunctionScaleOtherMinusLocalAddLocalAlpha( TColorStruct * pC, TColorStruct * pC2, const TColorStruct * Local, const TColorStruct * Other )
 {
-	if ((( Glide.State.ColorCombineFactor == GR_COMBINE_FACTOR_TEXTURE_ALPHA ) ||
-	    ( Glide.State.ColorCombineFactor == GR_COMBINE_FACTOR_TEXTURE_RGB )) &&
-	    (  Glide.State.ColorCombineOther == GR_COMBINE_OTHER_TEXTURE ) )
+	const GlideState glidestate = Glide.State;
+	if (((glidestate.ColorCombineFactor == GR_COMBINE_FACTOR_TEXTURE_ALPHA) ||
+	     (glidestate.ColorCombineFactor == GR_COMBINE_FACTOR_TEXTURE_RGB)) &&
+	     (glidestate.ColorCombineOther == GR_COMBINE_OTHER_TEXTURE))
 	{
 		pC->ar = pC->ag = pC->ab = Local->aa;
 		pC->br = pC->bg = pC->bb = Local->ba;
