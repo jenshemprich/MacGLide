@@ -31,6 +31,10 @@ protected:
 	GrLfbWriteMode_t m_grLfbLockWriteMode[6];
 	unsigned int m_bufferclearcalls;
 	static const tilesize tilesize_table_carmageddon[11];
+	static const tilesize tilesizeTableFalcon40_640[7];
+	static const tilesize tilesizeTableFalcon40_800[8];
+	static tilesize tilesizeTableFalcon40Scaled[Framebuffer::MaxTiles];
+	static void scaleTilesizeTable(const tilesize* in, tilesize* out, int factor);
 public:
 	void initialise(BufferStruct* framebuffer, BufferStruct* texbuffer);
 	void OnBufferLockStartWrite(GrLock_t dwType, GrBuffer_t dwBuffer, GrLfbWriteMode_t dwWriteMode, GrOriginLocation_t dwOrigin, FxBool bPixelPipeline);
@@ -53,7 +57,7 @@ public:
 	inline bool GetRenderBufferChangedForRead() const {return m_renderbuffer_changed_for_read;};
 	inline void ResetRenderBufferChangedForRead() {m_renderbuffer_changed_for_read = false;};
 	void CopyFrameBuffer(FxU16* targetbuffer);
-	inline FxU16 GetChromaKeyValue() {return m_ChromaKey;};
+	inline FxU16 GetChromaKeyValue() {return Framebuffer::GetChromaKeyValue();};
 protected:
 	void WriteFrameBuffer(bool pixelpipline);
 	inline bool BackBufferIsLocked() {return m_grLfbLockWriteMode[GR_BUFFER_BACKBUFFER] != GR_LFBWRITEMODE_UNUSED;};

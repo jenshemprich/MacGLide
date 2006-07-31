@@ -13,16 +13,24 @@
 #include "GlideFramebuffer.h"
 #include "GlideSettings.h"
 
+// Custom framebuffer tiles tables to minimise calls to glTexImage2D()
+// by defining tiles that:
+// - are empty (no color conversion takes place)
+// - don't change (so they have to be downloaded to the GPU only once)
+// This does not apply to drawing underlays because they are drawn with
+// max tile sizes as they're usally used to draw fullscreen backgrounds
 
-// Optimised framebuffer tile layout for Carmageddon: Minimise calls to glTexImage2D
-// Note: Carmageddon uses only the glide resolution 640x480.
-// The sum of the first column must  be 480 (vertical resolution)
-// The sum of each row must be 640 (horizontal resolution)
-// This does not apply to drawing the underlay
-// (Underlays are drawn with max tile sizes because they're usally used to draw backgrounds)
+// The sum of the first column must be Glide.WindowHeigth (vertical resolution)
+// The sum of all elements in the second element of each row must be Glide.WindowWidth (horizontal resolution)
+
+// Optimised framebuffer tile layout for Carmageddon:
+// Carmageddon uses only the glide resolution 640x480. The table optimised
+// the outside car view. In cockpit mode the framebuffer must be rendered two times
+// which makes everything much slower, but in cockpit mode this table allows
+// for a fluid framerate even on slow (~450 Mhz) machines
 const Framebuffer::tilesize GlideFramebuffer::tilesize_table_carmageddon[11] =
 {
-	{ 64, {128,128,  8,128,128, 64, 32, 16,  8,0,0}},
+	{ 64, {128,128,  8,128,128, 64, 32, 16,  8,0,0,0}},
 	{ 64, {128,128,128,128, 64, 64,  0,  0,  0,0,0,0}},
 	{ 32, {128,128,128,128,128,  0,  0,  0,  0,0,0,0}},
 	{ 32, {128,128,128,128,128,  0,  0,  0,  0,0,0,0}},
@@ -33,6 +41,71 @@ const Framebuffer::tilesize GlideFramebuffer::tilesize_table_carmageddon[11] =
 	{ 32, {128,128,128,128,128,  0,  0,  0,  0,0,0,0}},
 	{ 64, {  8,128,256,128, 32,  8, 64, 16,  0,0,0,0}},
 	{ 64, {  8,128,256,128, 32,  8, 64, 16,  0,0,0,0}}
+};
+
+// Optimised framebuffer tile layouts for Falcon 4.0:
+// Falcon ofers a lot of screen resolutions, so we have to provide mopre than one table.
+// If the table can be derived from a smaller one, it is scaled up to the appropriate
+// screen size. In fact, just 640x480 and 800x600 have to be hardcoded.
+
+// The table optimises the main cockpit view (looking forward after pressing "2" on the keyboard")
+// Areas are kept as large as possible in order to avoid producing many small textures in other views.
+// Static tiles with artwork only at the bottom are yield good performance as the better part of
+// the tile is just read (as if the tile was totally empty) and then never gets downloaded again.
+const Framebuffer::tilesize GlideFramebuffer::tilesizeTableFalcon40_640[7] =
+{
+	{  32, {256,128,256,  0,  0,  0,  0,  0,  0,0,0,0}},
+	{ 128, {128, 64,256, 64,128,  0,  0,  0,  0,0,0,0}},
+	{  64, { 32,128, 32,256, 32,128, 32,  0,  0,0,0,0}},
+	{  64, { 64,128,128,128,128, 64,  0,  0,  0,0,0,0}},
+	{  64, { 64,128,128,128,128, 64,  0,  0,  0,0,0,0}},
+	{ 128, { 64,128,128,128,128, 64,  0,  0,  0,0,0,0}},
+	{   0, {  0,  0,  0,  0,  0,  0,  0,  0,  0,0,0,0}}
+};
+
+const Framebuffer::tilesize GlideFramebuffer::tilesizeTableFalcon40_800[8] =
+{
+	{   8, {256,256, 32,256,  0,  0,  0,  0,0,0,0,0}},
+	{  16, {256,256, 32,256,  0,  0,  0,  0,0,0,0,0}},
+	{ 128, {128,128,256, 32,128,128,  0,  0,0,0,0,0}},
+	{ 128, {128,128,256, 32,128,128,  0,  0,0,0,0,0}},
+	{  64, {128,256, 32,256,128,  0,  0,  0,0,0,0,0}},
+	{  64, {128,128,128, 32,128,128,128,  0,0,0,0,0}},
+	{  64, {128,128,128, 32,128,128,128,  0,0,0,0,0}},
+	{ 128, {128,128,128, 32,128,128,128,  0,0,0,0,0}}
+};
+
+void GlideFramebuffer::scaleTilesizeTable(const Framebuffer::tilesize* in, Framebuffer::tilesize* out, int factor)
+{
+	GLint y_step;
+	int w = 0;
+	for(FxU32 y = 0; y < Glide.WindowHeight && w < MaxTiles ; y += y_step, w++)
+	{
+		y_step = in[w].y;
+		out[w].y = y_step * factor;
+		GLint x_step;
+		int v = 0;
+		for(FxU32 x = 0; x < Glide.WindowWidth && v < MaxTiles; x += x_step, v++ )
+		{
+			x_step = in[w].x[v];
+			out[w].x[v] = x_step * factor;
+		}
+	}
+}
+
+Framebuffer::tilesize GlideFramebuffer::tilesizeTableFalcon40Scaled[Framebuffer::MaxTiles] =
+{
+	{   0, {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,0,0}},
+	{   0, {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,0,0}},
+	{   0, {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,0,0}},
+	{   0, {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,0,0}},
+	{   0, {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,0,0}},
+	{   0, {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,0,0}},
+	{   0, {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,0,0}},
+	{   0, {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,0,0}},
+	{   0, {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,0,0}},
+	{   0, {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,0,0}},
+	{   0, {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,0,0}}
 };
 
 GlideFramebuffer::GlideFramebuffer()
@@ -65,17 +138,45 @@ void GlideFramebuffer::initialise(BufferStruct* framebuffer, BufferStruct* texbu
 	m_grLfbLockWriteMode[4] = GR_LFBWRITEMODE_UNUSED;
 	m_grLfbLockWriteMode[5] = GR_LFBWRITEMODE_UNUSED;
 	GlideApplication::Type application = s_GlideApplication.GetType();
-	if (application == GlideApplication::Carmageddon && Glide.WindowWidth == 640 && Glide.WindowHeight == 480)
+	if (application == GlideApplication::Falcon40 && Glide.WindowWidth == 640)
 	{
-		initialise_buffers( framebuffer, texbuffer,
-		                    Glide.WindowWidth, Glide.WindowHeight,
-		                    tilesize_table_carmageddon, InternalConfig.EXT_Client_Storage);
+		initialise_buffers(framebuffer, texbuffer,
+		                   Glide.WindowWidth, Glide.WindowHeight,
+		                   tilesizeTableFalcon40_640);
+	}
+	else if (application == GlideApplication::Falcon40 && Glide.WindowWidth == 800)
+	{
+		initialise_buffers(framebuffer, texbuffer,
+		                   Glide.WindowWidth, Glide.WindowHeight,
+		                   tilesizeTableFalcon40_800);
+	}
+	else if (application == GlideApplication::Falcon40 && Glide.WindowWidth == 1280)
+	{
+		scaleTilesizeTable(tilesizeTableFalcon40_640,
+		                   tilesizeTableFalcon40Scaled,
+		                   2);
+		initialise_buffers(framebuffer, texbuffer,
+		                   Glide.WindowWidth, Glide.WindowHeight,
+		                   tilesizeTableFalcon40Scaled);
+	}
+	else if (application == GlideApplication::Falcon40 && Glide.WindowWidth == 1600)
+	{
+		scaleTilesizeTable(tilesizeTableFalcon40_800,
+		                   tilesizeTableFalcon40Scaled,
+		                   2);
+		initialise_buffers(framebuffer, texbuffer,
+		                   Glide.WindowWidth, Glide.WindowHeight,
+		                   tilesizeTableFalcon40Scaled);
+	}
+	else if (application == GlideApplication::Carmageddon && Glide.WindowWidth == 640 && Glide.WindowHeight == 480)
+	{
+		initialise_buffers(framebuffer, texbuffer,
+		                   Glide.WindowWidth, Glide.WindowHeight,
+		                   tilesize_table_carmageddon);
 	}
 	else
 	{
-		initialise_buffers( framebuffer, texbuffer,
-		                    Glide.WindowWidth, Glide.WindowHeight,
-		                    128, 128, InternalConfig.EXT_Client_Storage);
+		initialise_buffers(framebuffer, texbuffer, Glide.WindowWidth, Glide.WindowHeight, 128, 128);
 	}
 	framebuffer->WriteMode = GR_LFBWRITEMODE_UNUSED;
 	texbuffer->WriteMode = GR_LFBWRITEMODE_UNUSED;
@@ -127,7 +228,7 @@ void GlideFramebuffer::OnBufferLockStartWrite(GrLock_t dwType, GrBuffer_t dwBuff
 	if (m_chromakeyvalue_changed && m_framebuffer->PixelPipeline)
 	{
 		// Apply changes to the frame buffer
-		m_ChromaKey = m_chromakeyvalue_new;
+		SetChromaKeyValue(m_chromakeyvalue_new);
 		m_chromakeyvalue_changed = false;
 		m_must_clear_buffer = true;
 		begin_write();
@@ -233,7 +334,7 @@ void GlideFramebuffer::OnClipWindow()
 		// @todo: Think this is obsolete as the case is catched by OnChromaKeyValueChanged()
 		if (m_chromakeyvalue_changed)
 		{
-			m_ChromaKey = m_chromakeyvalue_new;
+			SetChromaKeyValue(m_chromakeyvalue_new);
 			m_chromakeyvalue_changed = false;
 			// Fill the framebuffer with the new chromakey value
 			m_must_clear_buffer = true;
@@ -279,7 +380,7 @@ void GlideFramebuffer::OnBeforeBufferClear()
 #endif
 				m_must_write = true;
 			}
-			else if (m_framebuffer->Address[Glide.WindowTotalPixels >> 1] == m_ChromaKey)
+			else if (m_framebuffer->Address[Glide.WindowTotalPixels >> 1] == GetChromaKeyValue())
 			{
 				// In Carmageddon, an opaque background is written to the frame buffer
 				// as the background for the Car Damage screen. By peeking just one pixel
@@ -354,7 +455,7 @@ void GlideFramebuffer::OnRenderDrawTriangles()
 	{
 		if (m_chromakeyvalue_changed && m_framebuffer->PixelPipeline)
 		{
-			m_ChromaKey = m_chromakeyvalue_new;
+			SetChromaKeyValue(m_chromakeyvalue_new);
 			m_chromakeyvalue_changed = false;
 			// Fill the framebuffer with the new chromakey value
 			m_must_clear_buffer = true;
@@ -473,7 +574,7 @@ void GlideFramebuffer::CopyFrameBuffer(FxU16* targetbuffer)
 		GlideMsg( "GlideFrameBuffer::CopyFrameBuffer( 0x%x)\n", targetbuffer);
 	#endif
 
-	FxU16 chromakey = m_ChromaKey;
+	FxU16 chromakey = GetChromaKeyValue();
 	FxU16* framebuffer = m_framebuffer->Address;
 	FxU32 count = m_width * m_height;
 	for (FxU16* end = framebuffer + count; framebuffer < end; framebuffer++, targetbuffer++)
@@ -506,7 +607,7 @@ void GlideFramebuffer::OnChromaKeyValueChanged()
 	#endif
 
 	FxU16 chromakeyvalue = GetChromaKeyValue16(Glide.State.ChromakeyValue);
-	m_chromakeyvalue_changed = m_ChromaKey != chromakeyvalue;
+	m_chromakeyvalue_changed = GetChromaKeyValue() != chromakeyvalue;
 	m_chromakeyvalue_new = chromakeyvalue;
 	if (m_must_write)
 	{
@@ -514,7 +615,7 @@ void GlideFramebuffer::OnChromaKeyValueChanged()
 		{
 			// Flush the current contents of the framebuffer
 			WriteFrameBuffer(m_framebuffer->PixelPipeline);
-			m_ChromaKey = m_chromakeyvalue_new;
+			SetChromaKeyValue(m_chromakeyvalue_new);
 			m_chromakeyvalue_changed = false;
 			// Fill the framebuffer with the new chromakey value
 			m_must_clear_buffer = true;
