@@ -18,8 +18,8 @@ public:
 	static const int MaxTiles = 12;
 	struct tilesize {GLint y; GLint x[MaxTiles];};
 public:
-	bool initialise_buffers(BufferStruct* framebuffer, BufferStruct* texbuffer, FxU32 width, FxU32 height, const tilesize* tilesizetable, bool use_client_storage);
-	bool initialise_buffers(BufferStruct* framebuffer, BufferStruct* texbuffer, FxU32 width, FxU32 height, FxU32 x_tile, FxU32 y_tile, bool use_client_storage);
+	bool initialise_buffers(BufferStruct* framebuffer, BufferStruct* texbuffer, FxU32 width, FxU32 height, const tilesize* tilesizetable);
+	bool initialise_buffers(BufferStruct* framebuffer, BufferStruct* texbuffer, FxU32 width, FxU32 height, FxU32 x_tile, FxU32 y_tile);
 	void free_buffers();
 	void initialise_format(GrLfbWriteMode_t format);
 	bool begin_write();
@@ -27,6 +27,18 @@ public:
 	bool end_write(FxU32 alpha);
 	bool end_write(FxU32 alpha, GLfloat depth, bool pixelpipeline);
 	bool end_write_opaque();
+	inline FxU16 GetChromaKeyValue() {return m_ChromaKey.Scalar;};
+	inline void SetChromaKeyValue(FxU16 chromakey)
+	{
+#ifdef __ALTIVEC__
+		for(int i = 0; i < 8; i++)
+		{
+			(&m_ChromaKey.Scalar)[i] = chromakey;
+		}
+#else
+		m_ChromaKey.Scalar = chromakey;
+#endif
+	}
 protected:
 	void Clear();
 	bool draw(const tilesize* tilesizetable, bool pixelpipeline);
@@ -34,22 +46,28 @@ protected:
 	int buildVertexArrays(const tilesize* tilesizetable, int vertexarrayindex);
 	void set_gl_state(bool pixelpipeline);
 	void restore_gl_state(bool pixelpipeline);
-	inline bool createTextureData(FxU32* texbuffer, FxU32 x, FxU32 y, FxU32 x_step, FxU32 y_step);
-	inline bool Convert565Kto8888(FxU16* buffer1, FxU32* buffer2, register FxU32 width, register FxU32 height, register FxU32 stride);
+	enum TileUpdateState
+	{
+		TileUpdateState_TileEmpty = false,
+		TileUpdateState_TileDownloadToGPU = 1, // true,
+		TileUpdateState_TileDrawOnly = -1 // -true
+	};
+	static const int m_tileCount = MaxTiles * MaxTiles;
+	GLuint m_textureNames[m_tileCount];
+	inline TileUpdateState createTextureData(FxU32* texbuffer, FxU32 x, FxU32 y, FxU32 x_step, FxU32 y_step, int checksumIndex);
+	inline TileUpdateState Convert565Kto8888(FxU16* buffer1, FxU32* buffer2, register FxU32 width, register FxU32 height, register FxU32 stride);
 #ifdef __ALTIVEC__
-	inline bool Convert565Kto8888_AV(FxU16* buffer1, FxU32* buffer2, register FxU32 width, register FxU32 height, register FxU32 stride);
+	inline TileUpdateState Convert565Kto8888_AV(FxU16* buffer1, FxU32* buffer2, register FxU32 width, register FxU32 height, register FxU32 stride, int checksumIndex);
+	vector unsigned long m_tileChecksums[m_tileCount];
 #endif
-	inline bool Convert1555Kto8888(FxU16* buffer1, register FxU32* buffer2, FxU32 register width, register FxU32 height, register FxU32 stride);
-	inline bool ConvertARGB8888Kto8888(FxU32* buffer1, register FxU32* buffer2, FxU32 register width, register FxU32 height, register FxU32 stride);
-	static const int m_max_client_storage_textures = MaxTiles * MaxTiles;
-	GLuint m_tex_name[m_max_client_storage_textures];
+	inline TileUpdateState Convert1555Kto8888(FxU16* buffer1, register FxU32* buffer2, FxU32 register width, register FxU32 height, register FxU32 stride);
+	inline TileUpdateState ConvertARGB8888Kto8888(FxU32* buffer1, register FxU32* buffer2, FxU32 register width, register FxU32 height, register FxU32 stride);
 	bool m_use_client_storage;
 	bool m_must_clear_buffer;
 	GrOriginLocation_t m_origin;
 	GLint m_glInternalFormat;
 	GLint m_glFormat;
 	GLint m_glType;
-	FxU16 m_ChromaKey;
 	bool m_format_valid;
 	BufferStruct* m_framebuffer;
 	BufferStruct* m_texbuffer;
@@ -66,8 +84,22 @@ protected:
 	int m_customtilesizesCount;
 	int m_customtilesizesVertexArrayIndex;
 	GLfloat m_glDepth;
-	FxU32 m_glAlpha;
+	union 
+	{
+		FxU32 Scalar;
+#ifdef __ALTIVEC__
+	vector unsigned long Vector;
+#endif
+	} m_glAlpha;
 	// Pixelpipeline
 	bool m_bRestoreColorCombine;
 	bool m_bRestoreAlphaCombine;
+private:
+	union 
+	{
+		FxU16 Scalar;
+#ifdef __ALTIVEC__
+	vector bool short Vector;
+#endif
+	} m_ChromaKey;
 };
