@@ -32,6 +32,7 @@ bool s_bUpdateColorInvertState = false;
 bool s_bUpdateAlphaInvertState = false;
 bool s_bUpdateConstantColorValueState = false;
 bool s_bUpdateConstantColorValue4State = false;
+//bool s_bUpdateClipVerticesState = false;
 
 bool s_bForceChromaKeyAndAlphaStateUpdate = false;
 
@@ -1584,7 +1585,12 @@ void SetClipVerticesState_Update(bool clip_vertices)
 	OpenGL.ClipVerticesEnabledState = clip_vertices;
 	if (InternalConfig.EXT_clip_volume_hint)
 	{
-		RenderDrawTriangles();
+		// If clipping is about to be turned off we have to render
+		// any triangles to be rendered with clipping turned on
+		if (!OpenGL.ClipVerticesEnabledState)
+		{
+			RenderDrawTriangles();
+		}
 		glHint(GL_CLIP_VOLUME_CLIPPING_HINT_EXT, clip_vertices ? GL_DONT_CARE : GL_FASTEST);
 #ifdef OPENGL_DEBUG
 		GlideMsg("OpenGL.ClipVerticesEnabledState = %s\n", clip_vertices ? "GL_DONT_CARE" : "GL_FASTEST");
