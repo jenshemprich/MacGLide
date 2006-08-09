@@ -33,7 +33,7 @@ Descent 1 & 2:          Playable, but there are issues with switching from cockp
                         behind the cockpit becomes blank (to resolve this you can just switch
                         the view to rear and back)
                         
-Descent 3 Demo:		Works fine, with great graphics. But I have just the demo, and no
+Descent 3 Demo:	        Works fine, with great graphics. But I have just the demo, and no
                         twin-stick, so I just gave it a quick try.
                         
 Deus Ex:                Works fine except the sunglasses of some characters are sometimes 
@@ -60,7 +60,7 @@ Rune Demo:              The Demo seems to work fine.
 Tomb Raider 1 (Gold):   Works fine. Please note, that the In-Game menu has a black background,
                         except for 640x480, where you can see the dimmed paused game.
                         I believe this is actually a game feature, so don't blame me without
-                        screenshots made with 3dfx hardware.
+                        screenshots made with real 3Dfx hardware.
 
 Tomb Raider 2 (Gold):   Works fine even with movies enabled with Version TR2 1.03. Earlier
                         versions of TR2 may not display everything as expected.
@@ -74,22 +74,22 @@ Games with issues:
 
 Diablo 2:               In the video driver setup dialog, the 3dfx/Glide options is greyed out
                         and can't be selected. Probably needs 3DfxGlideLib3.x to run properly
-                        in 3dfx mode. However, there's a MacOS X patch available.
+                        in 3Dfx mode. However, there's a MacOS X patch available.
                         
-Driver 3dfx:            The main menu screen is missing. Besides that, the game doesn't run
-                        in the MaxOS X classic environment (even with software rendering).
+Driver 3dfx:            The game doesn't run at all in the MacOS X classic environment.
 
 F-18 Korea:             Hardly playable. Although the textures look correct now, there are
                         severe screen update problems in cockpit mode.
 
-Waterrace:              Needs 3DfxGlideLib3.x to run properly in 3dfx mode.
+Waterrace:              Needs 3DfxGlideLib3.x to run properly in 3Dfx mode.
 
 
 In general, MacGLide works best when used in the MacOS X Classic environment. In this case
 it can use the MacOS X OpenGL driver to render better quality images, and offers a lot more
 features (like anisotropic filtering, Full Scene Antialiasing, etc.).
 In MacOS 9, the performance is a little bit better, but the rendering quality is not as good
-as in the Classic environment.
+as in the Classic environment. There are also problems with loosing textures, and objects are
+rendered white after a while (depending on the game and probably the graphics card).
 
 
 Tested systems on MacOS X:
@@ -98,29 +98,35 @@ MacGLide runs on any system with an OpenGL capable graphics card.
 
 So far, I've tested MacGLide myself with the following cards:
 
-- NVidia GForce 2MX
-- NVidia 4MX
+- NVidia GeForce 2MX
+- NVidia Geforce 4MX
 - ATI Radeon 7500
 - ATI Radeon 9000
 - ATI Mobility Radeon 9200
 
-With these cards, all supported games work as described above.
+Reports from other users include:
+
+- NVidia GeForce 4600
+- ATI Radeon 9600XT
+- ATI Radeon 9800XT
+
 But other cards will likely work without problems, too.
 
 
-Same systems with MacOS 9.22:
+Systems with MacOS 9.22:
 
 On MacOS 9, MacGLide doesn't run very well. The development of MacGLide
 is focussed on features available through the Classic environemnt.
 As a result, MacOS9 users have to live with the following inconveniences:
 
 - Fog is missing
-- Unreal doesn't work with mipmaps enabled.
-- In Carmageddon, textured objects loose their texture adn become white shaded.
+- In Carmageddon, textured objects loose their texture and are rendered white.
 - The MacOS 9.22 OpenGL drivers doesn't support Antialiasing.
-- Chromakeying mght not work (probably caused by non-working alpha test).
+- Chromakeying might not work (probably caused by non-working alpha test).
+- The alhpatest causes the transparent parts of the cockpit in Descent 1 & 2
+  to be rendered opaque, resulting in the game hardly playable in cockpit mode.
 
-If you still want to play your games on MacOS 9.22, here's some problems
+If you still want to play your games on MacOS 9.22, here are some more problems
 I have encountered on my machines:
 
 NVidia GForce 2MX OpenGL 1.2.2 (MacOS 9.22):
@@ -141,8 +147,9 @@ ATI Rage 128 OpenGL Engine Version 1.1.ATI-5.99 (MacOS 9.22):
 - Unreal looks bad when mipmapping is enabled.
 
 - In Myth, the bounding rectangle of most objects in the game ise drawn with the wrong colors
-  (seems to be a problem with the Alpha test not working)
 
-If you have a graphic card not mentioned here, please let me know your experiences.
+Besides the problems listed above, your game might or might no work perfectly under OS9. But
+if you got it working perfectly, let me know. However, the image quality is far better with OSX,
+so you should really prefer the Classic environment.
 
 Regards, Jens
