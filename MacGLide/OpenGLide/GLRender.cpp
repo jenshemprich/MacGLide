@@ -599,8 +599,20 @@ void RenderDrawTriangles_impl( void )
 #endif
 
 	OGLRender.NumberOfTriangles = 0;
+	// Render the front buffer after each triangle sequence
+	// (However, rendering each triangle seperately would be more correct)
+	if (Glide.State.RenderBuffer == GR_BUFFER_FRONTBUFFER)
+	{
+		glFlush();
+	}
 	s_Framebuffer.SetRenderBufferChanged();
-  
+	// Clipping is turned off here per default to save the state-change call
+	// for unclipped triangles. Usally this never triggers, so it's called
+	// once per triangle sequence.
+	// This allows for one call per triangle sequence + one call per clipped
+	//  triangle instead of one call for any (even unclipped) triangle
+	SetClipVerticesState(false);
+
 	VERIFY_ACTIVE_TEXTURE_UNIT(OpenGL.ColorAlphaUnit1);
 }
 

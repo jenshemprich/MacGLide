@@ -13,6 +13,9 @@
 #include "GLRender.h"
 #include "GLRenderUpdateState.h"
 
+//#define RENDER_FRONTBUFFER_IMMMEDIATE if (Glide.State.RenderBuffer == GR_BUFFER_FRONTBUFFER){RenderDrawTriangles();glFlush();}
+#define RENDER_FRONTBUFFER_IMMMEDIATE
+
 //*************************************************
 //* Draws a Triangle on the screen
 //*************************************************
@@ -23,15 +26,9 @@ grDrawTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c )
 	GlideMsg( "grDrawTriangle( ---, ---, --- )\n" );
 #endif
 
-	SetClipVerticesState(false);
-	
+//	SetClipVerticesState(false);
 	RenderAddTriangle( a, b, c, true );
-
-	if ( Glide.State.RenderBuffer == GR_BUFFER_FRONTBUFFER )
-	{
-		RenderDrawTriangles( );
-		glFlush( );
-	}
+	RENDER_FRONTBUFFER_IMMMEDIATE
 }
 
 //*************************************************
@@ -44,17 +41,12 @@ grDrawPlanarPolygonVertexList( int nVertices, const GrVertex vlist[] )
 	GlideMsg("grDrawPlanarPolygonVertexList( %d, --- )\n", nVertices );
 #endif
 
-	SetClipVerticesState(false);
-
+//	SetClipVerticesState(false);
 	for ( int i = 2; i < nVertices; i++ )
 	{
 		RenderAddTriangle( &vlist[ 0 ], &vlist[ i - 1 ], &vlist[ i ], true );
 	}
-	if ( Glide.State.RenderBuffer == GR_BUFFER_FRONTBUFFER )
-	{
-		RenderDrawTriangles( );
-		glFlush( );
-	}
+	RENDER_FRONTBUFFER_IMMMEDIATE
 }
 
 //*************************************************
@@ -67,9 +59,9 @@ grDrawLine( const GrVertex *a, const GrVertex *b )
 	GlideMsg("grDrawLine( ---, --- )\n");
 #endif
 
-	SetClipVerticesState(false);
-    
+//	SetClipVerticesState(false);
 	RenderAddLine( a, b, true );
+	RENDER_FRONTBUFFER_IMMMEDIATE
 }
 
 //*************************************************
@@ -82,9 +74,9 @@ grDrawPoint( const GrVertex *a )
 	GlideMsg( "grDrawPoint( --- )\n" );
 #endif
 
-	SetClipVerticesState(false);
-
+//	SetClipVerticesState(false);
 	RenderAddPoint( a, true );
+	RENDER_FRONTBUFFER_IMMMEDIATE
 }
 
 //*************************************************
@@ -97,8 +89,7 @@ grDrawPolygon( int nverts, const int ilist[], const GrVertex vlist[] )
 	GlideMsg( "grDrawPolygon( %d, ---, --- )\n" );
 #endif
 
-	SetClipVerticesState(false);
-
+//	SetClipVerticesState(false);
 	for ( int i = 2; i < nverts; i++ )
 	{
 		RenderAddTriangle( &vlist[ ilist[ 0 ] ], 
@@ -106,12 +97,7 @@ grDrawPolygon( int nverts, const int ilist[], const GrVertex vlist[] )
 		                   &vlist[ ilist[ i ] ],
 		                   true );
 	}
-
-	if ( Glide.State.RenderBuffer == GR_BUFFER_FRONTBUFFER )
-	{
-		RenderDrawTriangles( );
-		glFlush( );
-	}
+	RENDER_FRONTBUFFER_IMMMEDIATE
 }
 
 //*************************************************
@@ -124,8 +110,7 @@ grDrawPlanarPolygon( int nverts, const int ilist[], const GrVertex vlist[] )
 	GlideMsg( "grDrawPlanarPolygon( %d, ---, --- )\n", nverts );
 #endif
 
-	SetClipVerticesState(false);
-
+//	SetClipVerticesState(false);
 	for ( int i = 2; i < nverts; i++ )
 	{
 		RenderAddTriangle( &vlist[ ilist[ 0 ] ], 
@@ -133,12 +118,7 @@ grDrawPlanarPolygon( int nverts, const int ilist[], const GrVertex vlist[] )
 		                   &vlist[ ilist[ i ] ],
 		                   true );
 	}
-
-	if ( Glide.State.RenderBuffer == GR_BUFFER_FRONTBUFFER )
-	{
-		RenderDrawTriangles( );
-		glFlush( );
-	}
+	RENDER_FRONTBUFFER_IMMMEDIATE
 }
 
 //*************************************************
@@ -151,8 +131,7 @@ grDrawPolygonVertexList( int nVertices, const GrVertex vlist[] )
   GlideMsg( "grDrawPolygonVertexList( %d, --- )\n", nVertices );
 #endif
 
-	SetClipVerticesState(false);
-
+//	SetClipVerticesState(false);
 	for ( int i = 2; i < nVertices; i++ )
 	{
 		RenderAddTriangle( &vlist[ 0 ],
@@ -160,11 +139,7 @@ grDrawPolygonVertexList( int nVertices, const GrVertex vlist[] )
 											&vlist[ i ],
 											true );
 	}
-	if ( Glide.State.RenderBuffer == GR_BUFFER_FRONTBUFFER )
-	{
-		RenderDrawTriangles( );
-		glFlush( );
-	}
+	RENDER_FRONTBUFFER_IMMMEDIATE
 }
 
 FX_ENTRY void FX_CALL
@@ -176,14 +151,8 @@ guAADrawTriangleWithClip( const GrVertex *a, const GrVertex *b,
 #endif
 
 	SetClipVerticesState(true);
-
 	RenderAddTriangle( a, b, c, false );
-
-	if ( Glide.State.RenderBuffer == GR_BUFFER_FRONTBUFFER )
-	{
-		RenderDrawTriangles( );
-		glFlush( );
-	}
+	RENDER_FRONTBUFFER_IMMMEDIATE
 }
 
 FX_ENTRY void FX_CALL
@@ -196,14 +165,8 @@ guDrawTriangleWithClip( const GrVertex *a,
 #endif
 
 	SetClipVerticesState(true);
-
 	RenderAddTriangle( a, b, c, false );
-
-	if ( Glide.State.RenderBuffer == GR_BUFFER_FRONTBUFFER )
-	{
-		RenderDrawTriangles( );
-		glFlush( );
-	}
+	RENDER_FRONTBUFFER_IMMMEDIATE
 }
 
 FX_ENTRY void FX_CALL
@@ -214,7 +177,6 @@ guDrawPolygonVertexListWithClip( int nVertices, const GrVertex vlist[] )
 #endif
 
 	SetClipVerticesState(true);
-
 	for ( int i = 2; i < nVertices; i++ )
 	{
 		RenderAddTriangle( &vlist[ 0 ], 
@@ -222,11 +184,7 @@ guDrawPolygonVertexListWithClip( int nVertices, const GrVertex vlist[] )
 											&vlist[ i ],
 											false );
 	}
-	if ( Glide.State.RenderBuffer == GR_BUFFER_FRONTBUFFER )
-	{
-		RenderDrawTriangles( );
-		glFlush( );
-	}
+	RENDER_FRONTBUFFER_IMMMEDIATE
 }
 
 FX_ENTRY void FX_CALL
@@ -236,69 +194,57 @@ grAADrawLine( const GrVertex *a, const GrVertex *b )
 	GlideMsg( "grAADrawLine( ---, --- )\n" );
 #endif
 
-	SetClipVerticesState(false);
-
-  RenderAddLine( a, b, true );
+//	SetClipVerticesState(false);
+	RenderAddLine( a, b, true );
+	RENDER_FRONTBUFFER_IMMMEDIATE
 }
 
 FX_ENTRY void FX_CALL
 grAADrawPoint(const GrVertex *a )
 {
 #ifdef OGL_CRITICAL
-  GlideMsg("grAADrawPoint( --- )\n");
+	GlideMsg("grAADrawPoint( --- )\n");
 #endif
 
-	SetClipVerticesState(false);
-
-  RenderAddPoint( a, true );
+//	SetClipVerticesState(false);
+	RenderAddPoint( a, true );
+	RENDER_FRONTBUFFER_IMMMEDIATE
 }
 
 FX_ENTRY void FX_CALL
 grAADrawPolygon( const int nverts, const int ilist[], const GrVertex vlist[] )
 {
 #ifdef OGL_CRITICAL
-  GlideMsg( "grAADrawPolygon( %d, ---, --- )\n", nverts );
+	GlideMsg( "grAADrawPolygon( %d, ---, --- )\n", nverts );
 #endif
 
-	SetClipVerticesState(false);
-
-  for ( int i = 2; i < nverts; i++ )
-  {
-    RenderAddTriangle( &vlist[ ilist[ 0 ] ],
-                       &vlist[ ilist[ i - 1 ] ],
-                       &vlist[ ilist[ i ] ],
-                       true );
-  }
-
-  if ( Glide.State.RenderBuffer == GR_BUFFER_FRONTBUFFER )
-  {
-    RenderDrawTriangles( );
-    glFlush( );
-  }
+//	SetClipVerticesState(false);
+	for ( int i = 2; i < nverts; i++ )
+	{
+		RenderAddTriangle( &vlist[ ilist[ 0 ] ],
+		                   &vlist[ ilist[ i - 1 ] ],
+		                   &vlist[ ilist[ i ] ],
+		                   true );
+	}
+	RENDER_FRONTBUFFER_IMMMEDIATE
 }
 
 FX_ENTRY void FX_CALL
 grAADrawPolygonVertexList( const int nverts, const GrVertex vlist[] )
 {
 #ifdef OGL_CRITICAL
-  GlideMsg( "grAADrawPolygonVertexList( %d, --- )\n", nverts );
+	GlideMsg( "grAADrawPolygonVertexList( %d, --- )\n", nverts );
 #endif
 
-	SetClipVerticesState(false);
-
-  for ( int i = 2; i < nverts; i++ )
-  {
-    RenderAddTriangle( &vlist[ 0 ],
-                       &vlist[ i - 1 ],
-                       &vlist[ i ],
-                       true );
-  }
-
-  if ( Glide.State.RenderBuffer == GR_BUFFER_FRONTBUFFER )
-  {
-    RenderDrawTriangles( );
-    glFlush( );
-  }
+//	SetClipVerticesState(false);
+	for ( int i = 2; i < nverts; i++ )
+	{
+		RenderAddTriangle( &vlist[ 0 ],
+		                   &vlist[ i - 1 ],
+		                   &vlist[ i ],
+		                   true );
+	}
+	RENDER_FRONTBUFFER_IMMMEDIATE
 }
 
 FX_ENTRY void FX_CALL
@@ -310,13 +256,7 @@ grAADrawTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c,
 	    ab_antialias, bc_antialias, ca_antialias );
 #endif
 
-	SetClipVerticesState(false);
-
-  RenderAddTriangle( a, b, c, true );
-
-	if ( Glide.State.RenderBuffer == GR_BUFFER_FRONTBUFFER )
-	{
-	    RenderDrawTriangles( );
-	    glFlush( );
-	}
+//	SetClipVerticesState(false);
+	RenderAddTriangle( a, b, c, true );
+	RENDER_FRONTBUFFER_IMMMEDIATE
 }

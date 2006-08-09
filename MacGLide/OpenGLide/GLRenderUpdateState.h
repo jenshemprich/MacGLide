@@ -22,6 +22,7 @@ extern bool s_bUpdateColorInvertState;
 extern bool s_bUpdateAlphaInvertState;
 extern bool s_bUpdateConstantColorValueState;
 extern bool s_bUpdateConstantColorValue4State;
+//extern bool s_bUpdateClipVerticesState;
 
 extern bool s_bForceChromaKeyAndAlphaStateUpdate;
 
@@ -178,16 +179,21 @@ inline void SetConstantColorValue4State()
  s_bUpdateConstantColorValue4State = true;
 }
 
+//inline void SetClipVerticesState()
+//{
+// s_bUpdateClipVerticesState = true;
+//}
+
 // Also called from FrameBuffer class
 extern void SetClipVerticesState_Update(bool clip_vertices);
 
 // Needs to be called before adding a triangle, line or point
 inline void SetClipVerticesState(bool clip)
 {
-	bool clip_vertices = clip || OpenGL.Clipping;
+	const bool clip_vertices = clip || OpenGL.Clipping;
 	// Triggers very seldomly (because grDrawXXXWithClip() is used very seldom)
 	// As a result this method is designed for cause the least cost when not being triggered
-	if (clip_vertices !=  OpenGL.ClipVerticesEnabledState)
+	if (clip_vertices != OpenGL.ClipVerticesEnabledState)
 	{
 		SetClipVerticesState_Update(clip_vertices);
 	}
