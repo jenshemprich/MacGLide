@@ -83,67 +83,58 @@ stExtensionSupport glNecessaryExt[] =
 
 // check to see if Extension is Supported
 // code by Mark J. Kilgard of NVidia modified by Fabio Barros
-bool OGLIsExtensionSupported( const char * extension )
+bool OGLIsExtensionSupported(const char* extensions, const char* extension)
 {
-    const char  * extensions;
-    const char  * start;
-    char        * where, 
-                * terminator;
-
-    where = (char *) strchr( extension, ' ' );
-    if ( where || ( *extension == '\0' ) )
-    {
-        return false;
-    }
-
-    extensions = (char*)glGetString( GL_EXTENSIONS );
-
-    start = extensions;
-
-    if ( *start == '\0' )
-    {
-        GlideError( "No OpenGL extension supported, using all emulated.\n" );
-        return false;
-    }
-
-    while ( true )
-    {
-        where = (char *)strstr( start, extension );
-        if ( !where )
-        {
-            break;
-        }
-        terminator = where + strlen( extension );
-        if ( ( where == start ) || ( *( where - 1 ) == ' ' ) )
-        {
-            if ( ( *terminator == ' ' ) || ( *terminator == '\0' ) )
-            {
-                return true;
-            }
-        }
-        start = terminator;
-    }
-
+	char* where = (char *) strchr( extension, ' ' );
+	if ( where || ( *extension == '\0' ) )
+	{
+		return false;
+	}
+	const char* start = extensions;
+	if ( *start == '\0' )
+	{
+		GlideError( "No OpenGL extension supported, using all emulated.\n" );
+		return false;
+	}
+	
+	while ( true )
+	{
+		where = (char *)strstr( start, extension );
+		if ( !where )
+		{
+			break;
+		}
+		const char* terminator = where + strlen( extension );
+		if ( ( where == start ) || ( *( where - 1 ) == ' ' ) )
+		{
+		    if ( ( *terminator == ' ' ) || ( *terminator == '\0' ) )
+			{
+				return true;
+			}
+		}
+		start = terminator;
+	}
+	
 	// fix for Rage 128 OpenGL Engine 1.1.ATI-5.99
 	// (See apple techote TN2014)
 	if (strcmp(extension, "GL_APPLE_packed_pixels") == 0)
 	{
-		return OGLIsExtensionSupported("GL_APPLE_packed_pixel");
+		return OGLIsExtensionSupported(extensions, "GL_APPLE_packed_pixel");
 	}
 	// fix for Rage 128 OpenGL Engine 1.1.ATI-5.99
 	// support for GL_EXT_texture_env_combine
 	else if (strcmp(extension, "GL_ARB_texture_env_combine") == 0)
 	{
-		return OGLIsExtensionSupported("GL_EXT_texture_env_combine");	
+		return OGLIsExtensionSupported(extensions, "GL_EXT_texture_env_combine");	
 	}
 	// also support the older GL_EXT_texture_env_add
 	else if (strcmp(extension, "GL_ARB_texture_env_add") == 0)
 	{
-		return OGLIsExtensionSupported("GL_EXT_texture_env_add");	
+		return OGLIsExtensionSupported(extensions, "GL_EXT_texture_env_add");	
 	}
 	else
 	{
-	    return false;
+		return false;
 	}
 }
 
@@ -154,100 +145,100 @@ void ValidateUserConfig( void )
 	// Copy config
 	InternalConfig = UserConfig;
 
-  GlideMsg( OGL_LOG_SEPARATE );
-  GlideMsg( "** OpenGL Information **\n" );
-  const unsigned char* renderer = glGetString( GL_RENDERER );
-  if (renderer == NULL || strlen(reinterpret_cast<const char*>(renderer)) == 0)
-  {
+	GlideMsg( OGL_LOG_SEPARATE );
+	GlideMsg( "** OpenGL Information **\n" );
+	const unsigned char* renderer = glGetString( GL_RENDERER );
+	if (renderer == NULL || strlen(reinterpret_cast<const char*>(renderer)) == 0)
+	{
 		GlideError("The OpenGL driver failed to report its version/vendor/renderer.\nThis may be caused by beta drivers located in thge game directory.\nThese drivers should be deleted.\n");
-  }
-  GlideMsg( OGL_LOG_SEPARATE );
-  GlideMsg( "Vendor:      %s\n", glGetString( GL_VENDOR ) );
-  GlideMsg( "Renderer:    %s\n", glGetString( GL_RENDERER ) );
-  GlideMsg( "Version:     %s\n", glGetString( GL_VERSION ) );
+	}
+	GlideMsg( OGL_LOG_SEPARATE );
+	GlideMsg( "Vendor:      %s\n", glGetString( GL_VENDOR ) );
+	GlideMsg( "Renderer:    %s\n", glGetString( GL_RENDERER ) );
+	GlideMsg( "Version:     %s\n", glGetString( GL_VERSION ) );
 	// Extension string is too long for the temp buffer, so we don't use GlideMsg()
-  UserConfig.write_log("Available Extensions: ");
-	UserConfig.write_log(reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)));
+	UserConfig.write_log("Available Extensions: ");
+	const char* extensions = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
+	UserConfig.write_log(extensions);
 	UserConfig.write_log("\n");
 
-  GlideMsg( OGL_LOG_SEPARATE );
-  GlideMsg( "OpenGL Extensions:\n" );
-  GlideMsg( OGL_LOG_SEPARATE );
-  int index = 0;
-  while ( strlen( glNecessaryExt[ index ].name ) > 0 )
-  {
-    *glNecessaryExt[ index ].internalVar = false;
-    switch ( glNecessaryExt[ index ].type )
-    {
-    case OGL_EXT_REQUIRED:
-      if ( ! OGLIsExtensionSupported( glNecessaryExt[ index ].name ) )
-      {
+	GlideMsg( OGL_LOG_SEPARATE );
+	GlideMsg( "OpenGL Extensions:\n" );
+	GlideMsg( OGL_LOG_SEPARATE );
+	int index = 0;
+	while ( strlen( glNecessaryExt[ index ].name ) > 0 )
+	{
+		*glNecessaryExt[ index ].internalVar = false;
+		switch ( glNecessaryExt[ index ].type )
+		{
+		case OGL_EXT_REQUIRED:
+			if (!OGLIsExtensionSupported(extensions, glNecessaryExt[index].name ))
+			{
 				char buffer[StringBufferSize];
 				sprintf(buffer, "Severe Problem: OpenGL %s extension is required for %s!", 
 				        glNecessaryExt[ index ].name, OpenGLideProductName);
 				GlideError(buffer);
-      }
-      break;
-
-    case OGL_EXT_DESIRED:
-      if ( ! OGLIsExtensionSupported( glNecessaryExt[ index ].name ) )
-      {
+			}
+			break;
+		case OGL_EXT_DESIRED:
+			if (!OGLIsExtensionSupported(extensions, glNecessaryExt[index].name))
+			{
 				char buffer[StringBufferSize];
-        sprintf(buffer, "Note: OpenGL %s extension is not supported, emulating behavior.\n", 
-                glNecessaryExt[ index ].name );
-        GlideMsg(buffer);
-      }
-      else
-      {
-        if ( *glNecessaryExt[ index ].userVar )
-        {
-            *glNecessaryExt[ index ].internalVar = true;
-            GlideMsg( "Extension %s is present and ENABLED\n", glNecessaryExt[ index ].name );
-        }
-        else
-        {
+				sprintf(buffer, "Note: OpenGL %s extension is not supported, emulating behavior.\n", 
+				        glNecessaryExt[ index ].name );
+				GlideMsg(buffer);
+			}
+			else
+			{
+				if ( *glNecessaryExt[ index ].userVar )
+				{
+					*glNecessaryExt[ index ].internalVar = true;
+					GlideMsg( "Extension %s is present and ENABLED\n", glNecessaryExt[ index ].name );
+				}
+				else
+				{
 					char buffer[StringBufferSize];
 					sprintf(buffer, "Note: OpenGL %s extension is supported but disabled by user\n", 
 					        glNecessaryExt[ index ].name );
 					GlideMsg(buffer);
-        }
-      }
-      break;
-
-    case OGL_EXT_UNUSED:
-      break;
-    }
-    ++index;
-  }
-  GlideMsg( OGL_LOG_SEPARATE );
-  GLExtensions( );
-  
- 	// Rendering quality seems to be better when this is left enabled for depth buffer size < 24 bits only
-	// (Try spinning around at the portal in the first level of Tomb Raider Gold)
-	GLint depthbufferbits;
-	glGetIntegerv(GL_DEPTH_BITS, &depthbufferbits);
-	glReportError();
-	if (depthbufferbits >= 24 && InternalConfig.PrecisionFix == 1)
-	{
-		GlideMsg("Actual number of depthbuffer bits is %d - precision fix can safely be disabled\n", depthbufferbits);
-		InternalConfig.PrecisionFix = 0;
+				}
+			}
+			break;
+		case OGL_EXT_UNUSED:
+			break;
+		}
+		++index;
 	}
+	GlideMsg( OGL_LOG_SEPARATE );
+	GLExtensions( );
 }
 
 void GLExtensions(void)
 {
 	glReportErrors("GLExtensions");
-	float one = 1.0f;
+	const float one = 1.0f;
 	
  	#ifdef OPENGLIDE_HOST_MAC
 		RunningInClassic = strstr(reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)), "GL_EXT_fog_coord") != NULL;
 	#endif
 
+	GlideMsg("OpenGL configuration:\n");
+	GlideMsg(OGL_LOG_SEPARATE);
+
  	// query the actual buffer size
  	GLint size;
 	glGetIntegerv(GL_DEPTH_BITS, &size);
+	glReportError();
 	GlideMsg("Depthbuffer size = %d\n", size);
-		if (UserConfig.GapFix & OpenGLideGapFixFlag_Enabled)
+ 	// Rendering quality seems to be better when this is left enabled for depth buffer size < 24 bits only
+	// (Try spinning around at the portal in the first level of Tomb Raider Gold)
+	const int disablePrecisionFixAtDepthSize = 24;
+	if (size >= disablePrecisionFixAtDepthSize && InternalConfig.PrecisionFix == 1)
+	{
+		GlideMsg("Actual number of depthbuffer bits is >= %d - precision fix can safely be disabled\n", disablePrecisionFixAtDepthSize, size);
+		InternalConfig.PrecisionFix = 0;
+	}
+	if (UserConfig.GapFix & OpenGLideGapFixFlag_Enabled)
 	{
 		glGetIntegerv(GL_STENCIL_BITS, &size);
 		GlideMsg("Stencilbuffer size = %d\n", size);
@@ -608,25 +599,22 @@ void GLExtensions(void)
 	if (InternalConfig.TextureSmoothing)
 	{
 		OpenGL.MinFilterMode = InternalConfig.Mipmapping ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
-    OpenGL.MagFilterMode = GL_LINEAR;
+		OpenGL.MagFilterMode = GL_LINEAR;
 	}
 
 	if (InternalConfig.EXT_clip_volume_hint)
 	{
-		GlideMsg("Using clip volume hint\n");
 		glHint(GL_CLIP_VOLUME_CLIPPING_HINT_EXT, GL_FASTEST);
 		OpenGL.ClipVerticesEnabledState = false;
 	}
 
 	if (InternalConfig.APPLE_transform_hint)
 	{
-		GlideMsg("Using apple transform hint\n");
 		glHint(GL_TRANSFORM_HINT_APPLE, GL_NICEST);
 	}
 
 	if (InternalConfig.EXT_SGIS_generate_mipmap)
 	{
-		GlideMsg("Using SGIS mipmap generation hint\n");
 		glHint(GL_GENERATE_MIPMAP_HINT_SGIS, GL_NICEST);
 	}
 
