@@ -16,6 +16,6 @@
 void ValidateUserConfig();
 void GLExtensions( );
 void GLExtensionsCleanup();
-bool OGLIsExtensionSupported(const char* extension);
+bool OGLIsExtensionSupported(const char* extensions, const char* extension);
 
 #endif
