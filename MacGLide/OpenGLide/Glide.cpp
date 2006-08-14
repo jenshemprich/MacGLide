@@ -28,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
 
-const char* OpenGLideVersion = "0.13a2";
+const char* OpenGLideVersion = "0.13a3";
 
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -147,17 +147,17 @@ OSErr InitMainVariables(void)
 			if (texturesmoothing)
 			{
 				UserConfig.TextureSmoothing = true;
-				GlideMsg("TextureSmoothing enabled\n");
+				GlideMsg("- TextureSmoothing\n");
 			}
 			if (subtextures)
 			{
 				UserConfig.GenerateSubTextures = 8;	// Good for TR1 and TR2
-				GlideMsg("Subtexture generation enabled\n");
+				GlideMsg("- Subtexture generation\n");
 			}
 			if (gapfix)
 			{
 				UserConfig.GapFix = static_cast<OpenGLideGapFixFlags>(UserConfig.GapFix | (OpenGLideGapFixFlag_Enabled));
-				GlideMsg("GapFix enabled\n");
+				GlideMsg("- GapFix\n");
 			}
 		}
 	}
@@ -178,13 +178,13 @@ bool InitWindow(FxU32 hwnd)
 	ValidateUserConfig();
 
 	GlideMsg( OGL_LOG_SEPARATE );
-	GlideMsg( "Configuration:\n");
+	GlideMsg( "3Dfx/Glide Configuration:\n");
 	GlideMsg( OGL_LOG_SEPARATE );
 	char sEnabled[] = "enabled";
 	char sDisabled[] = "disabled";
 	const char* boardnames[4] = {"Voodoo", "Voodoo Rush", "AT3D", "Voodoo 2"};
 	GlideMsg( "Board type = %s\n", boardnames[InternalConfig.BoardType]);
-	GlideMsg( "Number of Texture Units = %d\n", InternalConfig.GlideTextureUnits );
+	GlideMsg( "Number of emulated 3Dfx/Glide Texture Units = %d\n", InternalConfig.GlideTextureUnits );
 	GlideMsg( "Texture Memory Size = %d Mb\n", InternalConfig.TextureMemorySize );
 	GlideMsg( "Frame Buffer Memory Size = %d Mb\n", InternalConfig.FrameBufferMemorySize );
 	GlideMsg( "Display method = %d\n", InternalConfig.DisplayMode);
@@ -217,7 +217,7 @@ bool InitWindow(FxU32 hwnd)
 	GlideMsg("GapFix = %s\n", gapfix_enabled ? sEnabled : sDisabled);
 	if (gapfix_enabled)
 	{
-		GlideMsg(" Debug = %s\n", InternalConfig.GapFix & OpenGLideGapFixFlag_Debug ? sEnabled : sDisabled);
+		GlideMsg("                         Debug = %s\n", InternalConfig.GapFix & OpenGLideGapFixFlag_Debug ? sEnabled : sDisabled);
 		GlideMsg("              IncircleFilterOr = %s\n", InternalConfig.GapFix & OpenGLideGapFixFlag_IncircleOr ? sEnabled : sDisabled);
 		GlideMsg("             IncircleFilterAnd = %s\n", InternalConfig.GapFix & OpenGLideGapFixFlag_IncircleAnd ? sEnabled : sDisabled);
 		GlideMsg("    IncircleFilterSecondRadius = %s\n", InternalConfig.GapFix & OpenGLideGapFixFlag_IncircleSecondRadius ? sEnabled : sDisabled);
@@ -243,7 +243,7 @@ bool InitWindow(FxU32 hwnd)
 	GlideMsg("Generate subtextures = %s", InternalConfig.GenerateSubTextures ? sEnabled : sDisabled );
 	if (InternalConfig.GenerateSubTextures) GlideMsg(" (gridsize = %d)", InternalConfig.GenerateSubTextures);
 	GlideMsg("\n");
-	GlideMsg("Framebuffer overlays = %s\n", InternalConfig.EnableFrameBufferOverlays ? sEnabled : sDisabled );
+	GlideMsg("Framebuffer  overlays = %s\n", InternalConfig.EnableFrameBufferOverlays ? sEnabled : sDisabled );
 	GlideMsg("Framebuffer underlays = %s\n", InternalConfig.EnableFrameBufferUnderlays ? sEnabled : sDisabled );
 	if (InternalConfig.FramebufferIgnoreUnlock) GlideMsg( "Ignore buffer unlocks = %s\n", InternalConfig.FramebufferIgnoreUnlock ? sEnabled : sDisabled);
 	if (InternalConfig.PedanticFrameBufferEmulation) GlideMsg( "Pedantic Framebuffer emulation = %s\n", InternalConfig.PedanticFrameBufferEmulation ? sEnabled : sDisabled);
