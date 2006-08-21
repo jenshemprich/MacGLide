@@ -50,6 +50,15 @@ static TColorStruct     Local,
 #endif
 
 #ifdef OGL_DEBUG_OPENGL_COORDS
+	void GlideMsg(TVertexStruct* v)
+	{
+		GlideMsg("	glVertex(x=%g,y=%g,z=%g)", v->ax, v->ay, v->az);
+		GlideMsg("	glVertex(x=%g,y=%g,z=%g)", v->bx, v->by, v->bz);
+		GlideMsg("	glVertex(x=%g,y=%g,z=%g)", v->cx, v->cy, v->cz);
+	}
+#endif
+
+#ifdef OGL_DEBUG_OPENGL_COORDS
 	void GlideMsg(TVertexStruct* v, TTextureStruct* t)
 	{
 		GlideMsg("	glVertex(x=%g,y=%g,z=%g)", v->ax, v->ay, v->az);
@@ -1562,6 +1571,38 @@ void RenderAddTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c,
 		pV->cy = c->y;
 	}
 
+#ifdef OGL_DEBUG
+	DEBUG_MIN_MAX( pC->ar, OGLRender.MaxR, OGLRender.MinR );
+	DEBUG_MIN_MAX( pC->br, OGLRender.MaxR, OGLRender.MinR );
+	DEBUG_MIN_MAX( pC->cr, OGLRender.MaxR, OGLRender.MinR );
+	  
+	DEBUG_MIN_MAX( pC->ag, OGLRender.MaxG, OGLRender.MinG );
+	DEBUG_MIN_MAX( pC->bg, OGLRender.MaxG, OGLRender.MinG );
+	DEBUG_MIN_MAX( pC->cg, OGLRender.MaxG, OGLRender.MinG );
+	
+	DEBUG_MIN_MAX( pC->ab, OGLRender.MaxB, OGLRender.MinB );
+	DEBUG_MIN_MAX( pC->bb, OGLRender.MaxB, OGLRender.MinB );
+	DEBUG_MIN_MAX( pC->cb, OGLRender.MaxB, OGLRender.MinB );
+	
+	DEBUG_MIN_MAX( pC->aa, OGLRender.MaxA, OGLRender.MinA );
+	DEBUG_MIN_MAX( pC->ba, OGLRender.MaxA, OGLRender.MinA );
+	DEBUG_MIN_MAX( pC->ca, OGLRender.MaxA, OGLRender.MinA );
+	
+	DEBUG_MIN_MAX( pV->az, OGLRender.MaxZ, OGLRender.MinZ );
+	DEBUG_MIN_MAX( pV->bz, OGLRender.MaxZ, OGLRender.MinZ );
+	DEBUG_MIN_MAX( pV->cz, OGLRender.MaxZ, OGLRender.MinZ );
+	
+	DEBUG_MIN_MAX( pV->ax, OGLRender.MaxX, OGLRender.MinX );
+	DEBUG_MIN_MAX( pV->bx, OGLRender.MaxX, OGLRender.MinX );
+	DEBUG_MIN_MAX( pV->cx, OGLRender.MaxX, OGLRender.MinX );
+	
+	DEBUG_MIN_MAX( pV->ay, OGLRender.MaxY, OGLRender.MinY );
+	DEBUG_MIN_MAX( pV->by, OGLRender.MaxY, OGLRender.MinY );
+	DEBUG_MIN_MAX( pV->cy, OGLRender.MaxY, OGLRender.MinY );
+
+ 	OGLRender.FrameTriangles++;
+#endif
+
 	bool generate_subtextures = OpenGL.Texture;
 	if (OpenGL.Texture)
 	{
@@ -1608,20 +1649,40 @@ void RenderAddTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c,
 		pTS->aoow = atmuoow * maxoow;
 		pTS->boow = btmuoow * maxoow;
 		pTS->coow = ctmuoow * maxoow;
+
+#ifdef OGL_DEBUG
+		DEBUG_MIN_MAX( pTS->as, OGLRender.MaxS, OGLRender.MinS );
+		DEBUG_MIN_MAX( pTS->bs, OGLRender.MaxS, OGLRender.MinS );
+		DEBUG_MIN_MAX( pTS->cs, OGLRender.MaxS, OGLRender.MinS );
+		
+		DEBUG_MIN_MAX( pTS->at, OGLRender.MaxT, OGLRender.MinT );
+		DEBUG_MIN_MAX( pTS->bt, OGLRender.MaxT, OGLRender.MinT );
+		DEBUG_MIN_MAX( pTS->ct, OGLRender.MaxT, OGLRender.MinT );
+#endif
 		
 #ifdef OGL_DEBUG_GLIDE_COORDS
 		GlideMsg(a, maxoow);
 		GlideMsg(b, maxoow);
 		GlideMsg(c, maxoow);
 #endif
+#ifdef OGL_DEBUG_OPENGL_COORDS
+		GlideMsg(pV, pTS);
+#endif
 	}
-#ifdef OGL_DEBUG_GLIDE_COORDS
+#if defined(OGL_DEBUG_GLIDE_COORDS) || defined(OGL_DEBUG_OPENGL_COORDS)
 	else
 	{
+#ifdef OGL_DEBUG_GLIDE_COORDS
 		GlideMsg(a, 1.0f);
 		GlideMsg(b, 1.0f);
 		GlideMsg(c, 1.0f);
+#endif
+#ifdef OGL_DEBUG_OPENGL_COORDS
+	GlideMsg(pV);
+#endif
+#if defined(OGL_DEBUG_GLIDE_COORDS) || defined(OGL_DEBUG_OPENGL_COORDS)
 	}
+#endif
 #endif
 	
 	TFogStruct* pF = &OGLRender.TFog[TriangleIndex];
@@ -1654,52 +1715,6 @@ void RenderAddTriangle( const GrVertex *a, const GrVertex *b, const GrVertex *c,
 		DEBUG_MIN_MAX( pF->bf, OGLRender.MaxF, OGLRender.MinF );
 #endif
 	}
-
-#ifdef OGL_DEBUG
-	DEBUG_MIN_MAX( pC->ar, OGLRender.MaxR, OGLRender.MinR );
-	DEBUG_MIN_MAX( pC->br, OGLRender.MaxR, OGLRender.MinR );
-	DEBUG_MIN_MAX( pC->cr, OGLRender.MaxR, OGLRender.MinR );
-	  
-	DEBUG_MIN_MAX( pC->ag, OGLRender.MaxG, OGLRender.MinG );
-	DEBUG_MIN_MAX( pC->bg, OGLRender.MaxG, OGLRender.MinG );
-	DEBUG_MIN_MAX( pC->cg, OGLRender.MaxG, OGLRender.MinG );
-	
-	DEBUG_MIN_MAX( pC->ab, OGLRender.MaxB, OGLRender.MinB );
-	DEBUG_MIN_MAX( pC->bb, OGLRender.MaxB, OGLRender.MinB );
-	DEBUG_MIN_MAX( pC->cb, OGLRender.MaxB, OGLRender.MinB );
-	
-	DEBUG_MIN_MAX( pC->aa, OGLRender.MaxA, OGLRender.MinA );
-	DEBUG_MIN_MAX( pC->ba, OGLRender.MaxA, OGLRender.MinA );
-	DEBUG_MIN_MAX( pC->ca, OGLRender.MaxA, OGLRender.MinA );
-	
-	DEBUG_MIN_MAX( pV->az, OGLRender.MaxZ, OGLRender.MinZ );
-	DEBUG_MIN_MAX( pV->bz, OGLRender.MaxZ, OGLRender.MinZ );
-	DEBUG_MIN_MAX( pV->cz, OGLRender.MaxZ, OGLRender.MinZ );
-	
-	DEBUG_MIN_MAX( pV->ax, OGLRender.MaxX, OGLRender.MinX );
-	DEBUG_MIN_MAX( pV->bx, OGLRender.MaxX, OGLRender.MinX );
-	DEBUG_MIN_MAX( pV->cx, OGLRender.MaxX, OGLRender.MinX );
-	
-	DEBUG_MIN_MAX( pV->ay, OGLRender.MaxY, OGLRender.MinY );
-	DEBUG_MIN_MAX( pV->by, OGLRender.MaxY, OGLRender.MinY );
-	DEBUG_MIN_MAX( pV->cy, OGLRender.MaxY, OGLRender.MinY );
-
-	if (OpenGL.Texture)
-	{
-		DEBUG_MIN_MAX( pTS->as, OGLRender.MaxS, OGLRender.MinS );
-		DEBUG_MIN_MAX( pTS->bs, OGLRender.MaxS, OGLRender.MinS );
-		DEBUG_MIN_MAX( pTS->cs, OGLRender.MaxS, OGLRender.MinS );
-		
-		DEBUG_MIN_MAX( pTS->at, OGLRender.MaxT, OGLRender.MinT );
-		DEBUG_MIN_MAX( pTS->bt, OGLRender.MaxT, OGLRender.MinT );
-		DEBUG_MIN_MAX( pTS->ct, OGLRender.MaxT, OGLRender.MinT );
-	}
- 	OGLRender.FrameTriangles++;
-#endif
-
-#ifdef OGL_DEBUG_OPENGL_COORDS
-	GlideMsg(pV, pTS);
-#endif
 
 	OGLRender.NumberOfTriangles++;
 	if (generate_subtextures)
