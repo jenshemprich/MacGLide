@@ -127,15 +127,28 @@ grBufferSwap( int swap_interval )
 		{
 			glDisable(GL_COLOR_SUM_EXT);
 		}
-		if (OpenGL.Fog)
+		if (OpenGL.Fog && OpenGL.FogTextureUnit)
 		{
-			glActiveTextureARB(GL_TEXTURE2_ARB);
+			glActiveTextureARB(OpenGL.FogTextureUnit);
+			if (InternalConfig.EXT_compiled_vertex_array)
+			{
+				glClientActiveTextureARB(OpenGL.FogTextureUnit);
+				glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+				glTexCoordPointer(4, GL_FLOAT, 0, NULL);
+			}
 			glDisable(GL_TEXTURE_2D);
+			OpenGL.FogTextureUnitEnabledState = false;
 			SetFogModeState();
 		}
 		for(long unit_index = 1; unit_index >= 0; unit_index--)
 		{
 			glActiveTextureARB(OpenGL.ColorAlphaUnit1 + unit_index);
+			if (InternalConfig.EXT_compiled_vertex_array)
+			{
+				glClientActiveTextureARB(OpenGL.ColorAlphaUnit1 + unit_index);
+				glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+				glTexCoordPointer(4, GL_FLOAT, 0, NULL);
+			}
 			glDisable(GL_TEXTURE_2D);
 			OpenGL.ColorAlphaUnitColorEnabledState[unit_index] = false;
 			OpenGL.ColorAlphaUnitAlphaEnabledState[unit_index] = false;
