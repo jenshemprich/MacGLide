@@ -10,10 +10,10 @@
 //*  Mac version and additional features by Jens-Olaf Hemprich
 //**************************************************************
 
-//#define OGL_DEBUG
 //#define OGL_PROFILING
-//#define OGL_RENDER
+//#define OGL_DEBUG
 //#define OPENGL_DEBUG
+//#define OGL_RENDER
 //#define OGL_DEBUG_COORDS
 //#define OGL_ALL
 
@@ -52,7 +52,6 @@
 	#define OGL_DEBUG
 	#define OGL_CRITICAL
 	#define OPENGL_DEBUG
-	#define OGL_PROFILING
 	#define OGL_UTEX
 	#define OGL_COMBINE
 	#define OGL_FRAMEBUFFER
