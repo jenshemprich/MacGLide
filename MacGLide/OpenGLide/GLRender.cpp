@@ -134,9 +134,10 @@ void RenderInitialize(void)
 			glReportError();
 		}
 #endif
-
-		VERIFY_ACTIVE_TEXTURE_UNIT(OpenGL.ColorAlphaUnit1);
 	}
+
+	VERIFY_ACTIVE_TEXTURE_UNIT(OpenGL.ColorAlphaUnit1);
+	VERIFY_TEXTURE_ENABLED_STATE();
 
 #ifdef OGL_DEBUG
     OGLRender.FrameTriangles = 0;
