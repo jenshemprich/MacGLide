@@ -831,6 +831,9 @@ void RenderUpdateState_old()
 void RenderUpdateState()
 {
 	glReportErrors("RenderUpdateState");
+
+	VERIFY_ACTIVE_TEXTURE_UNIT(OpenGL.ColorAlphaUnit1);
+	VERIFY_TEXTURE_ENABLED_STATE();
 	
 	// This filters out a few state changes in Carmageddon
 	// (changing chromakey mode is expensive)
@@ -870,29 +873,30 @@ void RenderUpdateState()
 
 	bool active_texture_unit_not_coloralpha1 = false;
 	bool active_texture_unit_client_state_not_coloralpha1 = false;
-	if (s_bUpdateFogModeState ||
-		s_bUpdateFogColorState ||
-	    s_bUpdateColorInvertState ||
-	    s_bUpdateAlphaInvertState)
+	// color or alpha inversion also triggers a fog mode state so we don't have to check explicitly
+	if (s_bUpdateFogModeState || s_bUpdateFogColorState)
 	{
 		if (InternalConfig.FogMode == OpenGLideFogEmulation_EnvCombine)
 		{
-			if (s_bUpdateFogModeState || s_bUpdateFogColorState)
+			glActiveTextureARB(OpenGL.FogTextureUnit);
+			if (InternalConfig.EXT_compiled_vertex_array)
 			{
-				glActiveTextureARB(OpenGL.FogTextureUnit);
-				if (InternalConfig.EXT_compiled_vertex_array)
-				{
-					glClientActiveTextureARB(OpenGL.FogTextureUnit);
-					active_texture_unit_client_state_not_coloralpha1 = true;
-				}
-				active_texture_unit_not_coloralpha1 = true;
+				glClientActiveTextureARB(OpenGL.FogTextureUnit);
+				active_texture_unit_client_state_not_coloralpha1 = true;
+			}
+			active_texture_unit_not_coloralpha1 = true;
+			glReportError();
+			VERIFY_ACTIVE_TEXTURE_UNIT(OpenGL.FogTextureUnit);
+			// Fog color
+			if (s_bUpdateFogColorState)
+			{
+				s_bUpdateFogColorState = false;
+				glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, &OpenGL.FogColor[0]);
 				glReportError();
 			}
-
+			// Fog mode
 			if (s_bUpdateFogModeState)
 			{
-				VERIFY_ACTIVE_TEXTURE_UNIT(OpenGL.FogTextureUnit);
-
 				s_bUpdateFogModeState = false;
 				if (Glide.State.FogMode & (GR_FOG_WITH_ITERATED_ALPHA | GR_FOG_WITH_TABLE))
 				{
@@ -963,17 +967,16 @@ void RenderUpdateState()
 					OGLRender.UseEnvCombineFog = false;
 				}
 			}
-			
-			// Fog Color
-			if (s_bUpdateFogColorState)
-			{
-				s_bUpdateFogColorState = false;
-				glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, &OpenGL.FogColor[0]);
-				glReportError();
-			}
 		}
 		else if (InternalConfig.FogMode != OpenGLideFogEmulation_None)
 		{
+			if (s_bUpdateFogColorState)
+			{
+				s_bUpdateFogColorState = false;
+				glFogfv(GL_FOG_COLOR, &OpenGL.FogColor[0]);
+				glReportError();
+			}
+
 			if (s_bUpdateFogModeState)
 			{
 				s_bUpdateFogModeState = false;
@@ -1003,47 +1006,42 @@ void RenderUpdateState()
 				}
 				glReportError();
 			}
-			
-			if (s_bUpdateFogColorState)
+		}
+
+		if (s_bUpdateColorInvertState || s_bUpdateAlphaInvertState)
+		{
+			if (active_texture_unit_not_coloralpha1 == false)
 			{
-				s_bUpdateFogColorState = false;
-				glFogfv(GL_FOG_COLOR, &OpenGL.FogColor[0]);
+				active_texture_unit_not_coloralpha1 = true;
+				glActiveTextureARB(OpenGL.FogTextureUnit);
+				if (InternalConfig.EXT_compiled_vertex_array)
+				{
+					glClientActiveTextureARB(OpenGL.FogTextureUnit);
+					active_texture_unit_client_state_not_coloralpha1 = true;
+				}
 				glReportError();
 			}
-		}
-
-		// Means fog texture unit is active
-		if (active_texture_unit_not_coloralpha1 == false &&
-		    (s_bUpdateColorInvertState || s_bUpdateAlphaInvertState))
-		{
-			glActiveTextureARB(OpenGL.FogTextureUnit);
-			if (InternalConfig.EXT_compiled_vertex_array)
+			if (s_bUpdateColorInvertState)
 			{
-				glClientActiveTextureARB(OpenGL.FogTextureUnit);
-				active_texture_unit_client_state_not_coloralpha1 = true;
+				VERIFY_ACTIVE_TEXTURE_UNIT(OpenGL.FogTextureUnit);
+				
+				s_bUpdateColorInvertState = false;
+				FxBool invert = Glide.State.ColorCombineInvert;
+				glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, invert ? GL_ONE_MINUS_SRC_COLOR : GL_SRC_COLOR);
 			}
-			glReportError();
-			active_texture_unit_not_coloralpha1 = true;
-		}
-
-		if (s_bUpdateColorInvertState)
-		{
-			VERIFY_ACTIVE_TEXTURE_UNIT(OpenGL.FogTextureUnit);
-			
-			s_bUpdateColorInvertState = false;
-			FxBool invert = Glide.State.ColorCombineInvert;
-			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, invert ? GL_ONE_MINUS_SRC_COLOR : GL_SRC_COLOR);
-		}
-
-		if (s_bUpdateAlphaInvertState)
-		{
-			VERIFY_ACTIVE_TEXTURE_UNIT(OpenGL.FogTextureUnit);
-			
-			s_bUpdateAlphaInvertState = false;
-			FxBool invert = Glide.State.AlphaInvert;
-			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_EXT, invert ? GL_ONE_MINUS_SRC_ALPHA : GL_SRC_ALPHA);
+	
+			if (s_bUpdateAlphaInvertState)
+			{
+				VERIFY_ACTIVE_TEXTURE_UNIT(OpenGL.FogTextureUnit);
+				
+				s_bUpdateAlphaInvertState = false;
+				FxBool invert = Glide.State.AlphaInvert;
+				glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_EXT, invert ? GL_ONE_MINUS_SRC_ALPHA : GL_SRC_ALPHA);
+			}
 		}
 	}
+
+	VERIFY_TEXTURE_ENABLED_STATE();
 	
 	// Coloralpha state changes
 	if (s_bUpdateTextureState ||
@@ -1151,7 +1149,7 @@ void RenderUpdateState()
 						{
 #ifdef OPENGL_DEBUG
 							GlideMsg("Disabling unused texture unit GL_TEXTURE%d_ARB\n", unit_index);
-#endif							
+#endif
 							// Save state changes if fog state hasn't been changed
 							// and only coloralpha texture unit 0 is used
 							const bool set_active_texture_unit = active_texture_unit_not_coloralpha1 || unit_index != 0;
@@ -1161,38 +1159,43 @@ void RenderUpdateState()
 								if (InternalConfig.EXT_compiled_vertex_array)
 								{
 									glClientActiveTextureARB(OpenGL.ColorAlphaUnit1 + unit_index);
-									glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-									glTexCoordPointer(4, GL_FLOAT, 0, NULL);
 									active_texture_unit_client_state_not_coloralpha1 = (unit_index != 0);
 								}
 								active_texture_unit_not_coloralpha1 = (unit_index != 0);
 								glReportError();
 							}
-							VERIFY_ACTIVE_TEXTURE_UNIT(OpenGL.ColorAlphaUnit1 + unit_index);
-							
+							if (InternalConfig.EXT_compiled_vertex_array)
+							{
+								glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+								glTexCoordPointer(4, GL_FLOAT, 0, NULL);
+							}
 							glDisable(GL_TEXTURE_2D);
 							glReportError();
+
+							VERIFY_ACTIVE_TEXTURE_UNIT(OpenGL.ColorAlphaUnit1 + unit_index);
 						}
+#ifdef OPENGL_DEBUG
 						else
 						{
-#ifdef OPENGL_DEBUG
 							GlideMsg("Unused texture unit GL_TEXTURE%d_ARB already disabled\n", unit_index);
-#endif							
 						}
+#endif
 					}
 				}
 				else
 				{
-					// Save state changes if fog state hasn't been changed
-					// and only coloralpha texture unit 0 is used
+					// Any of the updates needs the active texture unit set, but not the client state
+					// Save state changes if fog state hasn't been changed and only coloralpha texture unit 0 is used
 					const bool set_active_texture_unit = active_texture_unit_not_coloralpha1 || unit_index != 0;
 					if (set_active_texture_unit)
 					{
 						glActiveTextureARB(OpenGL.ColorAlphaUnit1 + unit_index);
 						glReportError();
 						active_texture_unit_not_coloralpha1 = (unit_index != 0);
+						// The client state is changed only if the texture unit must be enabled, otherwise the
+						// active client texture unit is restored to color alpha unit 1 at the end
 					}
-					VERIFY_ACTIVE_TEXTURE_UNIT(OpenGL.ColorAlphaUnit1 + unit_index);
+					// Don't check VERIFY_ACTIVE_TEXTURE_UNIT yet as it hasn't been set up completely yet
 
 					// Texture state
 					if (s_bUpdateTextureState)
@@ -1203,7 +1206,7 @@ void RenderUpdateState()
 						{
 #ifdef OPENGL_DEBUG
 							GlideMsg("Enabling texture unit GL_TEXTURE%d_ARB\n", unit_index);
-#endif							
+#endif
 							// Enable the texture unit
 							glEnable(GL_TEXTURE_2D);
 							if (InternalConfig.EXT_compiled_vertex_array)
@@ -1224,12 +1227,24 @@ void RenderUpdateState()
 						{
 #ifdef OPENGL_DEBUG
 							GlideMsg("Texture unit GL_TEXTURE%d_ARB already enabled\n", unit_index);
-#endif							
+#endif
 						}
 					}
-					
-					VERIFY_ACTIVE_TEXTURE_UNIT(OpenGL.ColorAlphaUnit1 + unit_index);
-
+#ifdef OPENGL_DEBUG
+					// At this point, the client state doesn't matter anymore, and we just need to check the active texture 
+					GLint y;
+					const GLint x = OpenGL.ColorAlphaUnit1 + unit_index;
+					glGetIntegerv(GL_ACTIVE_TEXTURE_ARB, &y);
+					glReportError();
+					const bool verified = x == y;
+					if (!verified)
+					{
+						GlideMsg("Warning: %s() active texture unit is GL_TEXTURE%d_ARB, but should be GL_TEXTURE%d_ARB\n", __glide_functionname, y - GL_TEXTURE0_ARB, x - GL_TEXTURE0_ARB);
+					}
+#ifdef OGL_STOP_ON_GL_ERROR
+					assert(verified);
+#endif
+#endif
 					// ColorCombineState
 					if (s_bUpdateColorCombineState)
 					{
@@ -1238,7 +1253,7 @@ void RenderUpdateState()
 						if (unit.Function == CF_Unused)
 						{
 #ifdef OPENGL_DEBUG
-								GlideMsg("OpenGL ColorCombine unit %d = unused\n", unit_index);
+							GlideMsg("OpenGL ColorCombine unit %d = unused\n", unit_index);
 #endif
 							glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_REPLACE);
 							glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_PREVIOUS_EXT);
@@ -1248,7 +1263,7 @@ void RenderUpdateState()
 						else
 						{
 #ifdef OPENGL_DEBUG
-								GlideMsg("OpenGL ColorCombine Function for unit %d = 0x%x\n", unit_index, unit.Function);
+							GlideMsg("OpenGL ColorCombine Function for unit %d = 0x%x\n", unit_index, unit.Function);
 #endif
 							glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, unit.Function);
 							glReportError();
@@ -1402,7 +1417,7 @@ void RenderUpdateState()
 								const GrCombineLocal_t a_local = Glide.State.AlphaLocal;
 								const GrCombineOther_t a_other = Glide.State.AlphaOther;
 								const CombineArgument** combine_argument = &OpenGL.AlphaCombineArguments[0];
-								// combine_argument[CFARG_Local] = 0; // This is set to 0 onn initialising OpenGL
+								// combine_argument[CFARG_Local] = 0; // This is set to 0 on initialising OpenGL
 								// combine_argument[CFARG_Other] = 0;
 								combine_argument[CFARG_LocalAlpha] = &AlphaCombineLocals[a_local];
 								combine_argument[CFARG_OtherAlpha] = Glide.State.TextureCombineAInvert ? &AlphaCombineOthersInverted[a_other] : &AlphaCombineOthers[a_other];
@@ -1565,17 +1580,17 @@ void RenderUpdateState()
 			}
 		}
 	}
-
+	// Restore state
 	if (active_texture_unit_not_coloralpha1)
 	{
-		if (active_texture_unit_client_state_not_coloralpha1)
-		{
-			glClientActiveTextureARB(OpenGL.ColorAlphaUnit1);
-		}
 		glActiveTextureARB(OpenGL.ColorAlphaUnit1);
 		glReportError();
 	}
-	
+	if (active_texture_unit_client_state_not_coloralpha1)
+	{
+		glClientActiveTextureARB(OpenGL.ColorAlphaUnit1);
+	}
+
 	VERIFY_ACTIVE_TEXTURE_UNIT(OpenGL.ColorAlphaUnit1);
 	VERIFY_TEXTURE_ENABLED_STATE();
 }
