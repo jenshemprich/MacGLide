@@ -382,9 +382,14 @@ bool VerifyTextureEnabledState_impl(const char* functionname)
 {
 	glReportErrors("VerifyActiveTextureUnit_impl");
 
-	// emember state
-	GLint current;
-	glGetIntegerv(GL_ACTIVE_TEXTURE_ARB, &current);
+	// remember state
+	GLint activeTexture;
+	glGetIntegerv(GL_ACTIVE_TEXTURE_ARB, &activeTexture);
+	GLint activeClientTexture;
+	if (InternalConfig.EXT_compiled_vertex_array)
+	{
+		glGetIntegerv(GL_CLIENT_ACTIVE_TEXTURE_ARB, &activeClientTexture);
+	}
 	glReportError();
 	bool bVerified = true;
 	if (OpenGL.ColorAlphaUnit2)
@@ -399,18 +404,27 @@ bool VerifyTextureEnabledState_impl(const char* functionname)
 				GlideMsg("Warning: texture unit GL_TEXTURE%d_ARB is %s in %s()\n", OpenGL.ColorAlphaUnit1 + unit_index - GL_TEXTURE0_ARB, bState ? "enabled" : "disabled", functionname);
 				bVerified = false;
 			}
-			bState = glIsEnabled(GL_TEXTURE_COORD_ARRAY);
-			if (bState != (OpenGL.ColorAlphaUnitColorEnabledState[unit_index] ||
-			               OpenGL.ColorAlphaUnitAlphaEnabledState[unit_index]))
+			if (InternalConfig.EXT_compiled_vertex_array)
 			{
-				GlideMsg("Warning: texcoord array for unit GL_TEXTURE%d_ARB is %s in %s()\n", OpenGL.ColorAlphaUnit1 + unit_index - GL_TEXTURE0_ARB, bState ? "enabled" : "disabled", functionname);
-				bVerified = false;
+				glClientActiveTextureARB(OpenGL.ColorAlphaUnit1 + unit_index);
+				bState = glIsEnabled(GL_TEXTURE_COORD_ARRAY);
+				if (bState != (OpenGL.ColorAlphaUnitColorEnabledState[unit_index] ||
+				               OpenGL.ColorAlphaUnitAlphaEnabledState[unit_index]))
+				{
+					GlideMsg("Warning: texcoord array for unit GL_TEXTURE%d_ARB is %s in %s()\n", OpenGL.ColorAlphaUnit1 + unit_index - GL_TEXTURE0_ARB, bState ? "enabled" : "disabled", functionname);
+					bVerified = false;
+				}
 			}
 			glReportError();
 		}
 	}
 	// Restore previous state
-	glActiveTextureARB(current);
+	glActiveTextureARB(activeTexture);
+	if (InternalConfig.EXT_compiled_vertex_array)
+	{
+		glClientActiveTextureARB(activeClientTexture);
+	}
+	glReportError();
 	return bVerified;
 }
 #endif
