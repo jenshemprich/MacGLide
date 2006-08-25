@@ -395,14 +395,15 @@ OSErr DisplayManager_RememberPassthroughDisplay()
 		         PassthroughDisplay.HorizontalPixels, PassthroughDisplay.VerticalLines,
 		         PassthroughDisplay.ColorDepth, PassthroughDisplay.RefreshRate);
 #endif
-		if (DisplayManager_RememberGamma(PassthroughDisplay) == noErr)
+		err = DisplayManager_RememberGamma(PassthroughDisplay) ; 
+		if (err == noErr)
 		{
 			PassthroughDisplay.GammaValid = true;
 		}
 		// Remember menubar status
 		RestoreMenuBar = IsMenuBarVisible();
 	}
-	else
+	if (err != noErr)
 	{
 		GlideMsg("Display Manager: Error while remembering passthrough display mode: %d\n", err);
 	}
@@ -529,9 +530,12 @@ OSErr DisplayManager_RestorePassthroughDisplay()
 	if (err == noErr)
 	{
 		if (RestoreMenuBar) ShowMenuBar();
-		if (PassthroughDisplay.GammaValid == true) DisplayManager_RestoreGamma(PassthroughDisplay);
+		if (PassthroughDisplay.GammaValid == true)
+		{
+			err = DisplayManager_RestoreGamma(PassthroughDisplay);
+		}
 	}
-	else
+	if (err != noErr)
 	{
 		GlideMsg("Display Manager: Error while restoring passthrough display mode: %d\n", err);
 	}
