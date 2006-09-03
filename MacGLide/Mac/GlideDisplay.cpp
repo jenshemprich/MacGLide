@@ -395,7 +395,7 @@ OSErr DisplayManager_RememberPassthroughDisplay()
 		         PassthroughDisplay.HorizontalPixels, PassthroughDisplay.VerticalLines,
 		         PassthroughDisplay.ColorDepth, PassthroughDisplay.RefreshRate);
 #endif
-		err = DisplayManager_RememberGamma(PassthroughDisplay) ; 
+		err = DisplayManager_RememberGamma(PassthroughDisplay); 
 		if (err == noErr)
 		{
 			PassthroughDisplay.GammaValid = true;
