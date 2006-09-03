@@ -36,19 +36,12 @@ public:
 	static void genPaletteMipmaps( FxU32 width, FxU32 height, const FxU8 *data );
 	void ChromakeyMode( GrChromakeyMode_t mode );
 	void ChromakeyValue( GrColor_t value );
-	inline float GetHAspect() const
-	{
-	    return m_hAspect;
-	}
-	inline float GetWAspect() const
-	{
-	    return m_wAspect;
-	}
-	inline const GrTexInfo* GetCurrentTexInfo()  const
-	{
-		return &m_info;
-	}
-	void Clear();
+	inline float GetHAspect() const {return m_hAspect;}
+	inline float GetWAspect() const	{return m_wAspect;}
+	inline const GrTexInfo* GetCurrentTexInfo()  const {return &m_info;}
+	inline void Clear() {m_db->Clear();}
+	inline void initOpenGL() {m_db->initOpenGL();}
+	inline void cleanupOpenGL() {m_db->cleanupOpenGL();}
 	bool MakeReady(TTextureStruct* tex_coords = NULL, unsigned long number_of_triangles = 0);
 	void DownloadTable( GrTexTable_t type, const FxU32 *data, int first, int count );
 	void Source( FxU32 startAddress, FxU32 evenOdd, const GrTexInfo *info );
@@ -109,6 +102,7 @@ private:
 	float           m_wAspect;
 	float           m_hAspect;
 	FxU32*          m_tex_temp;
+	FxU32*          m_textureCache;
 	bool            m_valid;
 	FxU8 *          m_memory;
 	FxU32           m_startAddress;
