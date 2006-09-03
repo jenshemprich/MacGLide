@@ -62,96 +62,106 @@ void PGTexture::genPaletteMipmaps( FxU32 width, FxU32 height, const FxU8 *data )
 
 PGTexture::PGTexture( int mem_size )
 {
-    m_db = new TexDB( mem_size );
-    m_palette_dirty = true;
-    m_valid = false;
-    m_chromakey_mode = GR_CHROMAKEY_DISABLE;
-    m_tex_memory_size = mem_size;
-    m_memory = (FxU8*) AllocBuffer(mem_size, sizeof(FxU8));
-    m_tex_temp = reinterpret_cast<FxU32*>(AllocBuffer(256 * 256, sizeof(FxU32)));
-    m_ncc_select = GR_NCCTABLE_NCC0;
+	m_db = new TexDB( mem_size );
+	m_palette_dirty = true;
+	m_valid = false;
+	m_chromakey_mode = GR_CHROMAKEY_DISABLE;
+	m_tex_memory_size = mem_size;
+	m_memory = (FxU8*) AllocBuffer(mem_size, sizeof(FxU8));
+	if (InternalConfig.EXT_Client_Storage)
+	{
+		// Alloc 4-times the size of the Glide buffer for texture storage
+		m_textureCache = reinterpret_cast<FxU32*>(AllocBuffer(m_tex_memory_size, sizeof(FxU32)));
+		// No memory is wasted here because we save the internal OpenGL copy
+	}
+	else
+	{
+		m_textureCache = NULL;
+	}
+	// Needed for subtexturing and internal conversions
+	m_tex_temp = reinterpret_cast<FxU32*>(AllocBuffer(256 * 256, sizeof(FxU32)));
+	m_ncc_select = GR_NCCTABLE_NCC0;
 
 #ifdef OGL_DEBUG
-    Num_565_Tex = 0;
-    Num_565_Chromakey_Tex = 0;
-    Num_1555_Tex = 0;
-    Num_1555_Chromakey_Tex = 0;
-    Num_4444_Tex = 0;
-		Num_4444_Chromakey_Tex = 0;
-    Num_332_Tex = 0;
-    Num_8332_Tex = 0;
-    Num_Alpha_Tex = 0;
-    Num_AlphaIntensity88_Tex = 0;
-    Num_AlphaIntensity44_Tex = 0;
-    Num_AlphaPalette_Tex = 0;
-    Num_Palette_Tex = 0;
-    Num_Palette_Chromakey_Tex = 0;
-    Num_Intensity_Tex = 0;
-    Num_YIQ_Tex = 0;
-    Num_AYIQ_Tex = 0;
-    Num_Other_Tex = 0;
+	Num_565_Tex = 0;
+	Num_565_Chromakey_Tex = 0;
+	Num_1555_Tex = 0;
+	Num_1555_Chromakey_Tex = 0;
+	Num_4444_Tex = 0;
+	Num_4444_Chromakey_Tex = 0;
+	Num_332_Tex = 0;
+	Num_8332_Tex = 0;
+	Num_Alpha_Tex = 0;
+	Num_AlphaIntensity88_Tex = 0;
+	Num_AlphaIntensity44_Tex = 0;
+	Num_AlphaPalette_Tex = 0;
+	Num_Palette_Tex = 0;
+	Num_Palette_Chromakey_Tex = 0;
+	Num_Intensity_Tex = 0;
+	Num_YIQ_Tex = 0;
+	Num_AYIQ_Tex = 0;
+	Num_Other_Tex = 0;
 #endif
 }
 
 PGTexture::~PGTexture( void )
 {
-    FreeBuffer(m_memory);
-    FreeBuffer(m_tex_temp);
-    delete m_db;
+	FreeBuffer(m_memory);
+	FreeBuffer(m_tex_temp);
+	if (m_textureCache) FreeBuffer(m_textureCache);
+	delete m_db;
 }
 
 void PGTexture::DownloadMipMap( FxU32 startAddress, FxU32 evenOdd, const GrTexInfo *info )
 {
-    const FxU32 mip_size = MipMapMemRequired( info->smallLod, 
-                                        info->aspectRatio, 
-                                        info->format );
-    const FxU32 mip_offset = startAddress + TextureMemRequired( evenOdd, info );
-
-    if ( mip_offset <= m_tex_memory_size )
-    {
-        memcpy( m_memory + mip_offset - mip_size, info->data, mip_size );
-    }
-
-    // Any texture based on memory crossing this range
-    // is now out of date
-    m_db->WipeRange( startAddress, mip_offset, 0 );
+	const FxU32 mip_size = MipMapMemRequired(info->smallLod, 
+	                                         info->aspectRatio, 
+	                                         info->format);
+	const FxU32 mip_offset = startAddress + TextureMemRequired(evenOdd, info);
+	if ( mip_offset <= m_tex_memory_size )
+	{
+		memcpy( m_memory + mip_offset - mip_size, info->data, mip_size );
+	}
+	// Any texture based on memory crossing this range
+	// is now out of date
+	m_db->WipeRange( startAddress, mip_offset, 0 );
 
 #ifdef OGL_DEBUG
-    if ( info->smallLod == info->largeLod )
-    {
-        switch ( info->format )
-        {
-        case GR_TEXFMT_RGB_332:             Num_332_Tex++;                  break;
-        case GR_TEXFMT_YIQ_422:             Num_YIQ_Tex++;                  break;
-        case GR_TEXFMT_ALPHA_8:             Num_Alpha_Tex++;                break;
-        case GR_TEXFMT_INTENSITY_8:         Num_Intensity_Tex++;            break;
-        case GR_TEXFMT_ALPHA_INTENSITY_44:  Num_AlphaIntensity44_Tex++;     break;
-        case GR_TEXFMT_P_8:                 m_chromakey_mode
-                                            ? Num_Palette_Chromakey_Tex++
-                                            : Num_Palette_Tex++;
-                                            break;
-        case GR_TEXFMT_ARGB_8332:           Num_8332_Tex++;                 break;
-        case GR_TEXFMT_AYIQ_8422:           Num_AYIQ_Tex++;                 break;
-        case GR_TEXFMT_RGB_565:             m_chromakey_mode
-                                            ? Num_565_Chromakey_Tex++
-                                            : Num_565_Tex++;
-                                            break;
-        case GR_TEXFMT_ARGB_1555:           m_chromakey_mode
-                                            ? Num_1555_Chromakey_Tex++
-                                            : Num_1555_Tex++;
-                                            break;
-        case GR_TEXFMT_ARGB_4444:           m_chromakey_mode
-                                            ? Num_4444_Chromakey_Tex++
-                                            : Num_4444_Tex++;
-                                            break;
-        case GR_TEXFMT_ALPHA_INTENSITY_88:  Num_AlphaIntensity88_Tex++;     break;
-        case GR_TEXFMT_AP_88:               Num_AlphaPalette_Tex++;         break;
-        case GR_TEXFMT_RSVD0:
-        case GR_TEXFMT_RSVD1:
-        case GR_TEXFMT_RSVD2:
-        default:                            Num_Other_Tex++;                break;
-        }
-    }
+	if ( info->smallLod == info->largeLod )
+	{
+		switch ( info->format )
+		{
+		case GR_TEXFMT_RGB_332:             Num_332_Tex++;                  break;
+		case GR_TEXFMT_YIQ_422:             Num_YIQ_Tex++;                  break;
+		case GR_TEXFMT_ALPHA_8:             Num_Alpha_Tex++;                break;
+		case GR_TEXFMT_INTENSITY_8:         Num_Intensity_Tex++;            break;
+		case GR_TEXFMT_ALPHA_INTENSITY_44:  Num_AlphaIntensity44_Tex++;     break;
+		case GR_TEXFMT_P_8:                 m_chromakey_mode
+		                                    ? Num_Palette_Chromakey_Tex++
+		                                    : Num_Palette_Tex++;
+		                                    break;
+		case GR_TEXFMT_ARGB_8332:           Num_8332_Tex++;                 break;
+		case GR_TEXFMT_AYIQ_8422:           Num_AYIQ_Tex++;                 break;
+		case GR_TEXFMT_RGB_565:             m_chromakey_mode
+		                                    ? Num_565_Chromakey_Tex++
+		                                    : Num_565_Tex++;
+		                                    break;
+		case GR_TEXFMT_ARGB_1555:           m_chromakey_mode
+		                                    ? Num_1555_Chromakey_Tex++
+		                                    : Num_1555_Tex++;
+		                                    break;
+		case GR_TEXFMT_ARGB_4444:           m_chromakey_mode
+		                                    ? Num_4444_Chromakey_Tex++
+		                                    : Num_4444_Tex++;
+		                                    break;
+		case GR_TEXFMT_ALPHA_INTENSITY_88:  Num_AlphaIntensity88_Tex++;     break;
+		case GR_TEXFMT_AP_88:               Num_AlphaPalette_Tex++;         break;
+		case GR_TEXFMT_RSVD0:
+		case GR_TEXFMT_RSVD1:
+		case GR_TEXFMT_RSVD2:
+		default:                            Num_Other_Tex++;                break;
+		}
+	}
 #endif
 }
 
@@ -206,16 +216,16 @@ void PGTexture::DownloadMipMapLevelPartial(FxU32             startAddress,
 	m_db->WipeRange(startAddress, mip_offset, 0);	
 }
 
-void PGTexture::Source( FxU32 startAddress, FxU32 evenOdd, const GrTexInfo *info )
+void PGTexture::Source(FxU32 startAddress, FxU32 evenOdd, const GrTexInfo *info)
 {
-    m_startAddress = startAddress;
-    m_evenOdd = evenOdd;
-    m_info = *info;
-
-    m_wAspect = texAspects[ info->aspectRatio ].w;
-    m_hAspect = texAspects[ info->aspectRatio ].h;
-
-    m_valid = ( ( startAddress + TextureMemRequired( evenOdd, info ) ) <= m_tex_memory_size );
+	m_startAddress = startAddress;
+	m_evenOdd = evenOdd;
+	m_info = *info;
+	
+	m_wAspect = texAspects[ info->aspectRatio ].w;
+	m_hAspect = texAspects[ info->aspectRatio ].h;
+	
+	m_valid = ( ( startAddress + TextureMemRequired( evenOdd, info ) ) <= m_tex_memory_size );
 }
 
 void PGTexture::DownloadMipmapsToOpenGL(GLint compnum, GLint compformat, GLenum comptype, const void* texdata, TexValues& t, bool build_mipmaps)
@@ -565,28 +575,6 @@ bool PGTexture::MakeReady(TTextureStruct* tex_coords, unsigned long number_of_tr
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, OpenGL.TClampMode);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, OpenGL.MinFilterMode);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, OpenGL.MagFilterMode);
-		// Texture artefact fix for TR2
-		// This would solve remaining issues with texture artefacts caused by filtering,
-		// but degrades the overall image quality too much
-		/*
-		bool fix_subtexture_artefacts = false;
-		if (subtexcoords)
-		{
-			// While TR1 uses subtextures with power-of-2 sizes only (as far as I know),
-			// some TR2 textures don't fit into this scheme, and thus still produces artefacts
-			// (for instance the joins in Lara's hair and butler james clothes)
-			const GLfloat epsilon = 0.75;
-			if (subtexcoords->width / static_cast<GLfloat>(subtexcoords->texImageWidth) <= epsilon ||
-			    subtexcoords->height / static_cast<GLfloat>(subtexcoords->texImageHeight) <= epsilon)
-			{
-				// The artefacts can be fixed by applying neither mipmapping nor anisotropic filtering
-				fix_subtexture_artefacts = true;
-			}
-		}
-		// These are constant parameters and don't change between calls
-		const unsigned long anisotropy_level = fix_subtexture_artefacts ? 1 : InternalConfig.AnisotropylLevel;
-		const bool enable_mipmaps = fix_subtexture_artefacts ? false : InternalConfig.Mipmapping;
-		*/
 		const unsigned long anisotropy_level = InternalConfig.AnisotropylLevel;
 		const bool enable_mipmaps = InternalConfig.Mipmapping;
 		// Write only if enabled in config
@@ -637,16 +625,6 @@ bool PGTexture::MakeReady(TTextureStruct* tex_coords, unsigned long number_of_tr
 
 		if (subtexcoords)
 		{
-			/*
-			// Don't generate mipmaps in DownloadMipmapsToOpenGL()
-			if (fix_subtexture_artefacts)
-			{
-				// Pretend to have mipmap ext in order to
-				// avoid generating mipmaps without mipmap ext
-				use_mipmap_ext = true;
-				glBindTexture(GL_TEXTURE_2D, OpenGL.DummyTextureName);
-			}
-			*/
 			glPixelStorei(GL_UNPACK_SKIP_PIXELS, subtexcoords->left);
 			glPixelStorei(GL_UNPACK_SKIP_ROWS, subtexcoords->top);
 			glPixelStorei(GL_UNPACK_ROW_LENGTH, texVals.width);
@@ -654,14 +632,29 @@ bool PGTexture::MakeReady(TTextureStruct* tex_coords, unsigned long number_of_tr
 			texVals.width = subtexcoords->texImageWidth;
 			texVals.height = subtexcoords->texImageHeight;
 		}
-
+		// use client storage to avoid OpenGL-internal copy 
+		// OpenGL may still make a copy if the colro format isn't supported natively
+		// by the graphics card but all xto8888 conversions should benefit from this
+		const bool useClientStorage = InternalConfig.EXT_Client_Storage && !subtexcoords;
+		FxU32* texBuffer;
+		if (useClientStorage)
+		{
+			texBuffer = &m_textureCache[m_startAddress];
+			glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, true);
+			glReportError();		
+		}
+		else
+		{
+			texBuffer = m_tex_temp;
+		}
+		// Convert Glide texture data to format understood by OpenGL
 		switch ( m_info.format )
 		{
 		case GR_TEXFMT_RGB_565:
 			if ( m_chromakey_mode )
 			{
 				// Read about anisotropy and chromakey issues in macFormatConversions.cpp
-				Convert565Kto8888((FxU16*)data, m_chromakey_value_565, m_tex_temp, texVals.nPixels);
+				Convert565Kto8888((FxU16*)data, m_chromakey_value_565, texBuffer, texVals.nPixels);
 				DownloadMipmapsToOpenGL(4, GL_RGBA, GL_UNSIGNED_BYTE, m_tex_temp, texVals, !use_mipmap_ext);          	
 			}
 			else
@@ -676,8 +669,8 @@ bool PGTexture::MakeReady(TTextureStruct* tex_coords, unsigned long number_of_tr
 			if (m_chromakey_mode)
 			{
 				// Read about anisotropy and chromakey issues in macFormatConversions.cpp
-				Convert1555Kto8888((FxU16*) data, m_chromakey_value_1555, m_tex_temp, texVals.nPixels);
-				DownloadMipmapsToOpenGL(4, GL_RGBA, GL_UNSIGNED_BYTE, m_tex_temp, texVals, !use_mipmap_ext);          	
+				Convert1555Kto8888((FxU16*) data, m_chromakey_value_1555, texBuffer, texVals.nPixels);
+				DownloadMipmapsToOpenGL(4, GL_RGBA, GL_UNSIGNED_BYTE, texBuffer, texVals, !use_mipmap_ext);          	
 			}
 			else
 			{
@@ -703,45 +696,45 @@ bool PGTexture::MakeReady(TTextureStruct* tex_coords, unsigned long number_of_tr
 				if (InternalConfig.AnisotropylLevel >= 2)
 				{
 					// minimise anisotropy artefacts
-					ConvertP8Kto8888(data, m_chromakey_value_8888, m_tex_temp, texVals.nPixels, m_palette);
-					DownloadMipmapsToOpenGL(4, GL_RGBA, GL_UNSIGNED_BYTE, m_tex_temp, texVals, !use_mipmap_ext);
+					ConvertP8Kto8888(data, m_chromakey_value_8888, texBuffer, texVals.nPixels, m_palette);
+					DownloadMipmapsToOpenGL(4, GL_RGBA, GL_UNSIGNED_BYTE, texBuffer, texVals, !use_mipmap_ext);
 				}
 				else
 				{
-					ConvertP8to8888(data, m_tex_temp, texVals.nPixels, m_palette);
-					DownloadMipmapsToOpenGL(4, GL_RGBA, GL_UNSIGNED_BYTE, m_tex_temp, texVals, !use_mipmap_ext);
+					ConvertP8to8888(data, texBuffer, texVals.nPixels, m_palette);
+					DownloadMipmapsToOpenGL(4, GL_RGBA, GL_UNSIGNED_BYTE, texBuffer, texVals, !use_mipmap_ext);
 				}
 			}
 			break;
 	    case GR_TEXFMT_AP_88:
 			if ( use_two_textures )
 			{
-				FxU32 *tex_temp2 = m_tex_temp + 256 * 128;
+				FxU32 *texBuffer2 = texBuffer + 256 * 128;
 				glColorTable(GL_TEXTURE_2D, GL_RGBA, 256, GL_RGBA, GL_UNSIGNED_BYTE, m_palette);
-				SplitAP88( (FxU16 *)data, (FxU8 *)m_tex_temp, (FxU8 *)tex_temp2, texVals.nPixels );
-				glTexImage2D( GL_TEXTURE_2D, texVals.lod, GL_COLOR_INDEX8_EXT, 
-				              texVals.width, texVals.height, 0, 
-				              GL_COLOR_INDEX, GL_UNSIGNED_BYTE, m_tex_temp );
+				SplitAP88((FxU16*) data, (FxU8*) texBuffer, (FxU8*) texBuffer2, texVals.nPixels);
+				glTexImage2D(GL_TEXTURE_2D, texVals.lod, GL_COLOR_INDEX8_EXT, 
+				             texVals.width, texVals.height, 0, 
+				             GL_COLOR_INDEX, GL_UNSIGNED_BYTE, texBuffer);
 				if (InternalConfig.Mipmapping && !use_mipmap_ext)
 				{
-				    genPaletteMipmaps( texVals.width, texVals.height, (FxU8 *)m_tex_temp );
+				    genPaletteMipmaps(texVals.width, texVals.height, (FxU8*) texBuffer);
 				}
 				glActiveTextureARB(OpenGL.ColorAlphaUnit1 + 1);
-				DownloadMipmapsToOpenGL( GL_ALPHA, GL_ALPHA, GL_UNSIGNED_BYTE, tex_temp2, texVals, !use_mipmap_ext);
+				DownloadMipmapsToOpenGL( GL_ALPHA, GL_ALPHA, GL_UNSIGNED_BYTE, texBuffer2, texVals, !use_mipmap_ext);
 				glActiveTextureARB(OpenGL.ColorAlphaUnit1);
 				glReportError();
 			}
 			else
 			{
-				ConvertAP88to8888( (FxU16*)data, m_tex_temp, texVals.nPixels, m_palette );
-				DownloadMipmapsToOpenGL(4, GL_RGBA, GL_UNSIGNED_BYTE, m_tex_temp, texVals, !use_mipmap_ext);
+				ConvertAP88to8888((FxU16*) data, texBuffer, texVals.nPixels, m_palette );
+				DownloadMipmapsToOpenGL(4, GL_RGBA, GL_UNSIGNED_BYTE, texBuffer, texVals, !use_mipmap_ext);
 			}
 			break;
 		case GR_TEXFMT_ALPHA_8:
-			ConvertA8toAP88( (FxU8*)data, (FxU16*)m_tex_temp, texVals.nPixels );
-			DownloadMipmapsToOpenGL( 2, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, m_tex_temp, texVals, !use_mipmap_ext);
+			ConvertA8toAP88((FxU8*)data, (FxU16*) texBuffer, texVals.nPixels);
+			DownloadMipmapsToOpenGL(2, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, texBuffer, texVals, !use_mipmap_ext);
 			// @todo: The statement below breaks the overlay texts in Myth TFL.
-			// As a result ,this optimsation has been undone for now
+			// As a result, this optimsation has been undone for now
 			// DownloadMipmapsToOpenGL(1, GL_ALPHA, GL_UNSIGNED_BYTE, data, texVals, !use_mipmap_ext);
 			break;
 		case GR_TEXFMT_ALPHA_INTENSITY_88:
@@ -754,14 +747,14 @@ bool PGTexture::MakeReady(TTextureStruct* tex_coords, unsigned long number_of_tr
 			// @todo: untested
 			// DownloadMipmapsToOpenGL(GL_LUMINANCE4_ALPHA4, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, data, &texVals);
 			// @todo: untested
-			ConvertAI44toAP88((FxU8*)data, (FxU16*)m_tex_temp, texVals.nPixels);
-			DownloadMipmapsToOpenGL(2, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, m_tex_temp, texVals, !use_mipmap_ext);
+			ConvertAI44toAP88((FxU8*)data, (FxU16*)texBuffer, texVals.nPixels);
+			DownloadMipmapsToOpenGL(2, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, texBuffer, texVals, !use_mipmap_ext);
 			/*
-			ConvertAI44toAP88( (FxU8*)data, (FxU16*)m_tex_temp, texVals.nPixels );
-			glTexImage2D( GL_TEXTURE_2D, texVals.lod, 2, texVals.width, texVals.height, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, m_tex_temp );
+			ConvertAI44toAP88((FxU8*) data, (FxU16*) texBuffer, texVals.nPixels );
+			glTexImage2D(GL_TEXTURE_2D, texVals.lod, 2, texVals.width, texVals.height, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, texBuffer);
 			if (InternalConfig.Mipmapping && !use_mipmap_ext)
 			{
-			gluBuild2DMipmaps( GL_TEXTURE_2D, 2, texVals.width, texVals.height, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, m_tex_temp );
+			gluBuild2DMipmaps(GL_TEXTURE_2D, 2, texVals.width, texVals.height, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, texBuffer);
 			}
 			glReportError();
 			*/
@@ -770,26 +763,32 @@ bool PGTexture::MakeReady(TTextureStruct* tex_coords, unsigned long number_of_tr
 			DownloadMipmapsToOpenGL(3, GL_RGB, GL_UNSIGNED_BYTE_3_3_2_EXT, data, texVals, !use_mipmap_ext);
 			break;
 		case GR_TEXFMT_16BIT: //GR_TEXFMT_ARGB_8332:
-			Convert8332to8888( (FxU16*)data, m_tex_temp, texVals.nPixels );
-			DownloadMipmapsToOpenGL(4, GL_RGBA, GL_UNSIGNED_BYTE, m_tex_temp, texVals, !use_mipmap_ext);
+			Convert8332to8888( (FxU16*)data, texBuffer, texVals.nPixels );
+			DownloadMipmapsToOpenGL(4, GL_RGBA, GL_UNSIGNED_BYTE, texBuffer, texVals, !use_mipmap_ext);
 			break;
 		case GR_TEXFMT_YIQ_422:
-			ConvertYIQto8888( (FxU8*)data, m_tex_temp, texVals.nPixels, &(m_ncc[m_ncc_select]) );
-			// @todo: Should just be RGB in order to apply constant color per default, shouldn't it?
-			DownloadMipmapsToOpenGL(4, GL_RGBA, GL_UNSIGNED_BYTE, m_tex_temp, texVals, !use_mipmap_ext);
+			ConvertYIQto8888((FxU8*) data, texBuffer, texVals.nPixels, &(m_ncc[m_ncc_select]));
+			// @todo: Should just be RGB in order to apply constant alpha, shouldn't it?
+			DownloadMipmapsToOpenGL(4, GL_RGBA, GL_UNSIGNED_BYTE, texBuffer, texVals, !use_mipmap_ext);
 			break;
 		case GR_TEXFMT_AYIQ_8422:
-			ConvertAYIQto8888( (FxU16*)data, m_tex_temp, texVals.nPixels, &(m_ncc[m_ncc_select]) );
-			DownloadMipmapsToOpenGL(4, GL_RGBA, GL_UNSIGNED_BYTE, m_tex_temp, texVals, !use_mipmap_ext);
+			ConvertAYIQto8888((FxU16*) data, texBuffer, texVals.nPixels, &(m_ncc[m_ncc_select]));
+			DownloadMipmapsToOpenGL(4, GL_RGBA, GL_UNSIGNED_BYTE, texBuffer, texVals, !use_mipmap_ext);
 			break;
 	    case GR_TEXFMT_RSVD0:
 	    case GR_TEXFMT_RSVD1:
 	    case GR_TEXFMT_RSVD2:
 	    default:
 			GlideMsg("Error: grTexDownloadMipMapLevel - Unsupported format(%d)\n", m_info.format);
-			memset( m_tex_temp, 255, texVals.nPixels * 2 );
-			DownloadMipmapsToOpenGL(1, GL_LUMINANCE, GL_UNSIGNED_BYTE, m_tex_temp, texVals, !use_mipmap_ext);
+			memset(texBuffer, 255, texVals.nPixels * 2);
+			DownloadMipmapsToOpenGL(1, GL_LUMINANCE, GL_UNSIGNED_BYTE, texBuffer, texVals, !use_mipmap_ext);
 			break;
+		}
+		// Cleanup
+		if (useClientStorage)
+		{
+			glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, false);
+			glReportError();		
 		}
 		if (subtexcoords)
 		{
@@ -832,26 +831,21 @@ FxU32 PGTexture::TextureMemRequired( FxU32 evenOdd, const GrTexInfo *info )
 
 FxU32 PGTexture::MipMapMemRequired( GrLOD_t lod, GrAspectRatio_t aspectRatio, GrTextureFormat_t format )
 {
-    //
-    // If the format is one of these:
-    // GR_TEXFMT_RGB_332, GR_TEXFMT_YIQ_422, GR_TEXFMT_ALPHA_8
-    // GR_TEXFMT_INTENSITY_8, GR_TEXFMT_ALPHA_INTENSITY_44, GR_TEXFMT_P_8
-    // Reduces the size by 2
-    //
-    return nSquareLod[ format >= GR_TEXFMT_16BIT ][ aspectRatio ][ lod ];
+	//
+	// If the format is one of these:
+	// GR_TEXFMT_RGB_332, GR_TEXFMT_YIQ_422, GR_TEXFMT_ALPHA_8
+	// GR_TEXFMT_INTENSITY_8, GR_TEXFMT_ALPHA_INTENSITY_44, GR_TEXFMT_P_8
+	// Reduces the size by 2
+	//
+	return nSquareLod[ format >= GR_TEXFMT_16BIT ][ aspectRatio ][ lod ];
 }
 
 void PGTexture::GetTexValues( TexValues * tval ) const
 {
-    tval->width = texInfo[ m_info.aspectRatio ][ m_info.largeLod ].width;
-    tval->height = texInfo[ m_info.aspectRatio ][ m_info.largeLod ].height;
-    tval->nPixels = texInfo[ m_info.aspectRatio ][ m_info.largeLod ].numPixels;
-    tval->lod = 0;
-}
-
-void PGTexture::Clear( void )
-{
-    m_db->Clear( );
+	tval->width = texInfo[ m_info.aspectRatio ][ m_info.largeLod ].width;
+	tval->height = texInfo[ m_info.aspectRatio ][ m_info.largeLod ].height;
+	tval->nPixels = texInfo[ m_info.aspectRatio ][ m_info.largeLod ].numPixels;
+	tval->lod = 0;
 }
 
 void PGTexture::ChromakeyValue( GrColor_t value )
