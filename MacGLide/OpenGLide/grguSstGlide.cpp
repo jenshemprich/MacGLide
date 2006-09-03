@@ -296,6 +296,7 @@ grSstWinOpen(FxU32 hwnd,
 	// Initialise the frame buffer emulation
 	RenderInitialize();
 	s_Framebuffer.initialise(&Glide.FrameBuffer, &Glide.TempBuffer);
+	Textures->initOpenGL();
 
 	#ifdef OGL_DONE
 		GlideMsg( "----Start of grSstWinOpen()\n" );
@@ -543,7 +544,7 @@ grSstWinClose( void )
 #endif
 	}
 	
-	Textures->Clear();
+	Textures->cleanupOpenGL();
 	GLExtensionsCleanup();
 	RenderFree();
 	FinaliseOpenGLWindow();
