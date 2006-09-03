@@ -16,7 +16,9 @@
 TexDB::Record* TexDB::Record::s_FreeRecords = NULL;
 TexDB::RecordArray* TexDB::Record::s_RecordArrays = NULL;
 TexDB::SubRecord* TexDB::SubRecord::s_FreeSubRecords = NULL;
+TexDB::SubRecordArray* TexDB::SubRecord::s_SubRecordArrays = NULL;
 int TexDB::RecordArraySize = 16;
+int TexDB::textureNamesCount = 1;
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -36,20 +38,34 @@ TexDB::TexDB(unsigned int MemorySize)
 		m_texmem_2_record = static_cast<Record**>(AllocBuffer(MemorySize >> 3, sizeof(Record*)));
 		memset(m_texmem_2_record, 0, (MemorySize >> 3) * sizeof(Record*));
 	#endif
-	// Prealloc Reocrds proportional to the amount of tex memory
-	RecordArraySize = MemorySize / (1024 * 1024) * 256; // preallocate 256 records per mb  
+	// Prealloc records proportional to the amount of tex memory
+	RecordArraySize = MemorySize / (1024 * 1024) * 256; // preallocate 256 records per mb
+	// Number of texture names to be allocaed by default (See GL_PALETTE_EXT path in PGTexture::MakeReady)
+	// This may allocate more texture names than needed if the condition is true
+	textureNamesCount = OpenGL.ColorAlphaUnit2 == 0
+	                 && OpenGL.FogTextureUnit >= GL_TEXTURE1_ARB
+	                 && InternalConfig.EXT_paletted_texture
+	                    ? 2 : 1;
 	// Prealloc some texdb records to avoid out of memory problems later
 	TexDB::Record::Init();
+	if (InternalConfig.GenerateSubTextures)
+	{
+		TexDB::SubRecord::Init();
+	}
 }
 
 TexDB::~TexDB( void )
 {
 	Clear();
 	delete[] m_first;
-	TexDB::SubRecord::Cleanup();
 	#ifdef OPTIMISE_TEXTURE_LOOKUP
 		if (m_texmem_2_record) FreeBuffer(m_texmem_2_record);
 	#endif
+	if (InternalConfig.GenerateSubTextures)
+	{
+		TexDB::SubRecord::Cleanup();
+	}
+	TexDB::Record::Cleanup();
 }
 
 TexDB::Record* TexDB::Find(FxU32 startAddress, const GrTexInfo *info, FxU32 hash, bool *pal_change, SubTexCoord_t* subtexcoords) const
@@ -320,6 +336,19 @@ void TexDB::Clear( void )
 	}
 }
 
+// Must be called right after the OpenGL context has been built
+void TexDB::initOpenGL(void)
+{
+	Record::initOpenGL();
+}
+
+// Must be called before destroying the OpenGL context
+void TexDB::cleanupOpenGL(void)
+{
+	Clear();
+	Record::cleanupOpenGL();
+}
+
 ///////////////////////////////////////////////////////////////////
 // TexDB::Record Class implementation
 ///////////////////////////////////////////////////////////////////
@@ -347,6 +376,49 @@ void TexDB::Record::Cleanup()
 	return;	
 }
 
+// Init free chunks with OpenGL stuff
+void TexDB::Record::initOpenGL(void)
+{
+	glReportErrors("TexDB::Record::initOpenGL");
+
+	RecordArray* ra = s_RecordArrays;
+	// Only the first chunk of free records is initialised,
+	// so this has to be called each time new records have been allocated
+	if (ra)
+	{
+		const GLfloat one = 1.0f;
+		for(int i = 0; i < 	RecordArraySize; i++)
+		{
+			// Pre-generate texture names (unused when using subtextures)
+			GLuint* num = &s_RecordArrays->records[i].texNum;
+			glGenTextures(TexDB::textureNamesCount, &num[0]);
+			glPrioritizeTextures(TexDB::textureNamesCount, &num[0], &one);
+			glReportError();
+		}
+	}
+	return;	
+}
+
+void TexDB::Record::cleanupOpenGL(void)
+{
+	glReportErrors("TexDB::Record::cleanupOpenGL");
+
+	RecordArray* ra = s_RecordArrays;
+	while (ra)
+	{
+		// Delete pre-generated texture names
+		for(int i = 0; i < 	RecordArraySize; i++)
+		{
+			glDeleteTextures(textureNamesCount, &ra->records[i].texNum);
+			glReportError();
+			ra->records[i].texNum =
+			ra->records[i].tex2Num = 0;
+		}
+		ra = ra->next;
+	}
+	return;	
+}
+
 void TexDB::Record::AllocRecords()
 {
 #ifdef OGL_UTEX_MEM
@@ -368,6 +440,7 @@ void* TexDB::Record::operator new(size_t s)
 	if (s_FreeRecords == NULL)
 	{
 		AllocRecords();
+		initOpenGL();
 	}
 	p = s_FreeRecords;
 	s_FreeRecords = p->next;
@@ -388,34 +461,11 @@ void TexDB::Record::operator delete(void* p)
 
 TexDB::Record::Record(TexDB::TextureMode texturemode)
 {
-	if (texturemode <= Two)
-	{
-		GLfloat one; 
-		glGenTextures(1, &texNum);
-		glPrioritizeTextures(1, &texNum, &one);
-		if (texturemode == TexDB::Two )
-		{
-			glGenTextures(1, &tex2Num);
-			glPrioritizeTextures(1, &tex2Num, &one);
-		}
-		else
-		{
-			tex2Num = 0;
-		}
-	}
 }
 
 TexDB::Record::~Record(void)
 {
-	if (subrecords == NULL)
-	{
-		glDeleteTextures(1, &texNum);
-		if (tex2Num != 0)
-		{
-			glDeleteTextures(1, &tex2Num);
-		}
-	}
-	else
+	if (subrecords)
 	{
 		SubRecord* next = this->subrecords;
 		for (SubRecord* s = next; next != NULL; s = next)
@@ -458,25 +508,83 @@ void TexDB::Record::WipeInside(const SubTexCoord_t* subtexcoords)
 // TexDB::SubRecord Class implementation
 ///////////////////////////////////////////////////////////////////
 
-TexDB::SubRecord::SubRecord(TexDB::TextureMode texturemode)
+void TexDB::SubRecord::Init()
 {
-	glGenTextures(1, &texNum);
-	if (texturemode == TexDB::SubTextureTwo)
-	{
-		glGenTextures(1, &tex2Num);
-	}
-	else
-	{
-		 tex2Num = 0;
-	}
+	// Alloc a couple of subrecords in advance
+	AllocSubRecords();
 }
 
-TexDB::SubRecord::~SubRecord( void )
+void TexDB::SubRecord::Cleanup()
 {
-	glDeleteTextures(1, &texNum);
-	if (tex2Num != 0)
+	SubRecordArray* sra = s_SubRecordArrays;
+	while (sra)
 	{
-		glDeleteTextures(1, &tex2Num);
+		SubRecordArray* next = sra->next;
+		FreeObject(sra);
+#ifdef OGL_UTEX_MEM
+	GlideMsg("Freed TexDB subrecord array at 0x%x\n", sra);
+#endif
+		sra = next;
+	}
+	s_SubRecordArrays = NULL;
+	s_FreeSubRecords = NULL;
+	return;	
+}
+
+void TexDB::SubRecord::initOpenGL()
+{
+	glReportErrors("TexDB::SubRecord::initOpenGL");
+
+	SubRecordArray* sra = s_SubRecordArrays;
+	// Only the first chunk of free records is initialised,
+	// so this has to be called each time new records have been allocated
+	if (sra)
+	{
+		const GLfloat one = 1.0f;
+		for(int i = 0; i < 	RecordArraySize; i++)
+		{
+			// Pre-generate texture names (unused when using subtextures)
+			GLuint* num = &s_SubRecordArrays->subrecords[i].texNum;
+			glGenTextures(TexDB::textureNamesCount, num);
+			glPrioritizeTextures(TexDB::textureNamesCount, num, &one);
+			glReportError();
+		}
+	}
+	return;	
+}
+	
+void TexDB::SubRecord::cleanupOpenGL()
+{
+	glReportErrors("TexDB::SubRecord::cleanupOpenGL");
+
+	SubRecordArray* sra = s_SubRecordArrays;
+	while (sra)
+	{
+		// Delete pre-generated texture names
+		for(int i = 0; i < 	RecordArraySize; i++)
+		{
+			glDeleteTextures(textureNamesCount, &sra->subrecords[i].texNum);
+			glReportError();
+			sra->subrecords[i].texNum =
+			sra->subrecords[i].tex2Num = 0;
+		}
+		sra = sra->next;
+	}
+	return;	
+}
+
+void TexDB::SubRecord::AllocSubRecords()
+{
+#ifdef OGL_UTEX_MEM
+	GlideMsg("Allocating TexDB record array with %d entries\n", RecordArraySize);
+#endif
+	SubRecordArray* next = s_SubRecordArrays ? s_SubRecordArrays->next : NULL;
+	s_SubRecordArrays = static_cast<SubRecordArray*>(AllocObject(sizeof(SubRecordArray) + (RecordArraySize -1) * sizeof(SubRecord)));
+	s_SubRecordArrays->next = next;
+	for(int i = 0; i < 	RecordArraySize; i++)
+	{
+		s_SubRecordArrays->subrecords[i].next = s_FreeSubRecords;
+		s_FreeSubRecords = &s_SubRecordArrays->subrecords[i];
 	}
 }
 
@@ -485,45 +593,30 @@ void* TexDB::SubRecord::operator new(size_t s)
 	SubRecord* p;
 	if (s_FreeSubRecords == NULL)
 	{
-		p = reinterpret_cast<SubRecord*>(NewPtrSys(s));
-#ifdef OGL_UTEX_MEM
-	GlideMsg("Allocated TexDB subrecord at 0x%x\n", p);
-#endif
+		AllocSubRecords();
+		initOpenGL();
 	}
-	else
-	{
-		p = s_FreeSubRecords;
-		s_FreeSubRecords = p->next;
+	p = s_FreeSubRecords;
+	s_FreeSubRecords = p->next;
 #ifdef OGL_UTEX_MEM
 	GlideMsg("Using TexDB subrecord at 0x%x\n", p);
 #endif
-	}
 	return p;
 }
 
 void TexDB::SubRecord::operator delete(void* p)
 {
 #ifdef OGL_UTEX_MEM
-	GlideMsg("Moving TexDB subrecord at 0x%x to free-list\n", p);
+	GlideMsg("Moving TexDB subrecord at 0x%x to free list\n", p);
 #endif
-//	reinterpret_cast<TexDB::SubRecord*>(p)->next = s_FreeSubRecords;
-	SubRecord*  s = reinterpret_cast<TexDB::SubRecord*>(p);
-	s->next = s_FreeSubRecords;
-	s_FreeSubRecords = s;
+	reinterpret_cast<TexDB::SubRecord*>(p)->next = s_FreeSubRecords;
+	s_FreeSubRecords = reinterpret_cast<TexDB::SubRecord*>(p);
 }
 
-void TexDB::SubRecord::Cleanup()
+TexDB::SubRecord::SubRecord(TexDB::TextureMode texturemode)
 {
-	SubRecord* s = s_FreeSubRecords;
-	while (s)
-	{
-#ifdef OGL_UTEX_MEM
-	GlideMsg("Deleting TexDB subrecord at 0x%x\n", s);
-#endif
-		SubRecord* next = s->next;
-		DisposePtr(reinterpret_cast<Ptr>(s));
-		s = next;
-	}
-	s_FreeSubRecords = NULL;
-	return;	
+}
+
+TexDB::SubRecord::~SubRecord( void )
+{
 }

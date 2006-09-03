@@ -30,7 +30,6 @@
 class TexDB  
 {
 public:
-	void Clear( void );
 	enum TextureMode
 	{
 		One = 0,
@@ -38,8 +37,14 @@ public:
 		SubTextureOne = 2,
 		SubTextureTwo = 3
 	};
+	
+	struct SubRecordArray;
 	struct SubRecord
 	{
+	protected:
+		static SubRecord* s_FreeSubRecords;
+		static SubRecordArray* s_SubRecordArrays;
+		static void AllocSubRecords();
 	public:
 		SubRecord *next;
 	public:
@@ -67,11 +72,18 @@ public:
 		};
 		void* operator new(size_t s);
 		void operator delete(void* p);
+		static void Init();
 		static void Cleanup();
-		static SubRecord* s_FreeSubRecords;
+		static void initOpenGL();
+		static void cleanupOpenGL();
 	private:
 		void* operator new[](size_t s); // not used so we don't need an implementation
 		void operator delete[](void* p);
+	};
+	struct SubRecordArray
+	{
+		SubRecordArray* next;
+		SubRecord subrecords[1];
 	};
 
 	struct RecordArray;
@@ -111,21 +123,28 @@ public:
 		void operator delete(void* p);
 		static void Init();
 		static void Cleanup();
+		static void initOpenGL();
+		static void cleanupOpenGL();
 	private:
 		void* operator new[](size_t s); // not used so we don't need an implementation
 		void operator delete[](void* p); // not used so we don't need an implementation
 	};
-	static int RecordArraySize;
 	struct RecordArray
 	{
 		RecordArray* next;
 		Record records[1];
 	};
+	TexDB(unsigned int MemorySize);
+	virtual ~TexDB(void);
+	void Clear(void);
+	void initOpenGL();
+	void cleanupOpenGL();
 	Record* Add(FxU32 startAddress, FxU32 endAddress, const GrTexInfo *info, FxU32 hash, TexDB::TextureMode texturemode, const SubTexCoord_t* subtexcoords);
 	Record* Find(FxU32 startAddress, const GrTexInfo *info, FxU32 hash, bool *pal_change, SubTexCoord_t* subtexcoords) const;
 	void WipeRange(FxU32 startAddress, FxU32 endAddress, FxU32 hash);
-	TexDB(unsigned int MemorySize);
-	virtual ~TexDB(void);
+	static int RecordArraySize;
+protected:
+	static int textureNamesCount;
 private:
 	unsigned int numberOfTexSections;
 	Record** m_first;
