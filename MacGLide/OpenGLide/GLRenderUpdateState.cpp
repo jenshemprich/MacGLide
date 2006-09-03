@@ -419,7 +419,20 @@ inline void SetChromaKeyAndAlphaState_update()
 		GlideMsg("Changing Chromakeymode state to enabled\n");
 #endif
 		// setup chroma keying
-		glAlphaFunc(GL_GEQUAL, 0.5);
+		const GLenum alphaTestFunction = GL_GEQUAL;
+		const GLfloat alphaTestReferenceValue = 0.5;
+#ifdef OPTIMISE_OPENGL_STATE_CHANGES
+		// Update only when necessary
+		if (alphaTestFunction != OpenGL.AlphaTestFunction
+		 || alphaTestReferenceValue != OpenGL.AlphaReferenceValue)
+		{
+			OpenGL.AlphaTestFunction = alphaTestFunction;
+			OpenGL.AlphaReferenceValue = alphaTestReferenceValue;
+#endif
+			glAlphaFunc(alphaTestFunction, alphaTestReferenceValue);
+#ifdef OPTIMISE_OPENGL_STATE_CHANGES
+		}
+#endif
 		glEnable(GL_ALPHA_TEST);
 		if (InternalConfig.EXT_compiled_vertex_array)
 		{
@@ -440,9 +453,14 @@ inline void SetChromaKeyAndAlphaState_update()
 		}
 		else 
 		{
-			if ( Glide.State.AlphaTestFunction != GR_CMP_ALWAYS )
+			if (Glide.State.AlphaTestFunction != GR_CMP_ALWAYS)
 			{
 				glEnable(GL_ALPHA_TEST);
+#ifndef OPTIMISE_OPENGL_STATE_CHANGES
+				// Restore previous values
+				OpenGL.AlphaTestFunction = GL_NEVER + Glide.State.AlphaTestFunction;
+				OpenGL.AlphaReferenceValue = Glide.State.AlphaReferenceValue * D1OVER255;
+#endif
 				glAlphaFunc(OpenGL.AlphaTestFunction, OpenGL.AlphaReferenceValue);
 			}
 			else
