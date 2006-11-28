@@ -626,7 +626,7 @@ void GlideFramebuffer::OnChromaKeyValueChanged()
 
 void GlideFramebuffer::SetAlpha(FxU32 alpha)
 {
-	if (m_must_write && m_framebuffer->PixelPipeline & m_alpha != alpha)
+	if (m_must_write && (m_framebuffer->PixelPipeline & m_alpha) != alpha)
 	{
 		WriteFrameBuffer(m_framebuffer->PixelPipeline);
 	}
@@ -635,7 +635,7 @@ void GlideFramebuffer::SetAlpha(FxU32 alpha)
 
 void GlideFramebuffer::SetDepth(GLfloat depth)
 {
-	if (m_must_write && m_framebuffer->PixelPipeline && m_depth != depth)
+	if (m_must_write && (m_framebuffer->PixelPipeline && m_depth) != depth)
 	{
 		WriteFrameBuffer(m_framebuffer->PixelPipeline);
 	}
