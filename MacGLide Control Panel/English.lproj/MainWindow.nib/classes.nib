@@ -2,16 +2,49 @@
     IBClasses = (
         {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
         {
-            ACTIONS = {noSplash = id; toggleMipmapping = id; }; 
             CLASS = MacGLideMainPanel; 
             LANGUAGE = ObjC; 
+            OUTLETS = {controller = MacGLideSettingsController; }; 
             SUPERCLASS = NSWindow; 
         }, 
         {
-            ACTIONS = {toggleTextureSmoothing = id; }; 
-            CLASS = NSWindow; 
+            ACTIONS = {
+                setAnisotropicFilteringLevel = id; 
+                setAutoEnableGameSpecificSettings = id; 
+                setBoardType = id; 
+                setFramebufferMemory = id; 
+                setFullSceneAnitaliasingLevel = id; 
+                setGammaBias = id; 
+                setMipmapping = id; 
+                setNoSplash = id; 
+                setRefreshRate = id; 
+                setResolution = id; 
+                setSettingsName = id; 
+                setShowShamelessPlug = id; 
+                setTextureMemory = id; 
+                setTextureUnits = id; 
+                setUseApplicationSpecificSettings = id; 
+            }; 
+            CLASS = MacGLideSettingsController; 
             LANGUAGE = ObjC; 
-            SUPERCLASS = NSResponder; 
+            OUTLETS = {
+                anisotropicFilteringLevel = NSSlider; 
+                autoEnableGameSpecificSettings = NSButton; 
+                boardType = NSPopUpButton; 
+                framebufferMemory = NSPopUpButton; 
+                fullSceneAnitaliasingLevel = NSSlider; 
+                gammaBias = NSSlider; 
+                mipmapping = NSButton; 
+                noSplash = NSButton; 
+                refreshRate = NSPopUpButton; 
+                resolution = NSPopUpButton; 
+                settingsName = NSPopUpButton; 
+                showShamelessPlug = NSButton; 
+                textureMemory = NSPopUpButton; 
+                textureUnits = NSPopUpButton; 
+                useUseApplicationSpecificSettings = NSButton; 
+            }; 
+            SUPERCLASS = NSObject; 
         }
     ); 
     IBVersion = 1; 
