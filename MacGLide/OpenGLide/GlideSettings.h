@@ -143,7 +143,9 @@ protected:
 	void defaults();
 	virtual IOErr read_defaults()=0;
 	virtual IOErr read()=0;
+	virtual bool isApplicationSpecific()=0;
 	IOErr read_settings();
+	IOErr saveSettings();
 	bool get(const char* setting, const char** value);
 	bool get(const char* setting, unsigned long* value);
 	bool get(const char* setting, float* value);
