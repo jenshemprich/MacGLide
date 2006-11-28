@@ -11,12 +11,13 @@
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		B419FB2A0A32251C0070C008 /* Displays.png in Resources */ = {isa = PBXBuildFile; fileRef = B419FB290A32251C0070C008 /* Displays.png */; };
+		B427E8E20A9CFF2B00B42C21 /* MacGLideSettingsController.mm in Sources */ = {isa = PBXBuildFile; fileRef = B427E8E10A9CFF2B00B42C21 /* MacGLideSettingsController.mm */; };
 		B43FFB0509FD3D350094A3E3 /* GlideSettings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B43FFB0409FD3D350094A3E3 /* GlideSettings.cpp */; };
 		B44507C90A250ECA008ACE63 /* opengl.gif in Resources */ = {isa = PBXBuildFile; fileRef = B44507C80A250ECA008ACE63 /* opengl.gif */; };
 		B452D05509F9756E00A4F626 /* GlideSettings_iostream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B452D05309F9756E00A4F626 /* GlideSettings_iostream.cpp */; };
 		B467E8CA09A6410500625DA6 /* 3Dfx-Logo_25%.png in Resources */ = {isa = PBXBuildFile; fileRef = B467E8C909A6410500625DA6 /* 3Dfx-Logo_25%.png */; };
 		B467E92709A65EFD00625DA6 /* 3Dfx-Logo.icns in Resources */ = {isa = PBXBuildFile; fileRef = B467E92609A65EFD00625DA6 /* 3Dfx-Logo.icns */; };
-		B46D4BC80A064797002A428F /* GlideSettings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B46D4BC70A064796002A428F /* GlideSettings.cpp */; };
+		B4DC13F40A3AF2660094E754 /* GlideSettings_FSp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B4DC13F30A3AF2660094E754 /* GlideSettings_FSp.cpp */; };
 		B4DE41CB0A18BF99002BD718 /* MacGLideMainPanel.mm in Sources */ = {isa = PBXBuildFile; fileRef = B4DE41CA0A18BF99002BD718 /* MacGLideMainPanel.mm */; };
 		B4E30D5F09A0BD2A003DD374 /* MainWindow.nib in Resources */ = {isa = PBXBuildFile; fileRef = B4E30D5D09A0BD2A003DD374 /* MainWindow.nib */; };
 /* End PBXBuildFile section */
@@ -32,6 +33,8 @@
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* MacGLide Control Panel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MacGLide Control Panel.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B419FB290A32251C0070C008 /* Displays.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Displays.png; path = images/Displays.png; sourceTree = "<group>"; };
+		B427E8DD0A9CFEE100B42C21 /* MacGLideSettingsController.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = MacGLideSettingsController.h; sourceTree = "<group>"; };
+		B427E8E10A9CFF2B00B42C21 /* MacGLideSettingsController.mm */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.objcpp; path = MacGLideSettingsController.mm; sourceTree = "<group>"; };
 		B43FFB0409FD3D350094A3E3 /* GlideSettings.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = GlideSettings.cpp; path = ../MacGLide/OpenGLide/GlideSettings.cpp; sourceTree = SOURCE_ROOT; };
 		B44507C80A250ECA008ACE63 /* opengl.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; name = opengl.gif; path = images/opengl.gif; sourceTree = "<group>"; };
 		B452D05309F9756E00A4F626 /* GlideSettings_iostream.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = GlideSettings_iostream.cpp; path = ../MacGLide/OpenGLide/GlideSettings_iostream.cpp; sourceTree = SOURCE_ROOT; };
@@ -39,8 +42,8 @@
 		B467E8C909A6410500625DA6 /* 3Dfx-Logo_25%.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "3Dfx-Logo_25%.png"; path = "images/3Dfx-Logo_25%.png"; sourceTree = "<group>"; };
 		B467E92609A65EFD00625DA6 /* 3Dfx-Logo.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = "3Dfx-Logo.icns"; path = "images/3Dfx-Logo.icns"; sourceTree = "<group>"; };
 		B46D4BC60A064796002A428F /* GlideSettings_FSp.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = GlideSettings_FSp.h; path = ../MacGLide/Mac/GlideSettings_FSp.h; sourceTree = SOURCE_ROOT; };
-		B46D4BC70A064796002A428F /* GlideSettings.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = GlideSettings.cpp; path = ../MacGLide/Mac/GlideSettings.cpp; sourceTree = SOURCE_ROOT; };
 		B483759009F67BFC004826B1 /* GlideSettings.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = GlideSettings.h; path = ../MacGLide/OpenGLide/GlideSettings.h; sourceTree = SOURCE_ROOT; };
+		B4DC13F30A3AF2660094E754 /* GlideSettings_FSp.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = GlideSettings_FSp.cpp; path = ../MacGLide/Mac/GlideSettings_FSp.cpp; sourceTree = SOURCE_ROOT; };
 		B4DE41C90A18BF99002BD718 /* MacGLideMainPanel.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = MacGLideMainPanel.h; sourceTree = "<group>"; };
 		B4DE41CA0A18BF99002BD718 /* MacGLideMainPanel.mm */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.objcpp; path = MacGLideMainPanel.mm; sourceTree = "<group>"; };
 		B4E30D5E09A0BD2A003DD374 /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/MainWindow.nib; sourceTree = "<group>"; };
@@ -61,8 +64,10 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				B427E8E10A9CFF2B00B42C21 /* MacGLideSettingsController.mm */,
+				B427E8DD0A9CFEE100B42C21 /* MacGLideSettingsController.h */,
+				B4DC13F30A3AF2660094E754 /* GlideSettings_FSp.cpp */,
 				B46D4BC60A064796002A428F /* GlideSettings_FSp.h */,
-				B46D4BC70A064796002A428F /* GlideSettings.cpp */,
 				B43FFB0409FD3D350094A3E3 /* GlideSettings.cpp */,
 				B452D05309F9756E00A4F626 /* GlideSettings_iostream.cpp */,
 				B452D05409F9756E00A4F626 /* GlideSettings_iostream.h */,
@@ -203,8 +208,9 @@
 				8D11072D0486CEB800E47090 /* main.m in Sources */,
 				B452D05509F9756E00A4F626 /* GlideSettings_iostream.cpp in Sources */,
 				B43FFB0509FD3D350094A3E3 /* GlideSettings.cpp in Sources */,
-				B46D4BC80A064797002A428F /* GlideSettings.cpp in Sources */,
 				B4DE41CB0A18BF99002BD718 /* MacGLideMainPanel.mm in Sources */,
+				B4DC13F40A3AF2660094E754 /* GlideSettings_FSp.cpp in Sources */,
+				B427E8E20A9CFF2B00B42C21 /* MacGLideSettingsController.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -239,6 +245,7 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_REUSE_STRINGS = NO;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				PRODUCT_NAME = "MacGLide Control Panel";
@@ -257,6 +264,7 @@
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_REUSE_STRINGS = NO;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				PRODUCT_NAME = "MacGLide Control Panel";

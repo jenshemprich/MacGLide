@@ -1,10 +1,11 @@
 /* MacGLideMainPanel */
 
 #import <Cocoa/Cocoa.h>
+#import "MacGLideSettingsController.h"
 
 @interface MacGLideMainPanel : NSWindow
 {
+	IBOutlet MacGLideSettingsController* controller;
 }
-- (IBAction)toggleMipmapping:(id)sender;
-- (IBAction)toogleUseGameSpecificOptimisations:(id)sender;
+// - (id)initWithContentRect:(NSRect)contentRect styleMask:(unsigned int)styleMask backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
 @end

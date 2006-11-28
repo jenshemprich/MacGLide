@@ -7,12 +7,64 @@
 		addToTargets = (
 			8D1107260486CEB800E47090 /* MacGLide Control Panel */,
 		);
+		breakpoints = (
+			B4EC72250AF6164100828538 /* MacGLideSettingsController.mm:66 */,
+			B4EC72270AF6164200828538 /* MacGLideSettingsController.mm:61 */,
+			B4EC72290AF6164300828538 /* MacGLideSettingsController.mm:56 */,
+			B439EE190AF63A5300BAE724 /* MacGLideSettingsController.mm:27 */,
+			B439EE340AF63A8F00BAE724 /* MacGLideSettingsController.mm:89 */,
+			B439EE5E0AF63CA600BAE724 /* MacGLideSettingsController.mm:37 */,
+		);
 		breakpointsGroup = B4F7C7F909A508AB0001160D /* XCBreakpointsBucket */;
 		codeSenseManager = B4E30D5A09A0BC9A003DD374 /* Code sense */;
 		executables = (
 			B4E30D4B09A0BC8D003DD374 /* MacGLide Control Panel */,
 		);
 		perUserDictionary = {
+			"PBXConfiguration.PBXBreakpointsDataSource.v1:1CA1AED706398EBD00589147" = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXBreakpointsDataSource_BreakpointID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					20,
+					20,
+					291,
+					20,
+					255,
+					125,
+					20,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXBreakpointsDataSource_ActionID,
+					PBXBreakpointsDataSource_TypeID,
+					PBXBreakpointsDataSource_BreakpointID,
+					PBXBreakpointsDataSource_UseID,
+					PBXBreakpointsDataSource_LocationID,
+					PBXBreakpointsDataSource_ConditionID,
+					PBXBreakpointsDataSource_ContinueID,
+				);
+			};
+			"PBXConfiguration.PBXBreakpointsDataSource.v1:1CA23EDF0692099D00951B8B" = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXBreakpointsDataSource_BreakpointID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					20,
+					20,
+					266,
+					20,
+					165,
+					165,
+					20,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXBreakpointsDataSource_ActionID,
+					PBXBreakpointsDataSource_TypeID,
+					PBXBreakpointsDataSource_BreakpointID,
+					PBXBreakpointsDataSource_UseID,
+					PBXBreakpointsDataSource_LocationID,
+					PBXBreakpointsDataSource_ConditionID,
+					PBXBreakpointsDataSource_ContinueID,
+				);
+			};
 			PBXConfiguration.PBXFileTableDataSource3.PBXErrorsWarningsDataSource = {
 				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
 				PBXFileTableDataSourceColumnSortingKey = PBXErrorsWarningsDataSource_LocationID;
@@ -46,7 +98,7 @@
 				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
 				PBXFileTableDataSourceColumnWidthsKey = (
 					20,
-					554,
+					482,
 					20,
 					48,
 					43,
@@ -85,8 +137,33 @@
 					PBXFileDataSource_Warnings_ColumnID,
 				);
 			};
-			PBXPerProjectTemplateStateSaveDate = 171316574;
-			PBXWorkspaceStateSaveDate = 171316574;
+			PBXPerProjectTemplateStateSaveDate = 186008316;
+			PBXWorkspaceStateSaveDate = 186008316;
+		};
+		perUserProjectItems = {
+			B439EE1E0AF63A5500BAE724 /* PBXTextBookmark */ = B439EE1E0AF63A5500BAE724 /* PBXTextBookmark */;
+			B439EE210AF63A5500BAE724 /* PBXTextBookmark */ = B439EE210AF63A5500BAE724 /* PBXTextBookmark */;
+			B439EE2B0AF63A5700BAE724 /* PBXTextBookmark */ = B439EE2B0AF63A5700BAE724 /* PBXTextBookmark */;
+			B439EE670AF6479F00BAE724 /* PBXTextBookmark */ = B439EE670AF6479F00BAE724 /* PBXTextBookmark */;
+			B47770B00AF38D200083B671 /* PBXTextBookmark */ = B47770B00AF38D200083B671 /* PBXTextBookmark */;
+			B47770B10AF38D200083B671 /* PBXTextBookmark */ = B47770B10AF38D200083B671 /* PBXTextBookmark */;
+			B47770FD0AF3927D0083B671 /* PBXTextBookmark */ = B47770FD0AF3927D0083B671 /* PBXTextBookmark */;
+			B4C6D28F0B1642FB00A4F7AF /* PBXTextBookmark */ = B4C6D28F0B1642FB00A4F7AF /* PBXTextBookmark */;
+			B4C6D2CC0B16440300A4F7AF /* PBXTextBookmark */ = B4C6D2CC0B16440300A4F7AF /* PBXTextBookmark */;
+			B4C6D2CD0B16440300A4F7AF /* PBXTextBookmark */ = B4C6D2CD0B16440300A4F7AF /* PBXTextBookmark */;
+			B4C6D2CE0B16440600A4F7AF /* PBXTextBookmark */ = B4C6D2CE0B16440600A4F7AF /* PBXTextBookmark */;
+			B4C6D2D50B16445300A4F7AF /* PBXTextBookmark */ = B4C6D2D50B16445300A4F7AF /* PBXTextBookmark */;
+			B4C6D2D60B16445300A4F7AF /* PBXTextBookmark */ = B4C6D2D60B16445300A4F7AF /* PBXTextBookmark */;
+			B4EC712B0AF6064100828538 /* PBXTextBookmark */ = B4EC712B0AF6064100828538 /* PBXTextBookmark */;
+			B4EC712C0AF6064100828538 /* PBXTextBookmark */ = B4EC712C0AF6064100828538 /* PBXTextBookmark */;
+			B4EC712F0AF6064100828538 /* PBXTextBookmark */ = B4EC712F0AF6064100828538 /* PBXTextBookmark */;
+			B4EC71300AF6064100828538 /* PBXTextBookmark */ = B4EC71300AF6064100828538 /* PBXTextBookmark */;
+			B4EC71310AF6064100828538 /* PBXTextBookmark */ = B4EC71310AF6064100828538 /* PBXTextBookmark */;
+			B4EC71320AF6064100828538 /* PBXTextBookmark */ = B4EC71320AF6064100828538 /* PBXTextBookmark */;
+			B4EC722D0AF616CE00828538 /* PBXTextBookmark */ = B4EC722D0AF616CE00828538 /* PBXTextBookmark */;
+			B4EC72310AF616CE00828538 /* PBXTextBookmark */ = B4EC72310AF616CE00828538 /* PBXTextBookmark */;
+			B4EC72340AF616D100828538 /* PBXTextBookmark */ = B4EC72340AF616D100828538 /* PBXTextBookmark */;
+			B4EC723B0AF6172A00828538 /* PBXTextBookmark */ = B4EC723B0AF6172A00828538 /* PBXTextBookmark */;
 		};
 		sourceControlManager = B4E30D5909A0BC9A003DD374 /* Source Control */;
 		userBuildSettings = {
@@ -97,13 +174,13 @@
 			sepNavIntBoundsRect = "{{0, 0}, {723, 322}}";
 			sepNavSelRange = "{275, 0}";
 			sepNavVisRect = "{{0, 0}, {723, 322}}";
-			sepNavWindowFrame = "{{179, 0}, {762, 451}}";
+			sepNavWindowFrame = "{{95, 159}, {762, 451}}";
 		};
 	};
 	32CA4F630368D1EE00C91783 /* MacGLide Control Panel_Prefix.pch */ = {
 		uiCtxt = {
 			sepNavIntBoundsRect = "{{0, 0}, {725, 325}}";
-			sepNavSelRange = "{256, 0}";
+			sepNavSelRange = "{377, 0}";
 			sepNavVisRect = "{{0, 0}, {725, 325}}";
 			sepNavWindowFrame = "{{7, 36}, {764, 454}}";
 		};
@@ -122,12 +199,120 @@
 			sepNavWindowFrame = "{{216, 83}, {713, 596}}";
 		};
 	};
+	B427E8DD0A9CFEE100B42C21 /* MacGLideSettingsController.h */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {640, 910}}";
+			sepNavSelRange = "{1435, 0}";
+			sepNavVisRect = "{{0, 126}, {640, 463}}";
+			sepNavWindowFrame = "{{131, 57}, {640, 689}}";
+		};
+	};
+	B427E8E10A9CFF2B00B42C21 /* MacGLideSettingsController.mm */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {946, 2534}}";
+			sepNavSelRange = "{332, 27}";
+			sepNavVisRect = "{{0, 396}, {946, 231}}";
+			sepNavWindowFrame = "{{235, 0}, {750, 692}}";
+		};
+	};
+	B439EDEE0AF637E700BAE724 /* sdk2_3dfx.h */ = {
+		isa = PBXFileReference;
+		lastKnownFileType = sourcecode.c.h;
+		name = sdk2_3dfx.h;
+		path = "/Users/jens/Developer/MacGLide/MacGLide Control Panel/../MacGLide/OpenGLide/sdk2_3dfx.h";
+		sourceTree = "<absolute>";
+	};
+	B439EE190AF63A5300BAE724 /* MacGLideSettingsController.mm:27 */ = {
+		isa = PBXFileBreakpoint;
+		actions = (
+		);
+		breakpointStyle = 0;
+		continueAfterActions = 0;
+		delayBeforeContinue = 0;
+		fileReference = B427E8E10A9CFF2B00B42C21 /* MacGLideSettingsController.mm */;
+		functionName = "-init";
+		hitCount = 1;
+		lineNumber = 27;
+		location = MacGLideSettingsController.ob;
+		modificationTime = 186008435.73781;
+		state = 2;
+	};
+	B439EE1E0AF63A5500BAE724 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = B439EDEE0AF637E700BAE724 /* sdk2_3dfx.h */;
+		name = "#  warning define FX_ENTRY & FX_CALL for your compiler";
+		rLen = 55;
+		rLoc = 2297;
+		rType = 0;
+		vrLen = 602;
+		vrLoc = 1990;
+	};
+	B439EE210AF63A5500BAE724 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = B4DC13F30A3AF2660094E754 /* GlideSettings_FSp.cpp */;
+		name = dupFNErr;
+		rLen = 8;
+		rLoc = 4331;
+		rType = 0;
+		vrLen = 777;
+		vrLoc = 4945;
+	};
+	B439EE2B0AF63A5700BAE724 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = B439EDEE0AF637E700BAE724 /* sdk2_3dfx.h */;
+		name = "#  warning define FX_ENTRY & FX_CALL for your compiler";
+		rLen = 55;
+		rLoc = 2297;
+		rType = 0;
+		vrLen = 798;
+		vrLoc = 1910;
+	};
+	B439EE340AF63A8F00BAE724 /* MacGLideSettingsController.mm:89 */ = {
+		isa = PBXFileBreakpoint;
+		actions = (
+		);
+		breakpointStyle = 0;
+		continueAfterActions = 0;
+		delayBeforeContinue = 0;
+		fileReference = B427E8E10A9CFF2B00B42C21 /* MacGLideSettingsController.mm */;
+		functionName = "-saveSettings";
+		hitCount = 1;
+		lineNumber = 89;
+		location = MacGLideSettingsController.ob;
+		modificationTime = 186008486.918484;
+		state = 1;
+	};
+	B439EE5E0AF63CA600BAE724 /* MacGLideSettingsController.mm:37 */ = {
+		isa = PBXFileBreakpoint;
+		actions = (
+		);
+		breakpointStyle = 0;
+		continueAfterActions = 0;
+		delayBeforeContinue = 0;
+		fileReference = B427E8E10A9CFF2B00B42C21 /* MacGLideSettingsController.mm */;
+		functionName = "-init:";
+		hitCount = 32;
+		lineNumber = 37;
+		location = MacGLideSettingsController.ob;
+		modificationTime = 186008620.451515;
+		state = 1;
+	};
+	B439EE670AF6479F00BAE724 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = B43FFB0409FD3D350094A3E3 /* GlideSettings.cpp */;
+		name = "GlideSettings.cpp: 269";
+		rLen = 0;
+		rLoc = 8938;
+		rType = 0;
+		vrLen = 782;
+		vrLoc = 1927;
+	};
 	B43FFB0409FD3D350094A3E3 /* GlideSettings.cpp */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {693, 8232}}";
-			sepNavSelRange = "{426, 0}";
-			sepNavVisRect = "{{0, 0}, {693, 482}}";
-			sepNavWindowFrame = "{{36, 21}, {732, 611}}";
+			sepNavIntBoundsRect = "{{0, 0}, {782, 8876}}";
+			sepNavSelRange = "{8938, 0}";
+			sepNavVisRect = "{{0, 631}, {680, 601}}";
+			sepNavWindowFrame = "{{248, 17}, {732, 611}}";
 		};
 	};
 	B452D05309F9756E00A4F626 /* GlideSettings_iostream.cpp */ = {
@@ -148,42 +333,129 @@
 	};
 	B46D4BC60A064796002A428F /* GlideSettings_FSp.h */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {725, 602}}";
-			sepNavSelRange = "{434, 0}";
+			sepNavIntBoundsRect = "{{0, 0}, {725, 616}}";
+			sepNavSelRange = "{458, 16}";
 			sepNavVisRect = "{{0, 0}, {725, 325}}";
 			sepNavWindowFrame = "{{15, 287}, {764, 454}}";
 		};
 	};
-	B46D4BC70A064796002A428F /* GlideSettings.cpp */ = {
-		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {860, 3388}}";
-			sepNavSelRange = "{3812, 0}";
-			sepNavVisRect = "{{0, 1615}, {725, 325}}";
-			sepNavWindowFrame = "{{38, 266}, {764, 454}}";
-		};
+	B47770B00AF38D200083B671 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = B427E8E10A9CFF2B00B42C21 /* MacGLideSettingsController.mm */;
+		name = "MacGLideSettingsController.mm: 17";
+		rLen = 0;
+		rLoc = 437;
+		rType = 0;
+		vrLen = 409;
+		vrLoc = 253;
+	};
+	B47770B10AF38D200083B671 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = B43FFB0409FD3D350094A3E3 /* GlideSettings.cpp */;
+		name = "GlideSettings.cpp: 275";
+		rLen = 0;
+		rLoc = 9200;
+		rType = 0;
+		vrLen = 181;
+		vrLoc = 10450;
+	};
+	B47770FD0AF3927D0083B671 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = B43FFB0409FD3D350094A3E3 /* GlideSettings.cpp */;
+		name = "GlideSettings.cpp: 275";
+		rLen = 0;
+		rLoc = 9200;
+		rType = 0;
+		vrLen = 0;
+		vrLoc = 0;
 	};
 	B483759009F67BFC004826B1 /* GlideSettings.h */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {674, 2170}}";
-			sepNavSelRange = "{2260, 13}";
-			sepNavVisRect = "{{0, 881}, {674, 329}}";
+			sepNavIntBoundsRect = "{{0, 0}, {674, 2324}}";
+			sepNavSelRange = "{3209, 18}";
+			sepNavVisRect = "{{0, 1467}, {674, 329}}";
 			sepNavWindowFrame = "{{272, 31}, {713, 458}}";
+		};
+	};
+	B4C6D28F0B1642FB00A4F7AF /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = B427E8E10A9CFF2B00B42C21 /* MacGLideSettingsController.mm */;
+		rLen = 1;
+		rLoc = 17;
+		rType = 1;
+	};
+	B4C6D2CC0B16440300A4F7AF /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = B4DC13F30A3AF2660094E754 /* GlideSettings_FSp.cpp */;
+		name = retu;
+		rLen = 4;
+		rLoc = 1519;
+		rType = 0;
+		vrLen = 1327;
+		vrLoc = 1464;
+	};
+	B4C6D2CD0B16440300A4F7AF /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = B427E8E10A9CFF2B00B42C21 /* MacGLideSettingsController.mm */;
+		name = "err = userConfig.load();";
+		rLen = 27;
+		rLoc = 332;
+		rType = 0;
+		vrLen = 471;
+		vrLoc = 39;
+	};
+	B4C6D2CE0B16440600A4F7AF /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = B4DC13F30A3AF2660094E754 /* GlideSettings_FSp.cpp */;
+		name = retu;
+		rLen = 4;
+		rLoc = 1519;
+		rType = 0;
+		vrLen = 1008;
+		vrLoc = 1464;
+	};
+	B4C6D2D50B16445300A4F7AF /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = B427E8E10A9CFF2B00B42C21 /* MacGLideSettingsController.mm */;
+		name = "err = userConfig.load();";
+		rLen = 27;
+		rLoc = 332;
+		rType = 0;
+		vrLen = 511;
+		vrLoc = 40;
+	};
+	B4C6D2D60B16445300A4F7AF /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = B427E8E10A9CFF2B00B42C21 /* MacGLideSettingsController.mm */;
+		name = "err = userConfig.load();";
+		rLen = 27;
+		rLoc = 332;
+		rType = 0;
+		vrLen = 534;
+		vrLoc = 39;
+	};
+	B4DC13F30A3AF2660094E754 /* GlideSettings_FSp.cpp */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {848, 3598}}";
+			sepNavSelRange = "{1519, 4}";
+			sepNavVisRect = "{{0, 616}, {640, 463}}";
+			sepNavWindowFrame = "{{15, 19}, {781, 722}}";
 		};
 	};
 	B4DE41C90A18BF99002BD718 /* MacGLideMainPanel.h */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {725, 325}}";
-			sepNavSelRange = "{89, 0}";
-			sepNavVisRect = "{{0, 0}, {725, 325}}";
-			sepNavWindowFrame = "{{191, 105}, {764, 454}}";
+			sepNavIntBoundsRect = "{{0, 0}, {926, 386}}";
+			sepNavSelRange = "{88, 0}";
+			sepNavVisRect = "{{0, 0}, {640, 386}}";
+			sepNavWindowFrame = "{{167, 66}, {764, 454}}";
 		};
 	};
 	B4DE41CA0A18BF99002BD718 /* MacGLideMainPanel.mm */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {725, 325}}";
-			sepNavSelRange = "{126, 0}";
-			sepNavVisRect = "{{0, 0}, {725, 325}}";
-			sepNavWindowFrame = "{{61, 245}, {764, 454}}";
+			sepNavIntBoundsRect = "{{0, 0}, {902, 392}}";
+			sepNavSelRange = "{57, 0}";
+			sepNavVisRect = "{{0, 0}, {640, 386}}";
+			sepNavWindowFrame = "{{51, 105}, {734, 574}}";
 		};
 	};
 	B4E30D4B09A0BC8D003DD374 /* MacGLide Control Panel */ = {
@@ -211,6 +483,42 @@
 		};
 		sourceDirectories = (
 		);
+		variableFormatDictionary = {
+			$v0 = 1;
+			$v1 = 1;
+			$v10 = 1;
+			$v11 = 1;
+			$v12 = 1;
+			$v13 = 1;
+			$v14 = 1;
+			$v15 = 1;
+			$v16 = 1;
+			$v17 = 1;
+			$v18 = 1;
+			$v19 = 1;
+			$v2 = 1;
+			$v20 = 1;
+			$v21 = 1;
+			$v22 = 1;
+			$v23 = 1;
+			$v24 = 1;
+			$v25 = 1;
+			$v26 = 1;
+			$v27 = 1;
+			$v28 = 1;
+			$v29 = 1;
+			$v3 = 1;
+			$v30 = 1;
+			$v31 = 1;
+			$v4 = 1;
+			$v5 = 1;
+			$v6 = 1;
+			$v7 = 1;
+			$v8 = 1;
+			$v9 = 1;
+			$vrsave = 1;
+			$vscr = 1;
+		};
 	};
 	B4E30D5909A0BC9A003DD374 /* Source Control */ = {
 		isa = PBXSourceControlManager;
@@ -225,10 +533,161 @@
 		isa = PBXCodeSenseManager;
 		indexTemplatePath = "";
 	};
+	B4EC712B0AF6064100828538 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = B4DE41CA0A18BF99002BD718 /* MacGLideMainPanel.mm */;
+		name = "MacGLideMainPanel.mm: 3";
+		rLen = 0;
+		rLoc = 57;
+		rType = 0;
+		vrLen = 588;
+		vrLoc = 0;
+	};
+	B4EC712C0AF6064100828538 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = B4DE41C90A18BF99002BD718 /* MacGLideMainPanel.h */;
+		name = "MacGLideMainPanel.h: 5";
+		rLen = 0;
+		rLoc = 88;
+		rType = 0;
+		vrLen = 340;
+		vrLoc = 0;
+	};
+	B4EC712F0AF6064100828538 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = B427E8E10A9CFF2B00B42C21 /* MacGLideSettingsController.mm */;
+		name = "NSString* s = [sender titleOfSelectedItem];";
+		rLen = 46;
+		rLoc = 2763;
+		rType = 0;
+		vrLen = 623;
+		vrLoc = 2391;
+	};
+	B4EC71300AF6064100828538 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = B427E8DD0A9CFEE100B42C21 /* MacGLideSettingsController.h */;
+		name = "MacGLideSettingsController.h: 30";
+		rLen = 0;
+		rLoc = 765;
+		rType = 0;
+		vrLen = 1050;
+		vrLoc = 270;
+	};
+	B4EC71310AF6064100828538 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = B4DE41CA0A18BF99002BD718 /* MacGLideMainPanel.mm */;
+		name = "MacGLideMainPanel.mm: 3";
+		rLen = 0;
+		rLoc = 57;
+		rType = 0;
+		vrLen = 588;
+		vrLoc = 0;
+	};
+	B4EC71320AF6064100828538 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = B4DE41C90A18BF99002BD718 /* MacGLideMainPanel.h */;
+		name = "MacGLideMainPanel.h: 5";
+		rLen = 0;
+		rLoc = 88;
+		rType = 0;
+		vrLen = 340;
+		vrLoc = 0;
+	};
+	B4EC72250AF6164100828538 /* MacGLideSettingsController.mm:66 */ = {
+		isa = PBXFileBreakpoint;
+		actions = (
+		);
+		breakpointStyle = 0;
+		continueAfterActions = 0;
+		delayBeforeContinue = 0;
+		fileReference = B427E8E10A9CFF2B00B42C21 /* MacGLideSettingsController.mm */;
+		functionName = "-updateButton:floatValue:";
+		hitCount = 1;
+		lineNumber = 66;
+		location = MacGLideSettingsController.ob;
+		modificationTime = 186008435.733022;
+		state = 2;
+	};
+	B4EC72270AF6164200828538 /* MacGLideSettingsController.mm:61 */ = {
+		isa = PBXFileBreakpoint;
+		actions = (
+		);
+		breakpointStyle = 0;
+		continueAfterActions = 0;
+		delayBeforeContinue = 0;
+		fileReference = B427E8E10A9CFF2B00B42C21 /* MacGLideSettingsController.mm */;
+		functionName = "-updateButton:ulongValue:";
+		hitCount = 1;
+		lineNumber = 61;
+		location = MacGLideSettingsController.ob;
+		modificationTime = 186008435.735256;
+		state = 2;
+	};
+	B4EC72290AF6164300828538 /* MacGLideSettingsController.mm:56 */ = {
+		isa = PBXFileBreakpoint;
+		actions = (
+		);
+		breakpointStyle = 0;
+		continueAfterActions = 0;
+		delayBeforeContinue = 0;
+		fileReference = B427E8E10A9CFF2B00B42C21 /* MacGLideSettingsController.mm */;
+		functionName = "-updateButton:boolValue:";
+		hitCount = 1;
+		lineNumber = 56;
+		location = MacGLideSettingsController.ob;
+		modificationTime = 186008435.736552;
+		state = 2;
+	};
+	B4EC722D0AF616CE00828538 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 29B97316FDCFA39411CA2CEA /* main.m */;
+		name = "main.m: 13";
+		rLen = 0;
+		rLoc = 214;
+		rType = 0;
+		vrLen = 275;
+		vrLoc = 0;
+	};
+	B4EC72310AF616CE00828538 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 29B97316FDCFA39411CA2CEA /* main.m */;
+		name = "main.m: 13";
+		rLen = 0;
+		rLoc = 214;
+		rType = 0;
+		vrLen = 275;
+		vrLoc = 0;
+	};
+	B4EC72340AF616D100828538 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = B427E8DD0A9CFEE100B42C21 /* MacGLideSettingsController.h */;
+		name = "MacGLideSettingsController.h: setRefreshRate:";
+		rLen = 0;
+		rLoc = 1435;
+		rType = 0;
+		vrLen = 1373;
+		vrLoc = 0;
+	};
+	B4EC723B0AF6172A00828538 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = B427E8DD0A9CFEE100B42C21 /* MacGLideSettingsController.h */;
+		name = "MacGLideSettingsController.h: setRefreshRate:";
+		rLen = 0;
+		rLoc = 1435;
+		rType = 0;
+		vrLen = 1180;
+		vrLoc = 193;
+	};
 	B4F7C7F909A508AB0001160D /* XCBreakpointsBucket */ = {
 		isa = XCBreakpointsBucket;
-		name = "Project Breakpoints";
+		name = "MacGLide Control Panel";
 		objects = (
+			B4EC72250AF6164100828538 /* MacGLideSettingsController.mm:66 */,
+			B4EC72270AF6164200828538 /* MacGLideSettingsController.mm:61 */,
+			B4EC72290AF6164300828538 /* MacGLideSettingsController.mm:56 */,
+			B439EE190AF63A5300BAE724 /* MacGLideSettingsController.mm:27 */,
+			B439EE340AF63A8F00BAE724 /* MacGLideSettingsController.mm:89 */,
+			B439EE5E0AF63CA600BAE724 /* MacGLideSettingsController.mm:37 */,
 		);
 	};
 }

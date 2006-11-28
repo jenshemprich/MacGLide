@@ -14,4 +14,4 @@
 #include "sdk2_glide.h"
 
 const int StringBufferSize = 256;
-void GlideMsg(const char *message, ...);
+void GlideMsg(const char* message, ...);
