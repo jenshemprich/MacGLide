@@ -292,12 +292,12 @@ GlideSettings::IOErr GlideSettings::load()
 			err = create_defaults();
 			if (err == noErr)
 			{
-				err = save();
+				err = saveSettings();
 			}
 		}
 		if (err == noErr)
 		{
-			if (UseApplicationSpecificSettings)
+			if (isApplicationSpecific() && UseApplicationSpecificSettings)
 			{
 				err = read();
 				if (err == noErr)
@@ -323,18 +323,17 @@ GlideSettings::IOErr GlideSettings::load()
 						err = create();
 						if (err == noErr)
 						{
-							err = save();
+							err = saveSettings();
 						}
 					}
 				}
 			}
 		}
-//		if (!success) err = fnfErr;
 	}
 	return err;
 }
 
-GlideSettings::IOErr GlideSettings::save()
+GlideSettings::IOErr GlideSettings::saveSettings()
 {
 #ifdef OGL_DEBUG
 	GlideMsg("Saving...\n");
@@ -613,4 +612,23 @@ GlideSettings::IOErr GlideSettings::put(const char* setting, float value)
 GlideSettings::IOErr GlideSettings::put(const char* setting, bool value)
 {
 	return put(setting, value ? "1" : "0");
+}
+
+GlideSettings::IOErr GlideSettings::save()
+{
+	IOErr err = noErr;
+	if (isApplicationSpecific())
+	{
+		err = create();
+	}
+	else
+	{
+		err = create_defaults();
+	}
+	if (err == noErr)
+	{
+		err = saveSettings();
+	}
+	close();
+	return noErr;
 }

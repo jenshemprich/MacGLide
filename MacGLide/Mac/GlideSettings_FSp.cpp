@@ -45,10 +45,21 @@ GlideSettings::IOErr GlideSettingsFSp::makeSettingsFolderFileSpec(const char* pa
 	return err;
 }
 
+/**
+ * Find/Create settings folder
+ * @return fnfErr means the CLassic environment wasn't found
+ */
 GlideSettings::IOErr GlideSettingsFSp::init(const char* applicationname)
 {
+	// Select the domain
+#ifdef OPENGLIDE_HOST_MAC	// defined in system.h
+	short vRefNum = kOnSystemDisk;
+#else // OPENGLIDE_HOST_MAC_OSX
+ 	// else is ok since this is Mac specific code anyway
+ 	short vRefNum = kClassicDomain;
+#endif
 	// Make the settings folder
-	GlideSettings::IOErr err = FindFolder(kOnSystemDisk, kPreferencesFolderType, kCreateFolder, &m_vRefNumPrefsFolder, &m_dirIDPrefsFolder);
+	GlideSettings::IOErr err = FindFolder(vRefNum, kPreferencesFolderType, kCreateFolder, &m_vRefNumPrefsFolder, &m_dirIDPrefsFolder);
 	if (err == noErr)
 	{
 		FSSpec fsspec;
@@ -62,13 +73,17 @@ GlideSettings::IOErr GlideSettingsFSp::init(const char* applicationname)
 	// Make references to various files
 	if (err == noErr)
 	{
-		err = makeSettingsFolderFileSpec(&s_SettingsFolderName[1], applicationname, &m_fsSettingsFile);
+		err = makeSettingsFolderFileSpec(&s_SettingsFolderName[1], s_LogFileName, &m_fsLogFile);
 		if (err == noErr)
 		{
 			err = makeSettingsFolderFileSpec(&s_SettingsFolderName[1], s_DefaultSettingsFileName, &m_fsDefaultSettingsFile);
 			if (err == noErr)
 			{
-				err = makeSettingsFolderFileSpec(&s_SettingsFolderName[1], s_LogFileName, &m_fsLogFile);
+				m_fsSettingsFile.vRefNum = 0;
+				if (applicationname)
+				{
+					err = makeSettingsFolderFileSpec(&s_SettingsFolderName[1], applicationname, &m_fsSettingsFile);
+				}
 			}
 		}
 	}

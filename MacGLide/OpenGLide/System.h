@@ -12,20 +12,21 @@
 
 #pragma once
 
-#if defined(__MWERKS__)
-	#if defined(macintosh)
+#if defined(macintosh)
+	#if defined(__MWERKS__)
 		#define OPENGLIDE_HOST_MAC
 		// Codewarrior specific
 		#define PP_Target_Carbon 0
 		#define PP_Target_Classic (!PP_Target_Carbon)
 		#define TARGET_API_MAC_CARBON PP_Target_Carbon
 		#define TARGET_API_MAC_OS8 PP_Target_Classic
-// #  else if /* Carbon or MachO version */
-// #    define OPENGLIDE_HOST_MAC
-// #  endif /* !macintosh */
-	#else /* !macintosh */
-		#error "Unknown MetroWerks target platform"
-	#endif /* !macintosh */
+	#else
+		#define  OPENGLIDE_HOST_MAC_OSX
+	#endif /* __MWERKS__ */
+#else /* !macintosh */
+	#error "Unsupported target platform"
+	// But it shouldn't be too complicated to
+	// be ported back to Windows ot Linux
 #endif
 
 // Mac specific stuff

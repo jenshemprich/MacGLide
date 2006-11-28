@@ -26,6 +26,7 @@ protected:
 	IOErr create();
 	IOErr read_defaults();
 	IOErr read();
+	inline bool isApplicationSpecific();
 	IOErr put_raw(const char* string);
 	IOErr close();
 };
