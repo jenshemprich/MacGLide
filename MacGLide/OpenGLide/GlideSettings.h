@@ -69,6 +69,7 @@ struct ConfigStruct
 {
 	OpenGLideDisplayMode DisplayMode;
 	unsigned long Resolution;
+	unsigned long ResolutionCap;
 	unsigned long MonitorRefreshRate;
 	unsigned long DepthBufferBits;
 	unsigned long FullSceneAntiAliasing;
@@ -143,7 +144,6 @@ protected:
 	void defaults();
 	virtual IOErr read_defaults()=0;
 	virtual IOErr read()=0;
-	virtual bool isApplicationSpecific()=0;
 	IOErr read_settings();
 	IOErr saveSettings();
 	bool get(const char* setting, const char** value);

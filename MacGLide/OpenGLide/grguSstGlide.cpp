@@ -225,13 +225,13 @@ grSstWinOpen(FxU32 hwnd,
 		}
 	#endif
 
-	Glide.WindowWidth = windowDimensions[ Glide.Resolution ].width;
-	Glide.WindowHeight = windowDimensions[ Glide.Resolution ].height;
+	Glide.WindowWidth = windowDimensions[Glide.Resolution].width;
+	Glide.WindowHeight = windowDimensions[Glide.Resolution].height;
 	// Set the size of the opengl window (might be different from Glide window size)
 	if (UserConfig.Resolution == 0)
 	{
 		// Does only work if the library is loaded at startup, before the game changes the screen resolution
-		if (DisplayManager_GetDesktopDisplayResolution(OpenGL.WindowWidth, OpenGL.WindowHeight) != noErr)
+		if (!DisplayManager_GetDesktopDisplayResolution(OpenGL.WindowWidth, OpenGL.WindowHeight))
 		{
 			// Use the resuolution requested by the game
 			OpenGL.WindowWidth = Glide.WindowWidth;
@@ -244,18 +244,20 @@ grSstWinOpen(FxU32 hwnd,
 		OpenGL.WindowWidth = Glide.WindowWidth * UserConfig.Resolution;
 		OpenGL.WindowHeight = Glide.WindowHeight * UserConfig.Resolution;
 	}
-	else if (UserConfig.Resolution >= 512)
+	else
 	{
 		// override the resolution
 		OpenGL.WindowWidth = UserConfig.Resolution;
 		// Glide games have a fixed 4/3 aspect ratio
 		OpenGL.WindowHeight = UserConfig.Resolution * 3 / 4;
 	}
-	else
+	// Limit the display size to the max allowed screen resolution
+	if (UserConfig.ResolutionCap)
 	{
-		// Use the resuolution requested by the game
-		OpenGL.WindowWidth = Glide.WindowWidth;
-		OpenGL.WindowHeight = Glide.WindowHeight;
+		OpenGL.WindowWidth = min(OpenGL.WindowWidth,
+		                         UserConfig.ResolutionCap);
+		OpenGL.WindowHeight = min(OpenGL.WindowHeight,
+		                          UserConfig.ResolutionCap * 3 / 4);
 	}
 	Glide.WindowTotalPixels = Glide.WindowWidth * Glide.WindowHeight;
 	Glide.Refresh = ref;

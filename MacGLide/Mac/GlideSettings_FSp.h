@@ -26,7 +26,6 @@ protected:
 	IOErr create();
 	IOErr read_defaults();
 	IOErr read();
-	inline bool isApplicationSpecific() {return m_fsSettingsFile.vRefNum != 0;};
 	IOErr put_raw(const char* string);
 	IOErr close();
 	const unsigned char* PascalString(char* string);

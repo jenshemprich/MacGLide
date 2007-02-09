@@ -47,7 +47,7 @@ GlideSettings::IOErr GlideSettingsFSp::makeSettingsFolderFileSpec(const char* pa
 
 /**
  * Find/Create settings folder
- * @return fnfErr means the CLassic environment wasn't found
+ * @return fnfErr means the Classic environment wasn't found
  */
 GlideSettings::IOErr GlideSettingsFSp::init(const char* applicationname)
 {
@@ -71,6 +71,7 @@ GlideSettings::IOErr GlideSettingsFSp::init(const char* applicationname)
 		}
 	}
 	// Make references to various files
+	m_fsSettingsFile.vRefNum = 0;
 	if (err == noErr)
 	{
 		err = makeSettingsFolderFileSpec(&s_SettingsFolderName[1], s_LogFileName, &m_fsLogFile);
@@ -79,7 +80,6 @@ GlideSettings::IOErr GlideSettingsFSp::init(const char* applicationname)
 			err = makeSettingsFolderFileSpec(&s_SettingsFolderName[1], s_DefaultSettingsFileName, &m_fsDefaultSettingsFile);
 			if (err == noErr)
 			{
-				m_fsSettingsFile.vRefNum = 0;
 				if (applicationname)
 				{
 					err = makeSettingsFolderFileSpec(&s_SettingsFolderName[1], applicationname, &m_fsSettingsFile);
@@ -143,7 +143,7 @@ GlideSettings::IOErr GlideSettingsFSp::read_settings_from_file(FSSpec* file, Gli
 			err = save();
 			if (err == noErr)
 			{
-				// Now we have o load the file into memory to make the settings reader happy
+				// Now we have to load the file into memory to make the settings reader happy
 				err = read_file(file, &m_FileBuffer, &m_FileBufferSize, &m_SettingsFileRefnum);	
 			}
 		}
