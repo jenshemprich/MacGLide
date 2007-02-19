@@ -67,6 +67,7 @@ stExtensionSupport glNecessaryExt[] =
     { "GL_APPLE_packed_pixels",           OGL_EXT_REQUIRED,   &dummyExtVariable,                    &dummyExtVariable2 },
     { "GL_APPLE_client_storage",          OGL_EXT_DESIRED,    &dummyExtVariable,                    &InternalConfig.EXT_Client_Storage },
     { "GL_EXT_compiled_vertex_array",     OGL_EXT_DESIRED,    &UserConfig.EXT_compiled_vertex_array,&InternalConfig.EXT_compiled_vertex_array },
+    { "GL_ARB_texture_rectangle",         OGL_EXT_DESIRED,    &UserConfig.ARB_texture_rectangle,    &InternalConfig.ARB_texture_rectangle },
 #ifdef OPENGLIDE_SYSTEM_HAS_FOGCOORD
     { "GL_EXT_fog_coord",                 OGL_EXT_DESIRED,    &dummyExtVariable,                    &InternalConfig.EXT_fog_coord },
 #endif
@@ -246,6 +247,13 @@ void GLExtensions(void)
  	GLint MaxAnisotropyLevel;
 	glGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &MaxAnisotropyLevel);
 	GlideMsg("Maximum level of anisotropy = %d\n", MaxAnisotropyLevel);
+
+	// Since this a global setting, texture data must not be uploaded from temp buffers
+	if (InternalConfig.EXT_Client_Storage)
+	{
+		glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, true);
+		glReportError();
+	}
 
 	if (InternalConfig.EXT_texture_filter_anisotropic)
 	{
