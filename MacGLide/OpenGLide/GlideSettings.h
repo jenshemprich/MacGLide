@@ -100,6 +100,7 @@ struct ConfigStruct
 	bool EXT_SGIS_texture_edge_clamp;
 	bool EXT_Client_Storage;
 	bool EXT_compiled_vertex_array;
+	bool ARB_texture_rectangle;
 #ifdef OPENGLIDE_SYSTEM_HAS_FOGCOORD
 	bool EXT_fog_coord;
 #endif

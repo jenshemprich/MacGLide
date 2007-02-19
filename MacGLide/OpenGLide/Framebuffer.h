@@ -63,6 +63,7 @@ protected:
 	inline TileUpdateState Convert1555Kto8888(FxU16* buffer1, register FxU32* buffer2, FxU32 register width, register FxU32 height, register FxU32 stride);
 	inline TileUpdateState ConvertARGB8888Kto8888(FxU32* buffer1, register FxU32* buffer2, FxU32 register width, register FxU32 height, register FxU32 stride);
 	bool m_use_client_storage;
+	bool m_useRectangleARB;
 	bool m_must_clear_buffer;
 	GrOriginLocation_t m_origin;
 	GLint m_glInternalFormat;

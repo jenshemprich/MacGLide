@@ -30,6 +30,15 @@ char* _strdate(char* tmpbuf);
 // GL_APPLE_client_storage
 #define GL_UNPACK_CLIENT_STORAGE_APPLE 0x85B2
 
+// GL_ARB_texture_rectangle
+#define GL_TEXTURE_RECTANGLE_ARB 0x84F5
+
+// GL_APPLE_texture_range
+#define GL_TEXTURE_STORAGE_HINT_APPLE 0x85BC
+#define GL_STORAGE_PRIVATE_APPLE 0x85BD
+#define GL_STORAGE_CACHED_APPLE 0x85BE
+#define GL_STORAGE_SHARED_APPLE 0x85BF
+    
 // GL_ARB_multisample
 // aglChoosePixelFormat
 #define AGL_SAMPLE_BUFFERS_ARB 55
