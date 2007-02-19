@@ -623,8 +623,14 @@ bool PGTexture::MakeReady(TTextureStruct* tex_coords, unsigned long number_of_tr
 		}
 		glReportError();	
 
+		// use client storage to avoid OpenGL-internal copy 
+		// OpenGL may still make a copy if the color format isn't supported natively
+		// by the graphics card but all xto8888 conversions should benefit from this
+		// @todo: Not true for OSX, but for now we stay compatible to native OS9
+		const bool useClientStorage = InternalConfig.EXT_Client_Storage /* && !subtexcoords */;
 		if (subtexcoords)
 		{
+			// EXT_Client_Storage doesn't explicitely forbid to adjust pixel unpack :^)
 			glPixelStorei(GL_UNPACK_SKIP_PIXELS, subtexcoords->left);
 			glPixelStorei(GL_UNPACK_SKIP_ROWS, subtexcoords->top);
 			glPixelStorei(GL_UNPACK_ROW_LENGTH, texVals.width);
@@ -632,26 +638,23 @@ bool PGTexture::MakeReady(TTextureStruct* tex_coords, unsigned long number_of_tr
 			texVals.width = subtexcoords->texImageWidth;
 			texVals.height = subtexcoords->texImageHeight;
 		}
-		// use client storage to avoid OpenGL-internal copy 
-		// OpenGL may still make a copy if the colro format isn't supported natively
-		// by the graphics card but all xto8888 conversions should benefit from this
-		const bool useClientStorage = InternalConfig.EXT_Client_Storage && !subtexcoords;
 		FxU32* texBuffer;
+		// Which buffer
 		if (useClientStorage)
 		{
 			texBuffer = &m_textureCache[m_startAddress];
-			glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, true);
-			glReportError();		
+			// glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, true);
+			// glReportError();		
 		}
 		else
 		{
 			texBuffer = m_tex_temp;
 		}
 		// Convert Glide texture data to format understood by OpenGL
-		switch ( m_info.format )
+		switch (m_info.format)
 		{
 		case GR_TEXFMT_RGB_565:
-			if ( m_chromakey_mode )
+			if (m_chromakey_mode)
 			{
 				// Read about anisotropy and chromakey issues in macFormatConversions.cpp
 				Convert565Kto8888((FxU16*)data, m_chromakey_value_565, texBuffer, texVals.nPixels);
@@ -785,14 +788,14 @@ bool PGTexture::MakeReady(TTextureStruct* tex_coords, unsigned long number_of_tr
 			break;
 		}
 		// Cleanup
-		if (useClientStorage)
-		{
-			glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, false);
-			glReportError();		
-		}
+		// if (useClientStorage)
+		// {
+		// 	glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, false);
+		// 	glReportError();		
+		// }
 		if (subtexcoords)
 		{
-			// restore values
+			// restore default values
 			glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
 			glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
 			glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
