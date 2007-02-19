@@ -196,6 +196,7 @@ void GlideSettings::defaults()
 	EXT_SGIS_texture_edge_clamp    = true;
   EXT_Client_Storage             = true;
 	EXT_compiled_vertex_array      = true;
+	ARB_texture_rectangle          = true;
 	EXT_texture_filter_anisotropic = true;
 	ARB_multisample                = true;
 	NV_multisample_filter_hint     = true;
@@ -252,9 +253,10 @@ GlideSettings::IOErr GlideSettings::read_settings()
 	get("EnableFrameBufferUnderlays", &EnableFrameBufferUnderlays);
 	get("FramebufferIgnoreUnlock", &FramebufferIgnoreUnlock);
 	get("PedanticFrameBufferEmulation", &PedanticFrameBufferEmulation);
-	get("CompiledVertexArray", &EXT_compiled_vertex_array);
-	get("EnableMultiTextureEXT", &ARB_multitexture);
-	get("EnablePaletteEXT", &EXT_paletted_texture);
+	get("EXT_compiled_vertex_array", &EXT_compiled_vertex_array);
+	get("ARB_texture_rectangle", &ARB_texture_rectangle);
+	get("ARB_multitexture", &ARB_multitexture);
+	get("EXT_paletted_texture", &EXT_paletted_texture);
 	get("EXT_clip_volume_hint", &EXT_clip_volume_hint);
 	get("BoardType", &value);
 	BoardType = static_cast<OpenGLideBoardType>(value);
@@ -495,9 +497,13 @@ GlideSettings::IOErr GlideSettings::saveSettings()
 		put("EnableFrameBufferUnderlays", EnableFrameBufferUnderlays);
 		put("FramebufferIgnoreUnlock", FramebufferIgnoreUnlock);
 		put("PedanticFrameBufferEmulation", PedanticFrameBufferEmulation);
-		put("CompiledVertexArray", EXT_compiled_vertex_array);
-		put("EnableMultiTextureEXT", ARB_multitexture);
-		put("EnablePaletteEXT", EXT_paletted_texture);
+		put();
+		put("Various optional opengl extensions");
+		put();
+		put("EXT_compiled_vertex_array", EXT_compiled_vertex_array);
+		put("ARB_texture_rectangle", ARB_texture_rectangle);
+		put("ARB_multitexture", ARB_multitexture);
+		put("EXT_paletted_texture", EXT_paletted_texture);
 		put("EXT_clip_volume_hint", EXT_clip_volume_hint);
 		put();
 		put();
