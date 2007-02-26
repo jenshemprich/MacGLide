@@ -68,23 +68,24 @@ grLfbLock( GrLock_t dwType,
 		// Alloc readbuffer
 		if (Glide.ReadBuffer.Address == NULL)
 		{
-			Glide.ReadBuffer.Address = (FxU16*) AllocFrameBuffer(Glide.WindowWidth * Glide.WindowHeight, sizeof(FxU16));
+			Glide.ReadBuffer.Address = (FxU16*) AllocFrameBuffer(Glide.WindowTotalPixels, sizeof(FxU16));
 #ifdef OPENGL_DEBUG
 							GlideMsg("Allocated Readbuffer(%dx%d) at 0x%x\n",
 							           Glide.WindowWidth, Glide.WindowHeight, Glide.ReadBuffer.Address);
-#endif							
+#endif
 		}
 		// select main memory buffers
-		BufferStruct* targetbuffer = Glide.ReadBuffer.Address ? &Glide.ReadBuffer : &Glide.TempBuffer;
-		BufferStruct* sourcebuffer = Glide.ReadBuffer.Address ? &Glide.TempBuffer : &Glide.FrameBuffer;
+		// @todo Remove conditions for NULL ReadBuffer (usage of FrameBuffer as source is wrong because it might be 16bit only)
+		BufferStruct* targetbuffer = &Glide.ReadBuffer;
+		const BufferStruct* sourcebuffer = &Glide.TempBuffer;
 		if (s_Framebuffer.GetRenderBufferChangedForRead() == true)
 		{
 			// select buffer size
-			unsigned long bufferwidth = Glide.ReadBuffer.Address ? OpenGL.WindowWidth : Glide.WindowWidth;
-			unsigned long bufferheight = Glide.ReadBuffer.Address ? OpenGL.WindowHeight : Glide.WindowHeight;
+			const unsigned long bufferwidth = OpenGL.WindowWidth;
+			const unsigned long bufferheight = OpenGL.WindowHeight;
 			glReadBuffer(dwBuffer == GR_BUFFER_BACKBUFFER ? GL_BACK : GL_FRONT);
 			glReportError();
-			bool scale = bufferwidth != Glide.WindowWidth || bufferheight != Glide.WindowHeight;
+			const bool scale = bufferwidth != Glide.WindowWidth || bufferheight != Glide.WindowHeight;
 			GLint glWriteMode;
 			switch (dwWriteMode)
 			{
@@ -92,6 +93,7 @@ grLfbLock( GrLock_t dwType,
 			case GR_LFBWRITEMODE_565:	glWriteMode = GL_UNSIGNED_SHORT_5_6_5;	break;
 			default:	glWriteMode = GL_UNSIGNED_SHORT_5_6_5;	break;
 			}
+			// The read buffer is sized for Glide pixels. As a result we cannot be used it when the read buffer has to be resized
 			void* destination = (!scale && dwOrigin == GR_ORIGIN_LOWER_LEFT) ? targetbuffer->Address : sourcebuffer->Address;
 #ifdef OPENGL_DEBUG
 							GlideMsg("Calling glReadPixels(%d, %d, 0x%x)\n", bufferwidth, bufferheight, destination);
@@ -105,7 +107,7 @@ grLfbLock( GrLock_t dwType,
 #ifdef OPENGL_DEBUG
 			if (scale)
 							GlideMsg("Scaling to (%d, %d)  from 0x%x to 0x%x\n",
-							           Glide.WindowWidth, Glide.WindowHeight, sourcebuffer->Address, targetbuffer->Address);
+							         Glide.WindowWidth, Glide.WindowHeight, sourcebuffer->Address, targetbuffer->Address);
 #endif							
 			if (dwOrigin == GR_ORIGIN_UPPER_LEFT)
 			{
@@ -114,10 +116,10 @@ grLfbLock( GrLock_t dwType,
 				if (scale)
 				{
 					// size/copy from OpenGL-sized buffer to Glide-sized buffer?
-					FxU16* src;
+					const FxU16* src;
 					FxU16* dst = targetbuffer->Address;
-					int xratio = (bufferwidth << 16) / (Glide.WindowWidth);
-					int yratio = (bufferheight << 16) / (Glide.WindowHeight);
+					const int xratio = (bufferwidth << 16) / (Glide.WindowWidth);
+					const int yratio = (bufferheight << 16) / (Glide.WindowHeight);
 					int u;
 					int v = 0;
 					int x;
@@ -155,10 +157,10 @@ grLfbLock( GrLock_t dwType,
 				if (scale)
 				{
 					// Copy and scale
-					FxU16* src;
+					const FxU16* src;
 					FxU16* dst = targetbuffer->Address;
-					int xratio = (bufferwidth << 16) / Glide.WindowWidth;
-					int yratio = (bufferheight << 16) / Glide.WindowHeight;
+					const int xratio = (bufferwidth << 16) / Glide.WindowWidth;
+					const int yratio = (bufferheight << 16) / Glide.WindowHeight;
 					int u;
 					int v = 0;
 					int x;
