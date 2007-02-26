@@ -98,7 +98,7 @@ struct ConfigStruct
 	bool EXT_paletted_texture;
 	bool EXT_SGIS_generate_mipmap;
 	bool EXT_SGIS_texture_edge_clamp;
-	bool EXT_Client_Storage;
+	bool APPLE_client_storage;
 	bool EXT_compiled_vertex_array;
 	bool ARB_texture_rectangle;
 #ifdef OPENGLIDE_SYSTEM_HAS_FOGCOORD

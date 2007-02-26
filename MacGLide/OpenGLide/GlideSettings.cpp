@@ -194,7 +194,7 @@ void GlideSettings::defaults()
   EXT_secondary_color            = true;
 	EXT_SGIS_generate_mipmap       = true;
 	EXT_SGIS_texture_edge_clamp    = true;
-  EXT_Client_Storage             = true;
+  APPLE_client_storage             = true;
 	EXT_compiled_vertex_array      = true;
 	ARB_texture_rectangle          = true;
 	EXT_texture_filter_anisotropic = true;
@@ -255,6 +255,7 @@ GlideSettings::IOErr GlideSettings::read_settings()
 	get("PedanticFrameBufferEmulation", &PedanticFrameBufferEmulation);
 	get("EXT_compiled_vertex_array", &EXT_compiled_vertex_array);
 	get("ARB_texture_rectangle", &ARB_texture_rectangle);
+	get("APPLE_client_storage", &APPLE_client_storage);
 	get("ARB_multitexture", &ARB_multitexture);
 	get("EXT_paletted_texture", &EXT_paletted_texture);
 	get("EXT_clip_volume_hint", &EXT_clip_volume_hint);
@@ -502,6 +503,7 @@ GlideSettings::IOErr GlideSettings::saveSettings()
 		put();
 		put("EXT_compiled_vertex_array", EXT_compiled_vertex_array);
 		put("ARB_texture_rectangle", ARB_texture_rectangle);
+		put("APPLE_client_storage", APPLE_client_storage);
 		put("ARB_multitexture", ARB_multitexture);
 		put("EXT_paletted_texture", EXT_paletted_texture);
 		put("EXT_clip_volume_hint", EXT_clip_volume_hint);

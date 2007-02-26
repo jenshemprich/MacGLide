@@ -60,7 +60,7 @@ void PGTexture::genPaletteMipmaps( FxU32 width, FxU32 height, const FxU8 *data )
     }
 }
 
-PGTexture::PGTexture( int mem_size )
+PGTexture::PGTexture(int mem_size)
 {
 	m_db = new TexDB( mem_size );
 	m_palette_dirty = true;
@@ -68,8 +68,17 @@ PGTexture::PGTexture( int mem_size )
 	m_chromakey_mode = GR_CHROMAKEY_DISABLE;
 	m_tex_memory_size = mem_size;
 	m_memory = (FxU8*) AllocBuffer(mem_size, sizeof(FxU8));
-	if (InternalConfig.EXT_Client_Storage)
+	// This is initialized before the rendering context is available and before
+	// the list of OpenGL extensions can be checked against APPLE_client_storage.
+	// As a result the texture buffer is allocated bases on the user setting.
+	// And it might be legal to download textures before grWinOpen() so
+	// using the user config setting is the best we can do
+	if (UserConfig.APPLE_client_storage)
 	{
+		// use client storage to avoid OpenGL-internal copy 
+		// OpenGL may still make a copy if the color format isn't supported natively
+		// by the graphics card but all xto8888 conversions should benefit from this
+		// @todo: Not true for OSX, but for now we stay compatible to native OS9
 		// Alloc 4-times the size of the Glide buffer for texture storage
 		m_textureCache = reinterpret_cast<FxU32*>(AllocBuffer(m_tex_memory_size, sizeof(FxU32)));
 		// No memory is wasted here because we save the internal OpenGL copy
@@ -623,14 +632,9 @@ bool PGTexture::MakeReady(TTextureStruct* tex_coords, unsigned long number_of_tr
 		}
 		glReportError();	
 
-		// use client storage to avoid OpenGL-internal copy 
-		// OpenGL may still make a copy if the color format isn't supported natively
-		// by the graphics card but all xto8888 conversions should benefit from this
-		// @todo: Not true for OSX, but for now we stay compatible to native OS9
-		const bool useClientStorage = InternalConfig.EXT_Client_Storage /* && !subtexcoords */;
 		if (subtexcoords)
 		{
-			// EXT_Client_Storage doesn't explicitely forbid to adjust pixel unpack :^)
+			// APPLE_client_storage doesn't explicitely forbid to adjust pixel unpack :^)
 			glPixelStorei(GL_UNPACK_SKIP_PIXELS, subtexcoords->left);
 			glPixelStorei(GL_UNPACK_SKIP_ROWS, subtexcoords->top);
 			glPixelStorei(GL_UNPACK_ROW_LENGTH, texVals.width);
@@ -640,11 +644,9 @@ bool PGTexture::MakeReady(TTextureStruct* tex_coords, unsigned long number_of_tr
 		}
 		FxU32* texBuffer;
 		// Which buffer
-		if (useClientStorage)
+		if (m_textureCache)
 		{
 			texBuffer = &m_textureCache[m_startAddress];
-			// glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, true);
-			// glReportError();		
 		}
 		else
 		{
@@ -658,7 +660,7 @@ bool PGTexture::MakeReady(TTextureStruct* tex_coords, unsigned long number_of_tr
 			{
 				// Read about anisotropy and chromakey issues in macFormatConversions.cpp
 				Convert565Kto8888((FxU16*)data, m_chromakey_value_565, texBuffer, texVals.nPixels);
-				DownloadMipmapsToOpenGL(4, GL_RGBA, GL_UNSIGNED_BYTE, m_tex_temp, texVals, !use_mipmap_ext);          	
+				DownloadMipmapsToOpenGL(4, GL_RGBA, GL_UNSIGNED_BYTE, texBuffer, texVals, !use_mipmap_ext);          	
 			}
 			else
 			{
