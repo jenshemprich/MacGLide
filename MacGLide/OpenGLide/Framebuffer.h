@@ -46,25 +46,26 @@ protected:
 	int buildVertexArrays(const tilesize* tilesizetable, int vertexarrayindex);
 	void set_gl_state(bool pixelpipeline);
 	void restore_gl_state(bool pixelpipeline);
+	// Pixel conversion
 	enum TileUpdateState
 	{
 		TileUpdateState_TileEmpty = false,
 		TileUpdateState_TileDownloadToGPU = 1, // true,
 		TileUpdateState_TileDrawOnly = -1 // -true
 	};
-	static const int m_tileCount = MaxTiles * MaxTiles;
-	GLuint m_textureNames[m_tileCount];
+	static const int s_maxTiles = MaxTiles * MaxTiles;
+	GLuint m_textureNames[s_maxTiles];
 	inline TileUpdateState createTextureData(FxU32* texbuffer, FxU32 x, FxU32 y, FxU32 x_step, FxU32 y_step, int checksumIndex);
 	inline TileUpdateState Convert565Kto8888(FxU16* buffer1, FxU32* buffer2, register FxU32 width, register FxU32 height, register FxU32 stride);
 #ifdef __ALTIVEC__
 	inline TileUpdateState Convert565Kto8888_AV(FxU16* buffer1, FxU32* buffer2, register FxU32 width, register FxU32 height, register FxU32 stride, int checksumIndex);
-	vector unsigned long m_tileChecksums[m_tileCount];
+	vector unsigned long m_tileChecksums[s_maxTiles];
 #endif
 	inline TileUpdateState Convert1555Kto8888(FxU16* buffer1, register FxU32* buffer2, FxU32 register width, register FxU32 height, register FxU32 stride);
 	inline TileUpdateState ConvertARGB8888Kto8888(FxU32* buffer1, register FxU32* buffer2, FxU32 register width, register FxU32 height, register FxU32 stride);
-	bool m_use_client_storage;
 	bool m_useRectangleARB;
 	bool m_must_clear_buffer;
+	// Format
 	GrOriginLocation_t m_origin;
 	GLint m_glInternalFormat;
 	GLint m_glFormat;
@@ -72,18 +73,22 @@ protected:
 	bool m_format_valid;
 	BufferStruct* m_framebuffer;
 	BufferStruct* m_texbuffer;
+	// Dimensions
 	FxU32 m_width;
 	FxU32 m_height;
 	GLint m_x_step_start;
 	GLint m_y_step_start;
 	GLint m_x_step_start_opaque;
 	GLint m_y_step_start_opaque;
+	// Tiles
+	inline int getTileCount() const;
 	tilesize m_tilesizes[MaxTiles];
 	int m_tilesizesCount;
 	int m_tilesizesVertexArrayIndex;
 	const tilesize* m_custom_tilesizes;
 	int m_customtilesizesCount;
 	int m_customtilesizesVertexArrayIndex;
+	// Color, depth and alpha
 	GLfloat m_glDepth;
 	union 
 	{
