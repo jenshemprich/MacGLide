@@ -65,7 +65,7 @@ stExtensionSupport glNecessaryExt[] =
     { "GL_SGIS_texture_edge_clamp",       OGL_EXT_DESIRED,    &dummyExtVariable,                    &InternalConfig.EXT_SGIS_texture_edge_clamp },
     { "GL_EXT_paletted_texture",          OGL_EXT_DESIRED,    &UserConfig.EXT_paletted_texture,     &InternalConfig.EXT_paletted_texture },
     { "GL_APPLE_packed_pixels",           OGL_EXT_REQUIRED,   &dummyExtVariable,                    &dummyExtVariable2 },
-    { "GL_APPLE_client_storage",          OGL_EXT_DESIRED,    &UserConfig.APPLE_client_storage,       &InternalConfig.APPLE_client_storage },
+    { "GL_APPLE_client_storage",          OGL_EXT_DESIRED,    &UserConfig.APPLE_client_storage,     &InternalConfig.APPLE_client_storage },
     { "GL_EXT_compiled_vertex_array",     OGL_EXT_DESIRED,    &UserConfig.EXT_compiled_vertex_array,&InternalConfig.EXT_compiled_vertex_array },
     { "GL_ARB_texture_rectangle",         OGL_EXT_DESIRED,    &UserConfig.ARB_texture_rectangle,    &InternalConfig.ARB_texture_rectangle },
 #ifdef OPENGLIDE_SYSTEM_HAS_FOGCOORD
@@ -254,7 +254,7 @@ void GLExtensions(void)
 		glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, true);
 		glReportError();
 	}
-
+	// Anisotropic filtering
 	if (InternalConfig.EXT_texture_filter_anisotropic)
 	{
  		GLint MaxAnisotropyLevel;
