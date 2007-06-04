@@ -241,27 +241,6 @@ GrTextureFormat_t ParseTextureFormat(const char * text)
 	     if (!strcmp(text, formatTable[i].name)) return formatTable[i].format;
 	}
 	return -1;
-	/*
-	     if (!strcmp( text, "argb1555\n")) return GR_TEXFMT_ARGB_1555;
-	else if (!strcmp( text, "argb4444\n")) return GR_TEXFMT_ARGB_4444;
-	else if (!strcmp( text, "rgb565\n"))   return GR_TEXFMT_RGB_565;
-	else if (!strcmp( text, "rgb332\n"))   return GR_TEXFMT_RGB_332;
-	else if (!strcmp( text, "argb8332\n")) return GR_TEXFMT_ARGB_8332;
-	else if (!strcmp( text, "p8\n"))       return GR_TEXFMT_P_8;
-	else if (!strcmp( text, "ap88\n"))     return GR_TEXFMT_AP_88;
-	else if (!strcmp( text, "ai44\n"))     return GR_TEXFMT_ALPHA_INTENSITY_44;
-	else if (!strcmp( text, "yiq\n"))      return GR_TEXFMT_YIQ_422;
-	else if (!strcmp( text, "ayiq8422\n")) return GR_TEXFMT_AYIQ_8422;
-	else if (!strcmp( text, "a8\n"))       return GR_TEXFMT_ALPHA_8;
-	else if (!strcmp( text, "i8\n"))       return GR_TEXFMT_INTENSITY_8;
-	else if (!strcmp( text, "ai88\n"))     return GR_TEXFMT_ALPHA_INTENSITY_88;
-	// @todo: Just guessing the following format names as the docs for the texus tool
-	//        don't mention them, and they're not supported by the PGTexture class either
-	else if (!strcmp( text, "rsvd0\n"))    return GR_TEXFMT_RSVD0;
-	else if (!strcmp( text, "rsvd1\n"))    return GR_TEXFMT_RSVD1;
-	else if (!strcmp( text, "rsvd2\n"))    return GR_TEXFMT_RSVD2;
-	else return -1;
-	*/
 }
 
 int ParseLod( int Lod )
