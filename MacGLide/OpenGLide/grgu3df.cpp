@@ -208,50 +208,60 @@ gu3dfLoad( const char *filename, Gu3dfInfo *data )
     return FXTRUE;
 }
 
-GrTextureFormat_t ParseTextureFormat( const char * text )
+static const int numFormats = 16;
+static const struct
 {
-    if ( !strcmp( text, "argb1555\n" ) )
-    {
-        return GR_TEXFMT_ARGB_1555;
-    }
-    if ( !strcmp( text, "argb4444\n" ) )
-    {
-        return GR_TEXFMT_ARGB_4444;
-    }
-    if ( !strcmp( text, "rgb565\n" ) )
-    {
-        return GR_TEXFMT_RGB_565;
-    }
-    if ( !strcmp( text, "rgb332\n" ) )
-    {
-        return GR_TEXFMT_RGB_332;
-    }
-    if ( !strcmp( text, "argb8332\n" ) )
-    {
-        return GR_TEXFMT_ARGB_8332;
-    }
-    if ( !strcmp( text, "p8\n" ) )
-    {
-        return GR_TEXFMT_P_8;
-    }
-    if ( !strcmp( text, "ap88\n" ) )
-    {
-        return GR_TEXFMT_AP_88;
-    }
-    if ( !strcmp( text, "ai44\n" ) )
-    {
-        return GR_TEXFMT_ALPHA_INTENSITY_44;
-    }
-    if ( !strcmp( text, "yiq\n" ) )
-    {
-        return GR_TEXFMT_YIQ_422;
-    }
-    if ( !strcmp( text, "ayiq8422\n" ) )
-    {
-        return GR_TEXFMT_AYIQ_8422;
-    }
+	const char* name;
+	GrTextureFormat_t format;
+}
+formatTable[numFormats] =
+{
+	{"argb1555\n",GR_TEXFMT_ARGB_1555},
+	{"argb4444\n",GR_TEXFMT_ARGB_4444},
+	{"rgb565\n",GR_TEXFMT_RGB_565},
+	{"rgb332\n",GR_TEXFMT_RGB_332},
+	{"argb8332\n",GR_TEXFMT_ARGB_8332},
+	{"p8\n",GR_TEXFMT_P_8},
+	{"ap88\n",GR_TEXFMT_AP_88},
+	{"ai44\n",GR_TEXFMT_ALPHA_INTENSITY_44},
+	{"yiq\n",GR_TEXFMT_YIQ_422},
+	{"ayiq8422\n",GR_TEXFMT_AYIQ_8422},
+	{"a8\n",GR_TEXFMT_ALPHA_8},
+	{"i8\n",GR_TEXFMT_INTENSITY_8},
+	{"ai88\n",GR_TEXFMT_ALPHA_INTENSITY_88},
+	{"rsvd0\n",GR_TEXFMT_RSVD0},
+	{"rsvd1\n",GR_TEXFMT_RSVD1},
+	{"rsvd2\n",GR_TEXFMT_RSVD2}
+};
 
-    return 0;
+GrTextureFormat_t ParseTextureFormat(const char * text)
+{
+	for(int i = 0; i < numFormats; i++)
+	{
+	     if (!strcmp(text, formatTable[i].name)) return formatTable[i].format;
+	}
+	return -1;
+	/*
+	     if (!strcmp( text, "argb1555\n")) return GR_TEXFMT_ARGB_1555;
+	else if (!strcmp( text, "argb4444\n")) return GR_TEXFMT_ARGB_4444;
+	else if (!strcmp( text, "rgb565\n"))   return GR_TEXFMT_RGB_565;
+	else if (!strcmp( text, "rgb332\n"))   return GR_TEXFMT_RGB_332;
+	else if (!strcmp( text, "argb8332\n")) return GR_TEXFMT_ARGB_8332;
+	else if (!strcmp( text, "p8\n"))       return GR_TEXFMT_P_8;
+	else if (!strcmp( text, "ap88\n"))     return GR_TEXFMT_AP_88;
+	else if (!strcmp( text, "ai44\n"))     return GR_TEXFMT_ALPHA_INTENSITY_44;
+	else if (!strcmp( text, "yiq\n"))      return GR_TEXFMT_YIQ_422;
+	else if (!strcmp( text, "ayiq8422\n")) return GR_TEXFMT_AYIQ_8422;
+	else if (!strcmp( text, "a8\n"))       return GR_TEXFMT_ALPHA_8;
+	else if (!strcmp( text, "i8\n"))       return GR_TEXFMT_INTENSITY_8;
+	else if (!strcmp( text, "ai88\n"))     return GR_TEXFMT_ALPHA_INTENSITY_88;
+	// @todo: Just guessing the following format names as the docs for the texus tool
+	//        don't mention them, and they're not supported by the PGTexture class either
+	else if (!strcmp( text, "rsvd0\n"))    return GR_TEXFMT_RSVD0;
+	else if (!strcmp( text, "rsvd1\n"))    return GR_TEXFMT_RSVD1;
+	else if (!strcmp( text, "rsvd2\n"))    return GR_TEXFMT_RSVD2;
+	else return -1;
+	*/
 }
 
 int ParseLod( int Lod )
