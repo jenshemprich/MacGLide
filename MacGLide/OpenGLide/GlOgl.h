@@ -81,6 +81,7 @@ union OGLByteColor
 struct CombineFunction;
 struct CombineArgument;
 
+// The current glide state, valid anytime
 struct GlideState
 {
 	GrBuffer_t              RenderBuffer;
@@ -140,6 +141,7 @@ struct GlideState
 	FxFloat                 Gamma;
 };
 
+// Additional internal Glide state information
 struct GlideStruct
 {
     int                     ActiveVoodoo;
@@ -165,62 +167,73 @@ struct GlideStruct
     FxU32                   TextureMemory;
 };
 
+// The current OpenGL state
+// Vadility of members:
+// - session static - these don't change during the lifetime of the OpenGL context
+// - up to date - they are always up to date
+// - forthcoming up to date on the next call to RenderUpdateState()
+//
+// @todo: Some state variables are considered not until the next call to RenderUpdateState
+// while the others reflect the actual state  
 struct OpenGLStruct
 {
+	// Session static
 	bool                    GlideInit;
 	bool                    WinOpen;
-	unsigned long           WindowWidth;
-	unsigned long           WindowHeight;
 	FxU32                   OriginX;
 	FxU32                   OriginY;
+	unsigned long           WindowWidth;
+	unsigned long           WindowHeight;
+	GLint                   ColorAlphaUnit1;
+	GLint                   ColorAlphaUnit2;
+	GLuint                  DummyTextureName;
+	GLint                   FogTextureUnit;
+	int                     MultiTextureTMUs;
+	GLuint                  Refresh;
+	FxU32                   WaitSignal;
+	// up to date on the next call to RenderUpdateState()
+	bool                    Blend;
+	bool                    ChromaKey;
+	bool                    ClipVerticesEnabledState;
+	bool                    Fog;
+	GLfloat                 FogColor[4];
+	const CombineFunction*  ColorCombineFunctions;
+	const CombineFunction*  AlphaCombineFunctions;
+	const CombineArgument*  ColorCombineArguments[5];
+	const CombineArgument*  AlphaCombineArguments[5];
+	GLenum                  SrcBlend;
+	GLenum                  DstBlend;
+	GLenum                  SrcAlphaBlend;
+	GLenum                  DstAlphaBlend;
+	// always up to date	
 	FxU32                   ClipMinX;
 	FxU32                   ClipMaxX;
 	FxU32                   ClipMinY;
 	FxU32                   ClipMaxY;
-	GLfloat                 Gamma;
+	bool                    Clipping;
 	GLfloat                 AlphaReferenceValue;
 	GLenum                  AlphaTestFunction;
 	GLboolean               DepthBufferWritting;
 	GLfloat                 DepthBiasLevel;
 	GLenum                  DepthFunction;
 	int                     DepthBufferType;
+	GLfloat                 ZNear;
+	GLfloat                 ZFar;
 	GLenum                  RenderBuffer;
 	GLenum                  SClampMode;
 	GLenum                  TClampMode;
 	GLenum                  MinFilterMode;
 	GLenum                  MagFilterMode;
-	GLenum                  SrcBlend;
-	GLenum                  DstBlend;
-	GLenum                  SrcAlphaBlend;
-	GLenum                  DstAlphaBlend;
-	GLuint                  Refresh;
+	GLfloat                 Gamma;
 	GLfloat                 ConstantColor[4];
 	GLfloat                 Delta0Color[4];
-	GLfloat                 ZNear;
-	GLfloat                 ZFar;
-	GLint                   ColorAlphaUnit1;
-	GLint                   ColorAlphaUnit2;
 	bool                    ColorAlphaUnitColorEnabledState[2];
 	bool                    ColorAlphaUnitAlphaEnabledState[2];
-	GLuint                  DummyTextureName;
-	GLint                   FogTextureUnit;
-	bool                    FogTextureUnitEnabledState;
-	GLfloat                 FogColor[4];
 	OGLByteColor            ChromaColor;
-	bool                    Fog;
 	bool                    ColorTexture;
 	bool                    AlphaTexture;
-	bool                    Blend;
 	bool                    Texture;
-	bool                    ChromaKey;
-	bool                    Clipping;
-	bool                    ClipVerticesEnabledState;
-	int                     MultiTextureTMUs;
-	const CombineFunction*  ColorCombineFunctions;
-	const CombineFunction*  AlphaCombineFunctions;
-	const CombineArgument*  ColorCombineArguments[5];
-	const CombineArgument*  AlphaCombineArguments[5];
-	FxU32                   WaitSignal;
+	bool                    FogTextureUnitEnabledState; // @todo: currently not used
 	FxU8                    FogTable[OPENGLFOGTABLESIZE];
 };
 

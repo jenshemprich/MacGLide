@@ -648,56 +648,10 @@ guTexCombineFunction( GrChipID_t tmu, GrTextureCombineFnc_t func )
 #if defined( OGL_PARTDONE ) || defined( OGL_COMBINE )
     GlideMsg( "guTexCombineFunction( %d, %d )\n", tmu, func );
 #endif
-
-	// Ignoring TMU as we are only emulating Glide and assuming a well behaviored program
-	if ( tmu != GR_TMU0 )
-	{
-		return;
-	}
-	
-	switch ( func )
-	{
-	case GR_TEXTURECOMBINE_ZERO:            // 0x00 per component
-		grTexCombine( tmu, GR_COMBINE_FUNCTION_ZERO, GR_COMBINE_FACTOR_ZERO,
-			GR_COMBINE_FUNCTION_ZERO, GR_COMBINE_FACTOR_ZERO, FXFALSE, FXFALSE );
-		break;
-
-	case GR_TEXTURECOMBINE_DECAL:           // Clocal decal texture
-		grTexCombine( tmu, GR_COMBINE_FUNCTION_LOCAL, GR_COMBINE_FACTOR_NONE,
-			GR_COMBINE_FUNCTION_LOCAL, GR_COMBINE_FACTOR_NONE, FXFALSE, FXFALSE );
-		break;
-
-	case GR_TEXTURECOMBINE_OTHER:           // Cother pass through
-		grTexCombine( tmu, GR_COMBINE_FUNCTION_SCALE_OTHER, GR_COMBINE_FACTOR_ONE,
-			GR_COMBINE_FUNCTION_SCALE_OTHER, GR_COMBINE_FACTOR_ONE, FXFALSE, FXFALSE );
-		break;
-
-	case GR_TEXTURECOMBINE_ADD:             // Cother + Clocal additive texture
-		grTexCombine( tmu, GR_COMBINE_FUNCTION_SCALE_OTHER_ADD_LOCAL, GR_COMBINE_FACTOR_ONE,
-			GR_COMBINE_FUNCTION_SCALE_OTHER_ADD_LOCAL, GR_COMBINE_FACTOR_ONE, FXFALSE, FXFALSE );
-		break;
-
-	case GR_TEXTURECOMBINE_MULTIPLY:        // Cother * Clocal modulated texture
-		grTexCombine( tmu, GR_COMBINE_FUNCTION_SCALE_OTHER, GR_COMBINE_FACTOR_LOCAL,
-			GR_COMBINE_FUNCTION_SCALE_OTHER, GR_COMBINE_FACTOR_LOCAL, FXFALSE, FXFALSE );
-		break;
-
-	case GR_TEXTURECOMBINE_SUBTRACT:        // Cother – Clocal subtractive texture
-		grTexCombine( tmu, GR_COMBINE_FUNCTION_SCALE_OTHER_MINUS_LOCAL, GR_COMBINE_FACTOR_ONE,
-			GR_COMBINE_FUNCTION_SCALE_OTHER_MINUS_LOCAL, GR_COMBINE_FACTOR_ONE, FXFALSE, FXFALSE );
-		break;
-
-	case GR_TEXTURECOMBINE_ONE:             // 255 0xFF per component
-		grTexCombine( tmu, GR_COMBINE_FUNCTION_ZERO, GR_COMBINE_FACTOR_ZERO,
-			GR_COMBINE_FUNCTION_ZERO, GR_COMBINE_FACTOR_ZERO, FXTRUE, FXTRUE );
-		break;
-
-//  case GR_TEXTURECOMBINE_DETAIL:          // blend (Cother, Clocal) detail textures with detail on selected TMU
-//  case GR_TEXTURECOMBINE_DETAIL_OTHER:    // blend (Cother, Clocal) detail textures with detail on neighboring TMU
-//  case GR_TEXTURECOMBINE_TRILINEAR_ODD:   // blend (Cother, Clocal) LOD blended textures with odd levels on selected TMU
-//  case GR_TEXTURECOMBINE_TRILINEAR_EVEN:  // blend (Cother, Clocal) LOD blended textures with even levels on selected TMU
-//      break;
-    }
+	// @todo: guTexCombineFunction() also keeps track of which TMUs
+	// require texture coordinates for the rendering routines.
+	// (see glide24pgm page 139)
+	grTexCombineFunction(tmu, func);
 }
 
 //*************************************************

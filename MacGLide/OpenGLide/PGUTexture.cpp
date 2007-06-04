@@ -177,9 +177,25 @@ void PGUTexture::Source( GrMipMapId_t id )
 		grTexClampMode( tmu, mm_info[ id ].s_clamp_mode, mm_info[ id ].t_clamp_mode );
 		grTexLodBiasValue( tmu, mm_info[ id ].lod_bias );
 		// Download the ncc table
-		// @todo: the linux driver utilises both tables and optimises download
-		// -> No download, no texture recreation
-		grTexDownloadTable(tmu, GR_NCCTABLE_NCC0, &mm_info[ id ].ncc_table);
+		// @todo: only necessary when the format uses the table?
+		if ((info.format == GR_TEXFMT_YIQ_422) ||
+	        (info.format == GR_TEXFMT_AYIQ_8422))
+		{
+			// @todo: the linux driver utilises both tables and optimises downloads
+			// MacGLide only uses gr* functions whereas
+			// the linux driver has extra internal state for gu* functions
+			// -> No download, no texture recreation (see gutex.c)
+			//  /* Which table should we use? */
+			//  table = gc->tmu_state[tmu].next_ncc_table;
+			//  /* Download NCC table */ // using internal function
+			//  _grTexDownloadNccTable( tmu, table, &mminfo->ncc_table, 0, 11 );
+			//  /* Set the mmid so we known it's down there */
+			//  gc->tmu_state[tmu].ncc_mmids[table] = mmid;
+			//  /* Set the state to know which table was the LRA */
+			//  gc->tmu_state[tmu].next_ncc_table =
+			//    (table == 0 ? 1 : 0);
+			grTexDownloadTable(tmu, GR_NCCTABLE_NCC0, &mm_info[ id ].ncc_table);
+		}
 		m_current_id = id;
 	}
 #ifdef OGL_UTEX

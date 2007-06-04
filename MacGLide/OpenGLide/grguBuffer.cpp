@@ -20,6 +20,8 @@
 // Write colored pixels only
 void gapfixSetSimpleColorState()
 {
+	glReportErrors("gapfixSetSimpleColorState");
+	
 	// Disable the cull mode
 	glDisable(GL_CULL_FACE);
 	// Disable clip volume hint manually to avoid recursion
@@ -82,6 +84,8 @@ void gapfixSetSimpleColorState()
 
 void gapfixRestoreFromSimpleColorState()
 {
+	glReportErrors("gapfixRestoreFromSimpleColorState");
+
 	// Restore state
 	switch (Glide.State.CullMode)
 	{

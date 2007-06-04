@@ -200,7 +200,7 @@ void GlideFramebuffer::OnBufferLockStartWrite(GrLock_t dwType, GrBuffer_t dwBuff
 		// would appear twice or at unexpected places. This suggests there
 		// might be a bug in here (in conjunction with clipping??).
 		// Also be careful regarding performance issues.
-		WriteFrameBuffer(m_framebuffer->PixelPipeline);
+		WriteFrameBuffer();
 		m_must_write = false;
 	}
 	// Change format?
@@ -263,7 +263,7 @@ void GlideFramebuffer::OnBufferUnlockEndWrite(GrBuffer_t dwBuffer)
 	// pixel pipeline state before the buffer will eventtually be written out.
 	if (m_framebuffer->PixelPipeline)
 	{
-		WriteFrameBuffer(true);
+		WriteFrameBuffer();
 		// This write is finished
 		m_must_write = false;
 	}	
@@ -328,7 +328,7 @@ void GlideFramebuffer::OnClipWindow()
 	// @todo: This must be reconsidered because it triggers all the time
 	if (m_framebuffer->PixelPipeline)
 	{
-		WriteFrameBuffer(true);
+		WriteFrameBuffer();
 		// Keep writing as the frame buffer may still be locked
 		m_must_write = m_framebuffer->Lock;
 		// @todo: Think this is obsolete as the case is catched by OnChromaKeyValueChanged()
@@ -448,7 +448,7 @@ void GlideFramebuffer::OnRenderDrawTriangles()
 	}
 	else if (InternalConfig.PedanticFrameBufferEmulation || m_must_write)
 	{
-		WriteFrameBuffer(m_framebuffer->PixelPipeline);
+		WriteFrameBuffer();
 	}
 	// Need to start a new write
 	if (InternalConfig.PedanticFrameBufferEmulation)
@@ -489,24 +489,24 @@ void GlideFramebuffer::OnBeforeBufferSwap()
 		}
 		else if (m_must_write)
 		{
-			WriteFrameBuffer(m_framebuffer->PixelPipeline);
+			WriteFrameBuffer();
 		}
 		else if (BackBufferIsLocked())
 		{
-			WriteFrameBuffer(m_framebuffer->PixelPipeline);
+			WriteFrameBuffer();
 		}
 		m_must_write = false;
 		// optionally render the 3Dfx powerfield logo overlay on top of the frame
 		if (InternalConfig.ShamelessPlug)
 		{
 			// @todo: For apps that lock the frame buffer accross buffer swaps
-			// (for instance Carmageddon) the current state must be saved...
+			// (for instance Carmageddon) the current lock state must be saved...
 			_grShamelessPlug();
 			if (m_must_write)
 			{
-				WriteFrameBuffer(m_framebuffer->PixelPipeline);
+				WriteFrameBuffer();
 			}
-			// ... and restored after rendering the shameless plug
+			// @todo: ... and restored after rendering the shameless plug
 		}
 	}
 	else
@@ -530,10 +530,10 @@ void GlideFramebuffer::OnAfterBufferSwap()
 	begin_write();
 }
 
-void GlideFramebuffer::WriteFrameBuffer(bool pixelpipeline)
+void GlideFramebuffer::WriteFrameBuffer()
 {
 	#ifdef OGL_FRAMEBUFFER
-		GlideMsg( "GlideFrameBuffer::WriteFrameBuffer(%d)\n", pixelpipeline);
+		GlideMsg( "GlideFrameBuffer::WriteFrameBuffer()\n");
 	#endif
 
 	// apply the framebuffer changes?
@@ -541,16 +541,19 @@ void GlideFramebuffer::WriteFrameBuffer(bool pixelpipeline)
 	{
 		// Only the back buffer is supported because games like Carmageddon
 		// temporarily lock and unlock the front buffer while holding the lock
-		// to the back buffer. Becasue he current implementation of the framebuffer
+		// to the back buffer. Because he current implementation of the framebuffer
 		// emulation doesn't support locks to multiple buffers, data is written to
 		// the current buffer (which is usally the back buffer).
-		if (pixelpipeline)
+		if (m_framebuffer->PixelPipeline)
 		{
-			end_write(m_alpha, m_depth, pixelpipeline);
+			end_write(m_alpha, m_depth);
 		}
 		else
 		{
 			end_write();
+			// @todo: it would be nice to eleminate the condition,but
+			//        m_alpha is always applied to the write and depth never
+			// end_write(m_alpha, m_depth);
 		}
 	}
 	else
@@ -614,7 +617,7 @@ void GlideFramebuffer::OnChromaKeyValueChanged()
 		if (m_chromakeyvalue_changed && m_framebuffer->PixelPipeline)
 		{
 			// Flush the current contents of the framebuffer
-			WriteFrameBuffer(m_framebuffer->PixelPipeline);
+			WriteFrameBuffer();
 			SetChromaKeyValue(m_chromakeyvalue_new);
 			m_chromakeyvalue_changed = false;
 			// Fill the framebuffer with the new chromakey value
@@ -626,18 +629,18 @@ void GlideFramebuffer::OnChromaKeyValueChanged()
 
 void GlideFramebuffer::SetAlpha(FxU32 alpha)
 {
-	if (m_must_write && (m_framebuffer->PixelPipeline & m_alpha) != alpha)
+	if (m_must_write && m_framebuffer->PixelPipeline && m_alpha != alpha)
 	{
-		WriteFrameBuffer(m_framebuffer->PixelPipeline);
+		WriteFrameBuffer();
+		m_alpha = alpha;
 	}
-	m_alpha = alpha;
 };
 
 void GlideFramebuffer::SetDepth(GLfloat depth)
 {
-	if (m_must_write && (m_framebuffer->PixelPipeline && m_depth) != depth)
+	if (m_must_write && m_framebuffer->PixelPipeline && m_depth != depth)
 	{
-		WriteFrameBuffer(m_framebuffer->PixelPipeline);
+		WriteFrameBuffer();
+		m_depth = depth;
 	}
-	m_depth = depth;
 };

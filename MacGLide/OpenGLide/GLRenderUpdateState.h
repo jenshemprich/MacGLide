@@ -22,7 +22,6 @@ extern bool s_bUpdateColorInvertState;
 extern bool s_bUpdateAlphaInvertState;
 extern bool s_bUpdateConstantColorValueState;
 extern bool s_bUpdateConstantColorValue4State;
-//extern bool s_bUpdateClipVerticesState;
 
 extern bool s_bForceChromaKeyAndAlphaStateUpdate;
 
@@ -178,11 +177,6 @@ inline void SetConstantColorValue4State()
 {
  s_bUpdateConstantColorValue4State = true;
 }
-
-//inline void SetClipVerticesState()
-//{
-// s_bUpdateClipVerticesState = true;
-//}
 
 // Also called from FrameBuffer class
 extern void SetClipVerticesState_Update(bool clip_vertices);
