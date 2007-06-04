@@ -357,21 +357,20 @@ void GLExtensions(void)
 		{
 			OpenGL.ColorAlphaUnit2 = GL_TEXTURE1_ARB;
 			OpenGL.FogTextureUnit = GL_TEXTURE2_ARB;
-			// All texture units are enabled all the time
+			// env combine
 			glActiveTextureARB(OpenGL.ColorAlphaUnit1);
-			glEnable(GL_TEXTURE_2D);
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
 			glActiveTextureARB(OpenGL.ColorAlphaUnit2);
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
 			glReportError();
-			// Secondary color not neded in the enhanced color alpha rendering model
+			// Secondary color not needed in the enhanced color alpha rendering model
 			InternalConfig.EXT_secondary_color = false;
 			if (InternalConfig.ColorAlphaRenderMode == OpenGLideColorAlphaRenderMode_Automatic)
 			{
 				if (InternalConfig.ATI_texture_env_combine3)
 				{
-					// With GL_ATI_texture_env_combine3, more combine functions can be modeled as
-					// exactly as the original combine functions. They can also be rendered more
+					// With GL_ATI_texture_env_combine3, more combine functions can be modeled
+					// equivalently to the Glide combine functions. They can also be rendered more
 					// often with one texture unit, which leaves more space for correct rendering
 					// of textures that use both chromakeying and alpha blending together.
 					InternalConfig.ColorAlphaRenderMode = OpenGLideColorAlphaRenderMode_EnvCombine3_ATI;
@@ -437,7 +436,7 @@ void GLExtensions(void)
 		InternalConfig.FogMode = OpenGLideFogEmulation_Simple;
 	}
 
-	if (InternalConfig.EXT_secondary_color && OpenGL.ColorAlphaUnit2 == 0)
+	if (InternalConfig.EXT_secondary_color)
 	{
 		glEnable(GL_COLOR_SUM_EXT);
 		glReportError();

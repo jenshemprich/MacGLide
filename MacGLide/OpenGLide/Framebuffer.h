@@ -23,10 +23,9 @@ public:
 	void free_buffers();
 	void initialise_format(GrLfbWriteMode_t format);
 	bool begin_write();
-	bool end_write();
-	bool end_write(FxU32 alpha);
-	bool end_write(FxU32 alpha, GLfloat depth, bool pixelpipeline);
-	bool end_write_opaque();
+	void end_write();
+	void end_write(FxU32 alpha, GLfloat depth);
+	void end_write_opaque();
 	inline FxU16 GetChromaKeyValue() {return m_ChromaKey.Scalar;};
 	inline void SetChromaKeyValue(FxU16 chromakey)
 	{
@@ -41,11 +40,11 @@ public:
 	}
 protected:
 	void Clear();
-	bool draw(const tilesize* tilesizetable, bool pixelpipeline);
-	bool drawCompiledVertexArrays(const tilesize* tilesizetable, int vertexarrayindex, int tilecount, bool pixelpipeline);
+	void draw(const tilesize* tilesizetable);
+	void drawCompiledVertexArrays(const tilesize* tilesizetable, int vertexarrayindex, int tilecount);
 	int buildVertexArrays(const tilesize* tilesizetable, int vertexarrayindex);
-	void set_gl_state(bool pixelpipeline);
-	void restore_gl_state(bool pixelpipeline);
+	void set_gl_state();
+	void restore_gl_state();
 	// Pixel conversion
 	enum TileUpdateState
 	{

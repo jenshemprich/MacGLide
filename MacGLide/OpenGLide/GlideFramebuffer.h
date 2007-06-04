@@ -59,6 +59,6 @@ public:
 	void CopyFrameBuffer(FxU16* targetbuffer);
 	inline FxU16 GetChromaKeyValue() {return Framebuffer::GetChromaKeyValue();};
 protected:
-	void WriteFrameBuffer(bool pixelpipline);
+	void WriteFrameBuffer();
 	inline bool BackBufferIsLocked() {return m_grLfbLockWriteMode[GR_BUFFER_BACKBUFFER] != GR_LFBWRITEMODE_UNUSED;};
 };

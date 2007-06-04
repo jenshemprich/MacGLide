@@ -22,42 +22,28 @@
 
 void PGTexture::genPaletteMipmaps( FxU32 width, FxU32 height, const FxU8 *data )
 {
-    FxU8    buf[ 128 * 128 ];
-    FxU32   mmwidth;
-    FxU32   mmheight;
-    FxU32   lod;
-    FxU32   skip;
-
-    mmwidth = width;
-    mmheight = height;
-    lod = 0;
-    skip = 1;
-
-    while ( ( mmwidth > 1 ) || ( mmheight > 1 ) )
-    {
-        FxU32   x, 
-                y;
-
-        mmwidth = mmwidth > 1 ? mmwidth / 2 : 1;
-        mmheight = mmheight > 1 ? mmheight / 2 : 1;
-        lod += 1;
-        skip *= 2;
-
-        for ( y = 0; y < mmheight; y++ )
-        {
-            const FxU8* in;
-            FxU8* out;
-
-            in = data + width * y * skip;
-            out = buf + mmwidth * y;
-            for ( x = 0; x < mmwidth; x++ )
-            {
-                out[ x ] = in[ x * skip ];
-            }
-        }
-
-        glTexImage2D( GL_TEXTURE_2D, lod, GL_COLOR_INDEX8_EXT, mmwidth, mmheight, 0, GL_COLOR_INDEX, GL_UNSIGNED_BYTE, buf );
-    }
+	FxU8 buf[128 * 128];
+	FxU32 mmwidth = width;
+	FxU32 mmheight = height;
+	FxU32 lod = 0;
+	FxU32 skip = 1;
+	while ((mmwidth > 1) || (mmheight > 1))
+	{
+		mmwidth = mmwidth > 1 ? mmwidth / 2 : 1;
+		mmheight = mmheight > 1 ? mmheight / 2 : 1;
+		lod += 1;
+		skip *= 2;
+		for (FxU32 y = 0; y < mmheight; y++)
+		{
+			const FxU8* in = data + width * y * skip;
+			FxU8* out = buf + mmwidth * y;
+			for (FxU32 x = 0; x < mmwidth; x++)
+			{
+				out[x] = in[x * skip];
+			}
+		}
+		glTexImage2D( GL_TEXTURE_2D, lod, GL_COLOR_INDEX8_EXT, mmwidth, mmheight, 0, GL_COLOR_INDEX, GL_UNSIGNED_BYTE, buf );
+	}
 }
 
 PGTexture::PGTexture(int mem_size)
@@ -634,7 +620,7 @@ bool PGTexture::MakeReady(TTextureStruct* tex_coords, unsigned long number_of_tr
 
 		if (subtexcoords)
 		{
-			// APPLE_client_storage doesn't explicitely forbid to adjust pixel unpack :^)
+			// APPLE_client_storage doesn't explicitly forbid to adjust pixel unpack :^)
 			glPixelStorei(GL_UNPACK_SKIP_PIXELS, subtexcoords->left);
 			glPixelStorei(GL_UNPACK_SKIP_ROWS, subtexcoords->top);
 			glPixelStorei(GL_UNPACK_ROW_LENGTH, texVals.width);
@@ -684,7 +670,7 @@ bool PGTexture::MakeReady(TTextureStruct* tex_coords, unsigned long number_of_tr
 			break;
 		case GR_TEXFMT_P_8:
 			// Read about anisotropy and chromakey issues in macFormatConversions.cpp
-			if ( InternalConfig.EXT_paletted_texture && InternalConfig.AnisotropylLevel < 2)
+			if (InternalConfig.EXT_paletted_texture && InternalConfig.AnisotropylLevel < 2)
 			{
 				glColorTable(GL_TEXTURE_2D, GL_RGBA, 256, GL_RGBA, GL_UNSIGNED_BYTE, m_palette);
 				glTexImage2D( GL_TEXTURE_2D, texVals.lod, GL_COLOR_INDEX8_EXT, 
@@ -712,7 +698,7 @@ bool PGTexture::MakeReady(TTextureStruct* tex_coords, unsigned long number_of_tr
 			}
 			break;
 	    case GR_TEXFMT_AP_88:
-			if ( use_two_textures )
+			if (use_two_textures)
 			{
 				FxU32 *texBuffer2 = texBuffer + 256 * 128;
 				glColorTable(GL_TEXTURE_2D, GL_RGBA, 256, GL_RGBA, GL_UNSIGNED_BYTE, m_palette);
@@ -725,7 +711,7 @@ bool PGTexture::MakeReady(TTextureStruct* tex_coords, unsigned long number_of_tr
 				    genPaletteMipmaps(texVals.width, texVals.height, (FxU8*) texBuffer);
 				}
 				glActiveTextureARB(OpenGL.ColorAlphaUnit1 + 1);
-				DownloadMipmapsToOpenGL( GL_ALPHA, GL_ALPHA, GL_UNSIGNED_BYTE, texBuffer2, texVals, !use_mipmap_ext);
+				DownloadMipmapsToOpenGL(GL_ALPHA, GL_ALPHA, GL_UNSIGNED_BYTE, texBuffer2, texVals, !use_mipmap_ext);
 				glActiveTextureARB(OpenGL.ColorAlphaUnit1);
 				glReportError();
 			}
@@ -736,11 +722,9 @@ bool PGTexture::MakeReady(TTextureStruct* tex_coords, unsigned long number_of_tr
 			}
 			break;
 		case GR_TEXFMT_ALPHA_8:
+			// the alpha value is used for red, green, and blue as well (see glide24pgm.pdf)
 			ConvertA8toAP88((FxU8*)data, (FxU16*) texBuffer, texVals.nPixels);
 			DownloadMipmapsToOpenGL(2, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, texBuffer, texVals, !use_mipmap_ext);
-			// @todo: The statement below breaks the overlay texts in Myth TFL.
-			// As a result, this optimsation has been undone for now
-			// DownloadMipmapsToOpenGL(1, GL_ALPHA, GL_UNSIGNED_BYTE, data, texVals, !use_mipmap_ext);
 			break;
 		case GR_TEXFMT_ALPHA_INTENSITY_88:
 			DownloadMipmapsToOpenGL(2, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, data, texVals, !use_mipmap_ext);
@@ -810,28 +794,24 @@ bool PGTexture::MakeReady(TTextureStruct* tex_coords, unsigned long number_of_tr
 
 FxU32 PGTexture::LodOffset( FxU32 evenOdd, const GrTexInfo *info )
 {
-    FxU32   total = 0;
-    GrLOD_t i;
-
-    for( i = info->largeLod; i < info->smallLod; i++ )
-    {
-        total += MipMapMemRequired( i, info->aspectRatio, info->format );
-    }
-
-    total = ( total + 7 ) & ~7;
-
-    return total;
+	FxU32 total = 0;
+	for(GrLOD_t i = info->largeLod; i < info->smallLod; i++)
+	{
+		total += MipMapMemRequired( i, info->aspectRatio, info->format);
+	}
+	total = (total + 7) & ~7;
+	return total;
 }
 
 FxU32 PGTexture::TextureMemRequired( FxU32 evenOdd, const GrTexInfo *info )
 {
-    //
-    // If the format is one of these:
-    // GR_TEXFMT_RGB_332, GR_TEXFMT_YIQ_422, GR_TEXFMT_ALPHA_8
-    // GR_TEXFMT_INTENSITY_8, GR_TEXFMT_ALPHA_INTENSITY_44, GR_TEXFMT_P_8
-    // Reduces the size by 2
-    //
-    return nSquareTexLod[ info->format < GR_TEXFMT_16BIT ][ info->aspectRatio ][ info->largeLod ][ info->smallLod ];
+	//
+	// If the format is one of these:
+	// GR_TEXFMT_RGB_332, GR_TEXFMT_YIQ_422, GR_TEXFMT_ALPHA_8
+	// GR_TEXFMT_INTENSITY_8, GR_TEXFMT_ALPHA_INTENSITY_44, GR_TEXFMT_P_8
+	// Reduces the size by 2
+	//
+	return nSquareTexLod[ info->format < GR_TEXFMT_16BIT ][ info->aspectRatio ][ info->largeLod ][ info->smallLod ];
 }
 
 FxU32 PGTexture::MipMapMemRequired( GrLOD_t lod, GrAspectRatio_t aspectRatio, GrTextureFormat_t format )
@@ -842,7 +822,7 @@ FxU32 PGTexture::MipMapMemRequired( GrLOD_t lod, GrAspectRatio_t aspectRatio, Gr
 	// GR_TEXFMT_INTENSITY_8, GR_TEXFMT_ALPHA_INTENSITY_44, GR_TEXFMT_P_8
 	// Reduces the size by 2
 	//
-	return nSquareLod[ format >= GR_TEXFMT_16BIT ][ aspectRatio ][ lod ];
+	return nSquareLod[format >= GR_TEXFMT_16BIT][aspectRatio][lod];
 }
 
 void PGTexture::GetTexValues( TexValues * tval ) const
@@ -867,53 +847,51 @@ void PGTexture::ChromakeyValue( GrColor_t value )
 
 void PGTexture::ChromakeyMode( GrChromakeyMode_t mode )
 {
-    m_chromakey_mode = mode;
-    m_palette_dirty = true;
+	m_chromakey_mode = mode;
+	m_palette_dirty = true;
 }
 
 void PGTexture::ApplyKeyToPalette( void )
 {
-	FxU32   hash;
-	int     i;
-	if ( m_palette_dirty )
+	if (m_palette_dirty)
 	{
-	    hash = 0;
-	      {
-	        for ( i = 0; i < 256; i++ )
-	        {
-	            if ( ( m_chromakey_mode )
-	              && ( ( m_palette[i] & 0xffffff00 ) == m_chromakey_value_8888))
-	            {
-	               m_palette[i] &= 0xffffff00;
-	            }
-	            else
-	            {
-	               m_palette[i] |= 0x000000ff;
-	            }
-	            hash = ( ( hash << 5 ) | ( hash >> 27 ) );
-	            hash += ( InternalConfig.IgnorePaletteChange
-	                      ? ( m_palette[ i ] & 0x000000ff  )
-	                      : m_palette[ i ]);
-	        }
-	      }
-	    m_palette_hash = hash;
-	    m_palette_dirty = false;
+		FxU32 hash = 0;
+		{
+		  for (int i = 0; i < 256; i++)
+		  {
+				if ((m_chromakey_mode) &&
+				    ((m_palette[i] & 0xffffff00) == m_chromakey_value_8888))
+				{
+				   m_palette[i] &= 0xffffff00;
+				}
+				else
+				{
+				   m_palette[i] |= 0x000000ff;
+				}
+				hash = ((hash << 5) | (hash >> 27));
+				hash += (InternalConfig.IgnorePaletteChange
+				         ? (m_palette[i] & 0x000000ff)
+				         : m_palette[i]);
+			}		
+		}
+		m_palette_hash = hash;
+		m_palette_dirty = false;
 	}
 }
 
 void PGTexture::NCCTable( GrNCCTable_t tab )
 {
-    switch ( tab )
-    {
-    case GR_NCCTABLE_NCC0:
-    case GR_NCCTABLE_NCC1:
-        m_ncc_select = tab;
-    }
+	switch ( tab )
+	{
+	case GR_NCCTABLE_NCC0:
+	case GR_NCCTABLE_NCC1:
+		m_ncc_select = tab;
+	}
 }
 
 FxU32 PGTexture::GetMemorySize( void ) const
 {
-    return m_tex_memory_size;
+	return m_tex_memory_size;
 }
 
 unsigned int PGTexture::PowerOfTwoCeiling(unsigned int x)

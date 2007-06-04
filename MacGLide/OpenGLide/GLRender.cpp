@@ -105,7 +105,7 @@ void RenderInitialize(void)
 		pTS->aq = pTS->bq = pTS->cq = 0.0f;
 	}
 	OGLRender.TVertex  = (TVertexStruct*)  AllocBuffer(triangles, sizeof(TVertexStruct));
-	OGLRender.TFog     = (TFogStruct*)     AllocBuffer(OGLRender.FrameBufferStartIndex, sizeof(TFogStruct));
+	OGLRender.TFog     = (TFogStruct*)     AllocBuffer(triangles, sizeof(TFogStruct));
 	// Initialise compiled vertex arrays
 	OGLRender.BufferLocked = false;
 	OGLRender.BufferStart = 0;
