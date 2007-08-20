@@ -540,7 +540,6 @@ grTexCombine( GrChipID_t tmu,
 		Glide.State.TextureCombineCFunction = rgb_function;
 		Glide.State.TextureCombineCFactor   = rgb_factor;
 		SetColorTextureState();
-		SetTextureState();
 	}
 	if (Glide.State.TextureCombineAFunction != alpha_function ||
 	    Glide.State.TextureCombineAFactor != alpha_factor)
@@ -548,7 +547,6 @@ grTexCombine( GrChipID_t tmu,
 		Glide.State.TextureCombineAFunction = alpha_function;
 		Glide.State.TextureCombineAFactor   = alpha_factor;
 		SetAlphaTextureState();
-		SetTextureState();
 	}
 	if (Glide.State.TextureCombineRGBInvert != rgb_invert)
 	{

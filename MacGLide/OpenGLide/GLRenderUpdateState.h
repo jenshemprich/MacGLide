@@ -29,6 +29,7 @@ extern bool s_bForceChromaKeyAndAlphaStateUpdate;
 // (Deferred inlining)
 inline void SetChromaKeyAndAlphaState();
 inline void SetAlphaCombineState();
+inline void SetTextureState();
 
 inline void ForceChromaKeyAndAlphaStateUpdate()
 {
@@ -50,6 +51,7 @@ inline void SetColorTextureState()
 	{
 		OpenGL.ColorTexture = false;
 	}
+	SetTextureState();
 
 #ifdef OPENGL_DEBUG
     GlideMsg( "OpenGL.ColorTexture = %d\n", OpenGL.ColorTexture);
@@ -85,6 +87,7 @@ inline void SetAlphaTextureState()
 			OpenGL.AlphaTexture = false;
 		}
 	}
+	SetTextureState();
 
 #ifdef OPENGL_DEBUG
     GlideMsg( "OpenGL.AlphaTexture = %d\n", OpenGL.AlphaTexture);
