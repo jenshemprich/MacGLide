@@ -211,13 +211,14 @@ void RenderUpdateState()
 
 	bool active_texture_unit_not_coloralpha1 = false;
 	bool active_texture_unit_client_state_not_coloralpha1 = false;
+	const bool useCompiledVertexArrays = InternalConfig.EXT_compiled_vertex_array;
 	// color or alpha inversion also triggers a fog mode state so we don't have to check explicitly
 	if (s_bUpdateFogModeState || s_bUpdateFogColorState)
 	{
 		if (InternalConfig.FogMode == OpenGLideFogEmulation_EnvCombine)
 		{
 			glActiveTextureARB(OpenGL.FogTextureUnit);
-			if (InternalConfig.EXT_compiled_vertex_array)
+			if (useCompiledVertexArrays)
 			{
 				glClientActiveTextureARB(OpenGL.FogTextureUnit);
 				active_texture_unit_client_state_not_coloralpha1 = true;
@@ -239,7 +240,7 @@ void RenderUpdateState()
 				if (Glide.State.FogMode & (GR_FOG_WITH_ITERATED_ALPHA | GR_FOG_WITH_TABLE))
 				{
 					glEnable(GL_TEXTURE_2D);
-					if (InternalConfig.EXT_compiled_vertex_array)
+					if (useCompiledVertexArrays)
 					{
 						glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 						glTexCoordPointer(1, GL_FLOAT, 0, &OGLRender.TFog[0]);
@@ -279,7 +280,7 @@ void RenderUpdateState()
 					// because the minimal fog value is chosen. However, choosing replace might
 					// save some vram memory access cycles  
 					glEnable(GL_TEXTURE_2D);
-					if (InternalConfig.EXT_compiled_vertex_array)
+					if (useCompiledVertexArrays)
 					{
 						glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 						glTexCoordPointer(1, GL_FLOAT, 0, &OGLRender.TFog[0]);
@@ -292,7 +293,7 @@ void RenderUpdateState()
 				}
 				else
 				{
-					if (InternalConfig.EXT_compiled_vertex_array)
+					if (useCompiledVertexArrays)
 					{
 						glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 						// On MacOS9 (Classic?) the texcoord pointer needs to be reset
@@ -329,7 +330,7 @@ void RenderUpdateState()
 				glReportError();
 				// Change the fog color in order to emulate the correct fog equation
 				// (Imperfect emulation)
-				static const GLfloat ZeroColor[ 4 ] = { 0.0f, 0.0f, 0.0f, 0.0f };
+				static const GLfloat ZeroColor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 				GrFogMode_t modeAdd = Glide.State.FogMode & (GR_FOG_MULT2 | GR_FOG_ADD2);
 				switch (modeAdd)
 				{
@@ -352,7 +353,7 @@ void RenderUpdateState()
 			{
 				active_texture_unit_not_coloralpha1 = true;
 				glActiveTextureARB(OpenGL.FogTextureUnit);
-				if (InternalConfig.EXT_compiled_vertex_array)
+				if (useCompiledVertexArrays)
 				{
 					glClientActiveTextureARB(OpenGL.FogTextureUnit);
 					active_texture_unit_client_state_not_coloralpha1 = true;
@@ -482,7 +483,7 @@ void RenderUpdateState()
 							if (set_active_texture_unit)
 							{
 								glActiveTextureARB(OpenGL.ColorAlphaUnit1 + unit_index);
-								if (InternalConfig.EXT_compiled_vertex_array)
+								if (useCompiledVertexArrays)
 								{
 									glClientActiveTextureARB(OpenGL.ColorAlphaUnit1 + unit_index);
 									active_texture_unit_client_state_not_coloralpha1 = (unit_index != 0);
@@ -490,7 +491,7 @@ void RenderUpdateState()
 								active_texture_unit_not_coloralpha1 = (unit_index != 0);
 								glReportError();
 							}
-							if (InternalConfig.EXT_compiled_vertex_array)
+							if (useCompiledVertexArrays)
 							{
 								glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 								glTexCoordPointer(4, GL_FLOAT, 0, NULL);
@@ -535,7 +536,7 @@ void RenderUpdateState()
 #endif
 							// Enable the texture unit
 							glEnable(GL_TEXTURE_2D);
-							if (InternalConfig.EXT_compiled_vertex_array)
+							if (useCompiledVertexArrays)
 							{
 								glClientActiveTextureARB(OpenGL.ColorAlphaUnit1 + unit_index);
 								glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -857,7 +858,7 @@ void RenderUpdateState()
 				if (OpenGL.Texture)
 				{
 					glEnable(GL_TEXTURE_2D);
-					if (InternalConfig.EXT_compiled_vertex_array)
+					if (useCompiledVertexArrays)
 					{
 						glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 						glTexCoordPointer(4, GL_FLOAT, 0, &OGLRender.TTexture[0]);
@@ -865,7 +866,7 @@ void RenderUpdateState()
 				}
 				else
 				{
-					if (InternalConfig.EXT_compiled_vertex_array)
+					if (useCompiledVertexArrays)
 					{
 						glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 						glTexCoordPointer(4, GL_FLOAT, 0, NULL);
