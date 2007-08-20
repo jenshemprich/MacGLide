@@ -48,10 +48,11 @@ void gapfixSetSimpleColorState()
 	{
 		glDisable(GL_COLOR_SUM_EXT);
 	}
+	const bool useCompiledVertexArrays = InternalConfig.EXT_compiled_vertex_array;
 	if (OpenGL.Fog && OpenGL.FogTextureUnit)
 	{
 		glActiveTextureARB(OpenGL.FogTextureUnit);
-		if (InternalConfig.EXT_compiled_vertex_array)
+		if (useCompiledVertexArrays)
 		{
 			glClientActiveTextureARB(OpenGL.FogTextureUnit);
 			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -64,7 +65,7 @@ void gapfixSetSimpleColorState()
 	for(long unit_index = 1; unit_index >= 0; unit_index--)
 	{
 		glActiveTextureARB(OpenGL.ColorAlphaUnit1 + unit_index);
-		if (InternalConfig.EXT_compiled_vertex_array)
+		if (useCompiledVertexArrays)
 		{
 			glClientActiveTextureARB(OpenGL.ColorAlphaUnit1 + unit_index);
 			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
