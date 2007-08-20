@@ -362,7 +362,7 @@ void GlideFramebuffer::OnBeforeBufferClear()
 			m_bufferclearcalls++;
 			if (m_bufferclearcalls == 2)
 			{
-				// Trigger  write in order to render cockpit layer before the retro mirror 3D-view
+				// Trigger write in order to render cockpit layer before the retro mirror 3D-view
 #ifdef OGL_FRAMEBUFFER
 		GlideMsg( "Triggering  write in order to render cockpit layer before the retro mirror 3D-view\n");
 #endif
@@ -550,10 +550,7 @@ void GlideFramebuffer::WriteFrameBuffer()
 		}
 		else
 		{
-			end_write();
-			// @todo: it would be nice to eleminate the condition,but
-			//        m_alpha is always applied to the write and depth never
-			// end_write(m_alpha, m_depth);
+			end_write(0x000000ff, OpenGL.ZNear);
 		}
 	}
 	else
@@ -632,15 +629,15 @@ void GlideFramebuffer::SetAlpha(FxU32 alpha)
 	if (m_must_write && m_framebuffer->PixelPipeline && m_alpha != alpha)
 	{
 		WriteFrameBuffer();
-		m_alpha = alpha;
 	}
-};
+	m_alpha = alpha;
+}
 
 void GlideFramebuffer::SetDepth(GLfloat depth)
 {
 	if (m_must_write && m_framebuffer->PixelPipeline && m_depth != depth)
 	{
 		WriteFrameBuffer();
-		m_depth = depth;
 	}
-};
+	m_depth = depth;
+}
