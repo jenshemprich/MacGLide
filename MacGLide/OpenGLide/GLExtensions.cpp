@@ -83,7 +83,7 @@ stExtensionSupport glNecessaryExt[] =
 }; 
 
 // check to see if Extension is Supported
-// code by Mark J. Kilgard of NVidia modified by Fabio Barros
+// code by Mark J. Kilgard of NVidia modified by Fabio Barros, improved by Jens-Olaf Hemprich
 bool OGLIsExtensionSupported(const char* extensions, const char* extension)
 {
 	char* where = (char *) strchr( extension, ' ' );
@@ -115,31 +115,37 @@ bool OGLIsExtensionSupported(const char* extensions, const char* extension)
 		}
 		start = terminator;
 	}
-	
-	// fix for Rage 128 OpenGL Engine 1.1.ATI-5.99
-	// (See apple techote TN2014)
-	if (strcmp(extension, "GL_APPLE_packed_pixels") == 0)
+	// map ARB to EXT names in order to support older graphics cards
+	static const int numExtensions = 4;
+	static const struct
 	{
-		return OGLIsExtensionSupported(extensions, "GL_APPLE_packed_pixel");
+		const char* arbName;
+		const char* extName;
 	}
-	// fix for Rage 128 OpenGL Engine 1.1.ATI-5.99
-	// support for GL_EXT_texture_env_combine
-	else if (strcmp(extension, "GL_ARB_texture_env_combine") == 0)
+	extensionMapping[numExtensions] =
 	{
-		return OGLIsExtensionSupported(extensions, "GL_EXT_texture_env_combine");	
-	}
-	// also support the older GL_EXT_texture_env_add
-	else if (strcmp(extension, "GL_ARB_texture_env_add") == 0)
+		// fix for Rage 128 OpenGL Engine 1.1.ATI-5.99
+		// (See apple techote TN2014)
+		{"GL_APPLE_packed_pixels","GL_APPLE_packed_pixel"},
+		// fix for Rage 128 OpenGL Engine 1.1.ATI-5.99
+		// support for GL_EXT_texture_env_combine
+		{"GL_ARB_texture_env_combine","GL_EXT_texture_env_combine"},	
+		// also support the older GL_EXT_texture_env_add
+		{"GL_ARB_texture_env_add","GL_EXT_texture_env_add"},
+		// and non-ARB texture rectangle extension GL_EXT_texture_rectangle
+		{"GL_ARB_texture_rectangle","GL_EXT_texture_rectangle"}	
+	};
+	for(int i = 0; i < numExtensions; i++)
 	{
-		return OGLIsExtensionSupported(extensions, "GL_EXT_texture_env_add");	
+	     if (strcmp(extension, extensionMapping[i].arbName) == 0)
+	     {
+	     	return OGLIsExtensionSupported(extensions, extensionMapping[i].extName);
+	     }
 	}
-	else
-	{
-		return false;
-	}
+	return false;
 }
 
-void ValidateUserConfig( void )
+void ValidateUserConfig(void)
 {
 	glReportErrors("ValidateUserConfig");
 	
