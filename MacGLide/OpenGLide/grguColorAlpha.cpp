@@ -171,7 +171,6 @@ grColorCombine( GrCombineFunction_t function, GrCombineFactor_t factor,
 	ColorFactor3Func = colorCombineTable[ factor ][ function ].factorfunc;
 
 	SetColorTextureState();
-	SetTextureState();
 	SetColorCombineState();
 
 	VERIFY_ACTIVE_TEXTURE_UNIT(OpenGL.ColorAlphaUnit1);
@@ -529,7 +528,6 @@ grAlphaCombine( GrCombineFunction_t function, GrCombineFactor_t factor,
 
 	SetAlphaTextureState();
 	VERIFY_ACTIVE_TEXTURE_UNIT(OpenGL.ColorAlphaUnit1);
-	SetTextureState();
 
 #ifdef OPTIMISE_OPENGL_STATE_CHANGES
 	if (bUpdateColorCombineState)
