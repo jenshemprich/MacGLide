@@ -23,7 +23,6 @@ public:
 	void free_buffers();
 	void initialise_format(GrLfbWriteMode_t format);
 	bool begin_write();
-	void end_write();
 	void end_write(FxU32 alpha, GLfloat depth);
 	void end_write_opaque();
 	inline FxU16 GetChromaKeyValue() {return m_ChromaKey.Scalar;};
@@ -40,8 +39,7 @@ public:
 	}
 protected:
 	void Clear();
-	void draw(const tilesize* tilesizetable);
-	void drawCompiledVertexArrays(const tilesize* tilesizetable, int vertexarrayindex, int tilecount);
+	int buildVertexArrays();
 	int buildVertexArrays(const tilesize* tilesizetable, int vertexarrayindex);
 	void set_gl_state();
 	void restore_gl_state();
@@ -107,4 +105,8 @@ private:
 	vector bool short Vector;
 #endif
 	} m_ChromaKey;
+//#ifdef DEBUG_TILE_RENDERING
+protected:
+	static void highlightTileCorners(const Framebuffer::TileUpdateState updateState, FxU32* texbuffer, const GLint x_step, const GLint y_step);
+//#endif
 };

@@ -82,9 +82,9 @@ void RenderInitialize(void)
     GlideMsg( "RenderInitialize()\n");
 #endif
 	glReportErrors("RenderInitialize");
-	// initialise triagle buffers
+	// Allocate vertex array buffers
 	OGLRender.NumberOfTriangles = 0;
-	const int triangles = InternalConfig.EXT_compiled_vertex_array ? OGLRender.FrameBufferStartIndex + 2 * Framebuffer::MaxTiles * Framebuffer::MaxTiles : OGLRender.FrameBufferStartIndex;
+	const int triangles = OGLRender.FrameBufferStartIndex + 2 * Framebuffer::MaxTiles * Framebuffer::MaxTiles;
 	// Framebuffer utilises color, vertex and texture array only
 	OGLRender.TColor = (TColorStruct*) AllocBuffer(triangles, sizeof(TColorStruct));
 	if (OpenGL.ColorAlphaUnit2 == 0)
@@ -585,10 +585,10 @@ void RenderDrawTriangles_impl( void )
 			glReportError();
 		}
 	}
-	if ( use_two_tex )
+	if (use_two_tex)
 	{
 		glActiveTextureARB(OpenGL.ColorAlphaUnit1 + 1);
-		if (InternalConfig.EXT_compiled_vertex_array)
+		if (use_compiled_vertex_arrays)
 		{
 			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 			glTexCoordPointer( 4, GL_FLOAT, 0, NULL);
