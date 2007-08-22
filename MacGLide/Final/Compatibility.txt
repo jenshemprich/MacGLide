@@ -47,6 +47,8 @@ DS9 - The Fallen:       Some objects in the intro seem to have problems with tra
 Falcon 4.0:             Works just fine. For maximum performance at 1600x1200, choose 800x600
                         in the game menu, and set Resolution=2 in the settings file.
 
+F/A-18 Korea:           Works fine.
+
 Futurecop LAPD:         Works fine except that in version 1.02, the pause screen is corrupt.
                         But you can stick with version 1.0.
 
@@ -77,9 +79,6 @@ Diablo 2:               In the video driver setup dialog, the 3dfx/Glide options
                         in 3Dfx mode. However, there's a MacOS X patch available.
                         
 Driver 3dfx:            The game doesn't run at all in the MacOS X classic environment.
-
-F-18 Korea:             Hardly playable. Although the textures look correct now, there are
-                        severe screen update problems in cockpit mode.
 
 Waterrace:              Needs 3DfxGlideLib3.x to run properly in 3Dfx mode.
 
