@@ -191,11 +191,10 @@ grSstWinOpen(FxU32 hwnd,
              int num_buffers,
              int num_aux_buffers)
 {
-  if ( OpenGL.WinOpen )
-  {
-      grSstWinClose( );
-  }
-
+	if (OpenGL.WinOpen)
+	{
+		grSstWinClose();
+	}
 	// Some games read from the buffer after the window has been closed
 	// As a result, freeing the read buffer must be deferred until the
 	// next call to grSstWinOpen() or unloading the library
@@ -204,15 +203,12 @@ grSstWinOpen(FxU32 hwnd,
 		FreeFrameBuffer(Glide.ReadBuffer.Address);
 		Glide.ReadBuffer.Address = NULL;
 	}
-
-	#ifdef OGL_DONE
+#ifdef OGL_DONE
 		GlideMsg( "grSstWinOpen( %d, %d, %d, %d, %d, %d, %d )\n",
 				hwnd, res, ref, cformat, org_loc, num_buffers, num_aux_buffers );
-	#endif
-
-  Glide.Resolution = res;
-
-	#ifdef OGL_DEBUG
+#endif
+	Glide.Resolution = res;
+#ifdef OGL_DEBUG
 		if ( Glide.Resolution > GR_RESOLUTION_400x300 )
 		{
 				GlideError( "grSstWinOpen: res = GR_RESOLUTION_NONE\n" );
@@ -223,8 +219,7 @@ grSstWinOpen(FxU32 hwnd,
 				GlideError( "grSstWinOpen: Refresh Incorrect\n" );
 				return FXFALSE;
 		}
-	#endif
-
+#endif
 	Glide.WindowWidth = windowDimensions[Glide.Resolution].width;
 	Glide.WindowHeight = windowDimensions[Glide.Resolution].height;
 	// Set the size of the opengl window (might be different from Glide window size)
@@ -270,24 +265,24 @@ grSstWinOpen(FxU32 hwnd,
 	memset(&Glide.TempBuffer, 0, sizeof(BufferStruct));
 	memset(&Glide.ReadBuffer, 0, sizeof(BufferStruct));
 	// Initing OpenGL Window
-	if ( !InitWindow(hwnd))
+	if (!InitWindow(hwnd))
 	{
-			return FXFALSE;
+		return FXFALSE;
 	}
-
 	// Note: The OpenGL resolution might have changed during the call to InitWindow().
 	// As a result, buffers must be allocated afterwards
 	const unsigned long openglpixels = OpenGL.WindowWidth * OpenGL.WindowHeight;
-	// At first, allocate a framebuffer for 16bit pixel data only (will be expanded on demand)
-	unsigned long buffertypesize = sizeof(FxU16); // (dwWriteMode >= GR_LFBWRITEMODE_888) ? sizeof(FxU32) : sizeof(FxU16);
-	Glide.FrameBuffer.Address = (FxU16*) AllocFrameBuffer(Glide.WindowTotalPixels * buffertypesize + openglpixels * sizeof(FxU32), 1);
-	Glide.TempBuffer.Address = &Glide.FrameBuffer.Address[Glide.WindowTotalPixels * buffertypesize >> 1];
-	memset( Glide.FrameBuffer.Address, 0, Glide.WindowTotalPixels * buffertypesize);
-	memset( Glide.TempBuffer.Address, 0, openglpixels * sizeof(FxU32));
+	// As the lfb write format isn't known yet we must allocate a framebuffer for 32bit color formats
+	// although most games will use 16bit corlor formats only 
+	Glide.FrameBuffer.Address = (FxU16*) AllocFrameBuffer(Glide.WindowTotalPixels + openglpixels, 4);
+	// >> 1 as the framebuffer is allocated for 32 bit color formats but the pointer is declared as a short
+	Glide.TempBuffer.Address = &Glide.FrameBuffer.Address[Glide.WindowTotalPixels >> 1];
+	memset(Glide.FrameBuffer.Address, 0, Glide.WindowTotalPixels * sizeof(FxU32));
+	memset(Glide.TempBuffer.Address, 0, openglpixels * sizeof(FxU32));
 	// Prealloc readbuffer for Carmageddon, because allocating it on demand
 	// (when moving the cursor in Movie mode) would produce an OutOfMemory error)
-	if (Glide.ReadBuffer.Address == NULL &&
-	    s_GlideApplication.GetType() == GlideApplication::Carmageddon)
+	const bool preallocateReadBuffer = s_GlideApplication.GetType() == GlideApplication::Carmageddon;
+	if (preallocateReadBuffer)
 	{
 		Glide.ReadBuffer.Address = (FxU16*) AllocFrameBuffer(Glide.WindowTotalPixels, sizeof(FxU16));
 #ifdef OPENGL_DEBUG
@@ -299,16 +294,14 @@ grSstWinOpen(FxU32 hwnd,
 	RenderInitialize();
 	s_Framebuffer.initialise(&Glide.FrameBuffer, &Glide.TempBuffer);
 	Textures->initOpenGL();
-
 	#ifdef OGL_DONE
 		GlideMsg( "----Start of grSstWinOpen()\n" );
 	#endif
-	// All should be disabled
-	//depth buffering, fog, chroma-key, alpha blending, alpha testing
+	// All of this should be disabled: depth buffering, fog, chroma-key, alpha blending, alpha testing
 	#ifdef OPTIMISE_GLIDE_STATE_CHANGES
 		// When state change optimising is enabled, passing in default values of 0
-		// will not initialise the corresponding values in the OpenGL struct,
-		// because the optimising code assumes, it has already been set earlier.
+		// would not initialise the corresponding values in the OpenGL struct,
+		// because the optimising code would assume that the state has already been set.
 		// By writing values other than 0 to glide state variables which will
 		// become 0 below, the OpenGL values are initialises as exspected.
 		// For functions that are called by other functions during the

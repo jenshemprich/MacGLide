@@ -55,7 +55,7 @@ grLfbLock( GrLock_t dwType,
 	}
 	else if (OpenGL.WinOpen == false && Glide.ReadBuffer.Address)
 	{
-		BufferStruct* targetbuffer = Glide.ReadBuffer.Address ? &Glide.ReadBuffer : &Glide.TempBuffer;
+		BufferStruct* targetbuffer = &Glide.ReadBuffer;
 		lfbInfo->lfbPtr = targetbuffer->Address;
 		lfbInfo->origin = GR_ORIGIN_UPPER_LEFT;
 	}
@@ -68,17 +68,20 @@ grLfbLock( GrLock_t dwType,
 		// Alloc readbuffer
 		if (Glide.ReadBuffer.Address == NULL)
 		{
-			Glide.ReadBuffer.Address = (FxU16*) AllocFrameBuffer(Glide.WindowTotalPixels, sizeof(FxU16));
+			// @todo: 32bit read buffers are cureently not supported (any mac game using this format for reads?)
+			Glide.ReadBuffer.Address = (FxU16*) AllocFrameBuffer(Glide.WindowTotalPixels,
+					                                                 //dwWriteMode >= GR_LFBWRITEMODE_888 ? sizeof(FxU32) : sizeof(FxU16)
+			                                                     sizeof(FxU16)
+			                                                     );
 #ifdef OPENGL_DEBUG
-							GlideMsg("Allocated Readbuffer(%dx%d) at 0x%x\n",
-							           Glide.WindowWidth, Glide.WindowHeight, Glide.ReadBuffer.Address);
+			GlideMsg("Allocated Readbuffer(%dx%d) at 0x%x\n",
+			         Glide.WindowWidth, Glide.WindowHeight, Glide.ReadBuffer.Address);
 #endif
 		}
 		// select main memory buffers
-		// @todo Remove conditions for NULL ReadBuffer (usage of FrameBuffer as source is wrong because it might be 16bit only)
 		BufferStruct* targetbuffer = &Glide.ReadBuffer;
 		const BufferStruct* sourcebuffer = &Glide.TempBuffer;
-		if (s_Framebuffer.GetRenderBufferChangedForRead() == true)
+		if (s_Framebuffer.GetRenderBufferChangedForRead())
 		{
 			// select buffer size
 			const unsigned long bufferwidth = OpenGL.WindowWidth;
@@ -89,26 +92,25 @@ grLfbLock( GrLock_t dwType,
 			GLint glWriteMode;
 			switch (dwWriteMode)
 			{
-			case GR_LFBWRITEMODE_1555:	glWriteMode = GL_UNSIGNED_SHORT_1_5_5_5_REV;	break;
-			case GR_LFBWRITEMODE_565:	glWriteMode = GL_UNSIGNED_SHORT_5_6_5;	break;
-			default:	glWriteMode = GL_UNSIGNED_SHORT_5_6_5;	break;
+			case GR_LFBWRITEMODE_1555: glWriteMode = GL_UNSIGNED_SHORT_1_5_5_5_REV;	break;
+			case GR_LFBWRITEMODE_565:  glWriteMode = GL_UNSIGNED_SHORT_5_6_5;       break;
+			//case GR_LFBWRITEMODE_888:  glWriteMode = GL_UNSIGNED_BYTE_8_8_8_8;      break;
+			default:                   glWriteMode = GL_UNSIGNED_SHORT_5_6_5;       break;
 			}
 			// The read buffer is sized for Glide pixels. As a result we cannot be used it when the read buffer has to be resized
 			void* destination = (!scale && dwOrigin == GR_ORIGIN_LOWER_LEFT) ? targetbuffer->Address : sourcebuffer->Address;
 #ifdef OPENGL_DEBUG
-							GlideMsg("Calling glReadPixels(%d, %d, 0x%x)\n", bufferwidth, bufferheight, destination);
-#endif							
-			glReadPixels(0, 0, 
-			             bufferwidth, bufferheight,
-			             (dwWriteMode == GR_LFBWRITEMODE_1555) ? GL_RGBA : GL_RGB,
-			             glWriteMode, 
-		               destination);
+			GlideMsg("Calling glReadPixels(%d, %d, 0x%x)\n", bufferwidth, bufferheight, destination);
+#endif
+			glReadPixels(0, 0, bufferwidth, bufferheight,
+			             (dwWriteMode == GR_LFBWRITEMODE_565) ? GL_RGB : GL_RGBA,
+			             glWriteMode, destination);
 			glReportError();
 #ifdef OPENGL_DEBUG
 			if (scale)
-							GlideMsg("Scaling to (%d, %d)  from 0x%x to 0x%x\n",
-							         Glide.WindowWidth, Glide.WindowHeight, sourcebuffer->Address, targetbuffer->Address);
-#endif							
+				GlideMsg("Scaling to (%d, %d)  from 0x%x to 0x%x\n",
+				         Glide.WindowWidth, Glide.WindowHeight, sourcebuffer->Address, targetbuffer->Address);
+#endif
 			if (dwOrigin == GR_ORIGIN_UPPER_LEFT)
 			{
 				// When the OpenGL resolution differs from the Glide resolution,
@@ -139,9 +141,9 @@ grLfbLock( GrLock_t dwType,
 				else
 				{
 #ifdef OPENGL_DEBUG
-							GlideMsg("Copying/Vertical mirroring pixels to destination buffer from 0x%x to 0x%x\n",
-							           sourcebuffer->Address, targetbuffer->Address);
-#endif							
+					GlideMsg("Copying/Vertical mirroring pixels to destination buffer from 0x%x to 0x%x\n",
+					         sourcebuffer->Address, targetbuffer->Address);
+#endif
 					// Swap pixels during copy from temp to read buffer
 					for ( int j = 0; j < Glide.WindowHeight; j++ )
 					{
@@ -180,8 +182,8 @@ grLfbLock( GrLock_t dwType,
 				else
 				{
 #ifdef OPENGL_DEBUG
-							GlideMsg("Copying/Vertical mirroring not necessary - pixels already in the right orientation\n");
-#endif							
+					GlideMsg("Copying/Vertical mirroring not necessary - pixels already in the right orientation\n");
+#endif
 				}
 			}
 			// Update with current framebuffer pixels not yet written to vram
@@ -220,14 +222,13 @@ grLfbUnlock( GrLock_t dwType, GrBuffer_t dwBuffer )
 	}
 	else
 	{
-		BufferStruct* targetbuffer = Glide.ReadBuffer.Address ? &Glide.ReadBuffer : &Glide.TempBuffer;
-		if (targetbuffer->Lock)
+		if (Glide.ReadBuffer.Lock)
 		{
 			// We're not interested in keeping track of unlocks since this breaks
 			// Framebuffer updates when moving the cursor in Carmageddon movie mode
 			// (because grLfbReadRegion() is called)
 			// @todo: -> Doesn't solve the issue
-			targetbuffer->Lock = false;
+			Glide.ReadBuffer.Lock = false;
 			return FXTRUE; 
 		}
 		else
