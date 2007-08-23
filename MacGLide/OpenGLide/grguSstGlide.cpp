@@ -276,7 +276,7 @@ grSstWinOpen(FxU32 hwnd,
 	// although most games will use 16bit corlor formats only 
 	Glide.FrameBuffer.Address = (FxU16*) AllocFrameBuffer(Glide.WindowTotalPixels + openglpixels, 4);
 	// >> 1 as the framebuffer is allocated for 32 bit color formats but the pointer is declared as a short
-	Glide.TempBuffer.Address = &Glide.FrameBuffer.Address[Glide.WindowTotalPixels >> 1];
+	Glide.TempBuffer.Address = &Glide.FrameBuffer.Address[Glide.WindowTotalPixels << 1];
 	memset(Glide.FrameBuffer.Address, 0, Glide.WindowTotalPixels * sizeof(FxU32));
 	memset(Glide.TempBuffer.Address, 0, openglpixels * sizeof(FxU32));
 	// Prealloc readbuffer for Carmageddon, because allocating it on demand
