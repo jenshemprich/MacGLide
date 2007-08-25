@@ -544,9 +544,12 @@ grSstWinClose( void )
 	RenderFree();
 	FinaliseOpenGLWindow();
 
-	FreeFrameBuffer(Glide.FrameBuffer.Address);
-	Glide.FrameBuffer.Address = NULL;
-	Glide.TempBuffer.Address = NULL;
+	if (Glide.FrameBuffer.Address)
+	{
+		FreeFrameBuffer(Glide.FrameBuffer.Address);
+		Glide.FrameBuffer.Address = NULL;
+		Glide.TempBuffer.Address = NULL;
+	}
 	// Freeing the readbuffer is be deferred until
 	// reopening the window or unloading the library
 }
