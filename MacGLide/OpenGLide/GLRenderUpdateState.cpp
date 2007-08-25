@@ -46,25 +46,24 @@ inline void SetChromaKeyAndAlphaState_update()
 {
 	glReportErrors("SetChromaKeyAndAlpha_update");
 
-	// Setup alpha and chrma keying
-	// Chromakeying really works for textures only, and chroma keying
+	// Chromakeying works for textures only, but chroma keying
 	// without textures doesn't make sense anyway.
 	if(!OpenGL.Blend && OpenGL.ChromaKey && OpenGL.Texture)
 	{
 #ifdef OPENGL_DEBUG
 		GlideMsg("Changing Chromakeymode state to enabled\n");
 #endif
-		// setup chroma keying
-		const GLenum alphaTestFunction = GL_GEQUAL;
-		const GLfloat alphaTestReferenceValue = 0.5;
+		// setup chroma keying (and ignore Glide alpha tests) 
+		const GLenum alphaTestFunction = GL_GREATER;
+		const GLfloat alphaTestReferenceValue = 0.0;
 #ifdef OPTIMISE_OPENGL_STATE_CHANGES
 		// Update only when necessary
 		if (alphaTestFunction != OpenGL.AlphaTestFunction
 		 || alphaTestReferenceValue != OpenGL.AlphaReferenceValue)
 		{
+#endif
 			OpenGL.AlphaTestFunction = alphaTestFunction;
 			OpenGL.AlphaReferenceValue = alphaTestReferenceValue;
-#endif
 			glAlphaFunc(alphaTestFunction, alphaTestReferenceValue);
 #ifdef OPTIMISE_OPENGL_STATE_CHANGES
 		}
@@ -81,8 +80,7 @@ inline void SetChromaKeyAndAlphaState_update()
 #ifdef OPENGL_DEBUG
 		GlideMsg("Changing Chromakeymode state to disabled\n");
 #endif
-		// Alpha Fix
-		// (todo: find out why this is a fix)
+		// Apply the alpha test values as requested by the glide application
 		if (Glide.State.AlphaOther != GR_COMBINE_OTHER_TEXTURE)
 		{
 			glDisable(GL_ALPHA_TEST);
@@ -197,16 +195,16 @@ void RenderUpdateState()
 		SetChromaKeyAndAlphaState();
 	}
 
-	if (s_bUpdateBlendState)
-	{
-		s_bUpdateBlendState = false;
-		SetBlendState_update();
-	}
-
 	if (s_bUpdateChromaKeyAndAlphaState)
 	{
 		s_bUpdateChromaKeyAndAlphaState = false;
 		SetChromaKeyAndAlphaState_update();
+	}
+
+	if (s_bUpdateBlendState)
+	{
+		s_bUpdateBlendState = false;
+		SetBlendState_update();
 	}
 
 	bool active_texture_unit_not_coloralpha1 = false;
@@ -841,20 +839,21 @@ void RenderUpdateState()
 		}
 		else // OpenGL.ColorAlphaTectureUnit2 == 0
 		{
+			if (active_texture_unit_not_coloralpha1)
+			{
+				glActiveTextureARB(OpenGL.ColorAlphaUnit1);
+				active_texture_unit_not_coloralpha1 = false;
+				if (active_texture_unit_client_state_not_coloralpha1)
+				{
+					glClientActiveTextureARB(OpenGL.ColorAlphaUnit1);
+					active_texture_unit_client_state_not_coloralpha1 = false;
+				}
+				glReportError();
+			}
+
 			if (s_bUpdateTextureState)
 			{
 				s_bUpdateTextureState = false;
-				if (active_texture_unit_not_coloralpha1)
-				{
-					glActiveTextureARB(OpenGL.ColorAlphaUnit1);
-					active_texture_unit_not_coloralpha1 = false;
-					if (active_texture_unit_client_state_not_coloralpha1)
-					{
-						glClientActiveTextureARB(OpenGL.ColorAlphaUnit1);
-						active_texture_unit_client_state_not_coloralpha1 = false;
-					}
-					glReportError();
-				}
 				if (OpenGL.Texture)
 				{
 					glEnable(GL_TEXTURE_2D);
@@ -904,6 +903,11 @@ void RenderUpdateState()
 				    glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 				}
 				glReportError();
+			}
+
+			if (s_bUpdateAlphaCombineState)
+			{
+				s_bUpdateAlphaCombineState = false;
 			}
 		}
 	}

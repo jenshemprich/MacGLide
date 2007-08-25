@@ -99,7 +99,7 @@ grConstantColorValue4( float a, float r, float g, float b )
 	// according to the linux driver src,
 	// alpha is completely ignored
 	// Glide.State.Delta0ModeColor[3] = a * D10255;
-	// Thus, alpha is take from grConstantColorValue()
+	// Thus, alpha is taken from grConstantColorValue()
 	OpenGL.Delta0Color[3] = OpenGL.ConstantColor[3];
 
 	SetConstantColorValue4State();
@@ -323,17 +323,8 @@ grAlphaTestReferenceValue( GrAlpha_t value )
 #endif
 
 	RenderDrawTriangles( );
-
 	Glide.State.AlphaReferenceValue = value;
-	OpenGL.AlphaReferenceValue = value * D1OVER255;
-	// Only call if the state needs to be changed
-#ifdef OPTIMISE_OPENGL_STATE_CHANGES
-	// alpha reference value applies only when the following conditons are true
-	if ((!OpenGL.ChromaKey || !OpenGL.Texture || OpenGL.Blend)
-	 && Glide.State.AlphaOther == GR_COMBINE_OTHER_TEXTURE
-	 && Glide.State.AlphaTestFunction != GR_CMP_ALWAYS)
-#endif
-		SetChromaKeyAndAlphaState();
+	SetChromaKeyAndAlphaState();
 }
 
 //*************************************************
@@ -349,20 +340,8 @@ grAlphaTestFunction( GrCmpFnc_t function )
 #endif
 
 	RenderDrawTriangles( );
-
 	Glide.State.AlphaTestFunction = function;
-
-	// We can do this just because we know the constant values for both OpenGL and Glide
-	// To port it to anything else than OpenGL we NEED to change this code
-	OpenGL.AlphaTestFunction = GL_NEVER + function;
-
-#ifdef OPTIMISE_OPENGL_STATE_CHANGES
-	if ((Glide.State.AlphaOther == GR_COMBINE_OTHER_TEXTURE)
-	 && (!OpenGL.ChromaKey || OpenGL.Blend || !OpenGL.Texture))
-#endif
-	{
-		SetChromaKeyAndAlphaState();
-	}
+	SetChromaKeyAndAlphaState();
 }
 
 //*************************************************
@@ -470,7 +449,7 @@ grAlphaBlendFunction( GrAlphaBlendFnc_t rgb_sf,   GrAlphaBlendFnc_t rgb_df,
 	OpenGL.Blend = !(( rgb_sf == GR_BLEND_ONE ) && ( rgb_df == GR_BLEND_ZERO ));
 	SetTextureState();
 	SetBlendState();
-	
+
 	VERIFY_ACTIVE_TEXTURE_UNIT(OpenGL.ColorAlphaUnit1);
 }
 
