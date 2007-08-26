@@ -87,15 +87,23 @@ inline void SetChromaKeyAndAlphaState_update()
 		}
 		else 
 		{
+			const GLenum alphaTestFunction = GL_NEVER + Glide.State.AlphaTestFunction;
+			const GLfloat alphaTestReferenceValue = Glide.State.AlphaReferenceValue * D1OVER255;
 			if (Glide.State.AlphaTestFunction != GR_CMP_ALWAYS)
 			{
-				glEnable(GL_ALPHA_TEST);
-#ifndef OPTIMISE_OPENGL_STATE_CHANGES
-				// Restore previous values
-				OpenGL.AlphaTestFunction = GL_NEVER + Glide.State.AlphaTestFunction;
-				OpenGL.AlphaReferenceValue = Glide.State.AlphaReferenceValue * D1OVER255;
+#ifdef OPTIMISE_OPENGL_STATE_CHANGES
+				if (alphaTestFunction != OpenGL.AlphaTestFunction
+				 || alphaTestReferenceValue != OpenGL.AlphaReferenceValue)
+				{
 #endif
-				glAlphaFunc(OpenGL.AlphaTestFunction, OpenGL.AlphaReferenceValue);
+					// Restore previous values
+					OpenGL.AlphaTestFunction = alphaTestFunction;
+					OpenGL.AlphaReferenceValue = alphaTestReferenceValue;
+					glAlphaFunc(alphaTestFunction, alphaTestReferenceValue);
+#ifdef OPTIMISE_OPENGL_STATE_CHANGES
+				}
+#endif
+				glEnable(GL_ALPHA_TEST);
 			}
 			else
 			{
@@ -184,7 +192,7 @@ void RenderUpdateState()
 	else
 	{
 #ifdef OPENGL_DEBUG
-		GlideMsg( "Calls to grChromakeyMode() didn't change ChromaKeyAndAlphaState\n");
+		GlideMsg("Calls to grChromakeyMode() didn't change ChromaKeyAndAlphaState\n");
 #endif
 	}
 
@@ -908,6 +916,7 @@ void RenderUpdateState()
 			if (s_bUpdateAlphaCombineState)
 			{
 				s_bUpdateAlphaCombineState = false;
+				// Alpha is completely ignored in simple coloralpha render mode
 			}
 		}
 	}
