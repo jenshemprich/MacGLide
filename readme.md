@@ -9,7 +9,7 @@ Finally in 2008, when I was just starting to have a very good time with the proj
 # Remains
 The original web-site can be found here: http://macglide.sourceforge.net/
 
-In-game screeshots:
+In-game screenshots:
 
 ![Tomb Raider 1](images/Tomb_Raider_1.jpg "Tomb Raider 1")
 
