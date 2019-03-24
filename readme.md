@@ -12,19 +12,31 @@ The original web-site can be found here: http://macglide.sourceforge.net/
 In-game screeshots:
 
 ![Tomb Raider 1](images/Tomb_Raider_1.jpg "Tomb Raider 1")
+
 Tomb Raider 1
 
+
 ![Carmageddon](images/Carmageddon.jpg "Carmageddon")
+
 Carmageddon
 
+
 ![Falcon 4.0 (with Realism Patch)](images/Falcon_4.0_with_Realism_Patch.jpg "Falcon 4.0 (with Realism Patch)")
+
 Falcon 4.0
 
+
 ![Deep Space 9 - The Fallen](images/Deep_Space_9_-_The_Fallen.jpg "Deep Space 9 - The Fallen")
+
 Deep Space 9 - The Fallen
 
+
 ![Myth - The Fallen Lords](images/Myth_-_The_Fallen_Lords.jpg "Myth - The Fallen Lords")
+
 Myth - The Fallen Lords
 
+
 ![FutureCop LAPD](images/FutureCop_LAPD.jpg "FutureCop LAPD")
+
 FutureCop LAPD
+
