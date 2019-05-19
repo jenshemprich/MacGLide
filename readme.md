@@ -8,7 +8,7 @@ Besides improvements in emulation there was additional support for custom resolu
 
 Finally in 2008, when I was just starting to have a very good time with the project, Apple decided to give up on the PowerPC, abandoned OS9 Classic and thereby grounded the project.
 
-All of this wouldn't have been possible without the supporters from all over the world, who were helping me to collect missing games, obtaining hardware parts, giving hints, feedback, donations, making suggestions for improvements, and advice on algorithms.
+All of this wouldn't have been possible without the supporters from all over the world, who were helping me to collect missing games, obtaining hardware parts, giving hints, feedback, donations,  advice on algorithms, and making suggestions for improvements.
 
 Thank you very much!
 
